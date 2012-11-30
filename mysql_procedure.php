@@ -60,6 +60,7 @@ class mysql_procedure extends procedure
 
                 if(!$mysqli->next_result())
                 {
+                    $mysqli->rollback();
                     runtime_error('MySQL query failed: ' . $this->substitute($this->body, $args) . ' # ' . $mysqli->error);
                     break;
                 }

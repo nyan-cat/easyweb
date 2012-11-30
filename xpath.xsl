@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:php="http://php.net/xsl" xmlns:www="http://easyweb.com/" xmlns:func="http://exslt.org/functions" extension-element-prefixes="php func" exclude-result-prefixes="php www func">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:php="http://php.net/xsl" xmlns:www="https://github.com/nyan-cat/easyweb" xmlns:func="http://exslt.org/functions" extension-element-prefixes="php func" exclude-result-prefixes="php www func">
     <xsl:output omit-xml-declaration="yes" encoding="utf-8" />
     <func:function name="www:access">
         <xsl:param name="expression" />

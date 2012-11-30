@@ -81,7 +81,7 @@ class www
     private function replace_www($template, $document, $args = array())
     {
         $xpath = new DOMXPath($document);
-        $xpath->registerNamespace('www', 'http://easyweb.com/');
+        $xpath->registerNamespace('www', 'https://github.com/nyan-cat/easyweb');
         foreach($xpath->query('//www:*') as $node)
         {
             switch($node->nodeName)

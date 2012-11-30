@@ -14,7 +14,14 @@ class dispatcher
 
     function query_document($name, $args)
     {
-        return $this->get($name, $args)->query_document($args);
+        $procedure = $this->get($name, $args);
+        $mangled = $procedure->mangled();
+
+        if(!isset($this->cache[$mangled])
+        {
+            $this->cache[$mangled] = $procedure->query_document($args);
+        }
+        return $this->cache[$mangled];
     }
 
     function parse_query_document($expression)
@@ -25,9 +32,13 @@ class dispatcher
         }
         else
         {
-            $xml = new xml();
-            $xml->load($expression);
-            return $xml;
+            if(!isset($this->cache[$expression]))
+            {
+                $xml = new xml();
+                $xml->load($expression);
+                $this->cache[$expression] = $xml;
+            }
+            return $this->cache[$expression];
         }
     }
 
@@ -43,6 +54,7 @@ class dispatcher
         return $this->procedures[$mangled];
     }
 
+    private $cache = array();
     private $procedures = array();
 }
 
