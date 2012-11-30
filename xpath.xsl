@@ -44,7 +44,7 @@
     </func:function>
     <func:function name="www:query">
         <xsl:param name="name" />
-        <xsl:param name="args" />
+        <xsl:param name="args" select="''" />
         <xsl:param name="xpath" select="'//*'" />
         <func:result select="php:function('wwwquery', string($name), string($args), string($xpath))" />
     </func:function>

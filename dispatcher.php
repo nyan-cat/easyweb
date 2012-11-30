@@ -25,7 +25,9 @@ class dispatcher
         }
         else
         {
-            return fs::checked_read($expression);
+            $xml = new xml();
+            $xml->load($expression);
+            return $xml;
         }
     }
 

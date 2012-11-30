@@ -1,7 +1,7 @@
 easyweb
 =======
 
-General web engine that gives XML response to HTTP request
+XSLT-based general web engine that gives XML response to HTTP request
 
 ## License
 
