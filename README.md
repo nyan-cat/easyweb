@@ -3,6 +3,8 @@ easyweb
 
 XSLT-based general web engine that gives XML response to HTTP request
 
+You can find easyweb documentation <a href="/nyan-cat/easyweb/wiki">here</a>.
+
 ## License
 
 This project is copyrighted by Denis Sibilev under the Creative Commons Attribution-NonCommercial-NoDerivs 3.0 Unported License.
