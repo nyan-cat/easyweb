@@ -20,7 +20,7 @@ class mysql_procedure extends procedure
 
         if($this->query($args) === false)
         {
-            runtime_error('First MySQL query statement failed: ' . $this->substitute($this->body, $args) . ' # ' . $mysqli->error);
+            runtime_error('First MySQL query statement failed: ' . $this->apply($this->body, $args) . ' # ' . $mysqli->error);
         }
         else
         {
@@ -53,7 +53,7 @@ class mysql_procedure extends procedure
                 {
                     if(!$this->empty && $empty)
                     {
-                        runtime_error('MySQL procedure returned empty result: ' . $this->substitute($this->body, $args));
+                        runtime_error('MySQL procedure returned empty result: ' . $this->apply($this->body, $args));
                     }
                     break;
                 }
@@ -61,7 +61,7 @@ class mysql_procedure extends procedure
                 if(!$mysqli->next_result())
                 {
                     $mysqli->rollback();
-                    runtime_error('MySQL query failed: ' . $this->substitute($this->body, $args) . ' # ' . $mysqli->error);
+                    runtime_error('MySQL query failed: ' . $this->apply($this->body, $args) . ' # ' . $mysqli->error);
                     break;
                 }
             }
@@ -72,17 +72,24 @@ class mysql_procedure extends procedure
 
     private function query($args)
     {
-        return $this->datasource->get()->multi_query($this->substitute($this->body, $args));
+        return $this->datasource->get()->multi_query($this->apply($this->body, $args));
     }
 
-    private function substitute($query, $args)
+    private function apply($query, $args)
     {
-        foreach($args as $name => $value)
-        {
-            $query = str_replace('$' . $name . '$', $this->datasource->get()->real_escape_string($value), $query);
-            $query = str_replace('@' . $name . '@', preg_replace('/[a-zA-Z]+/', '', $value), $query);
-        }
-        return $query;
+        return preg_replace(array('/\[(\w+)]\]/e', '/\$(\w+)/e'), array("\$this->replace('\\1', $args)", "\$this->replace_escape('\\1', $args)"), $query);
+    }
+
+    private function replace($name, $args)
+    {
+        isset($args[$name]) or runtime_error('Unknown procedure parameter: ' . $name);
+        return $args[$name];
+    }
+
+    private function replace_escape($name, $args)
+    {
+        isset($args[$name]) or runtime_error('Unknown procedure parameter: ' . $name);
+        return '\'' . $this->datasource->get()->real_escape_string($args[$name]) . '\'';
     }
 
     private $datasource;

@@ -27,7 +27,7 @@ class access
     {
         if(!isset($this->expression_cache[$expression]))
         {
-            $this->expression_cache[$expression] = $this->evaluate(preg_replace('/\$([\w:]+)/e', "\$this->replace_permission('\1', \$args)", $expression));
+            $this->expression_cache[$expression] = $this->evaluate(preg_replace('/([\w:]+)/e', "\$this->replace_permission('\1', \$args)", $expression));
         }
         return $this->expression_cache[$expression];
     }
@@ -37,7 +37,7 @@ class access
         if(!isset($this->permission_cache[$name]))
         {
             isset($this->permissions[$name]) or runtime_error('Permission not found: ' . $name);
-            $this->permission_cache[$name] = $this->evaluate(preg_replace('/\$([\w:]+)/e', "\$this->replace_role('\1', \$args);", $this->permissions[$name]));
+            $this->permission_cache[$name] = $this->evaluate(preg_replace('/([\w:]+)/e', "\$this->replace_role('\1', \$args);", $this->permissions[$name]));
         }
         return $this->permission_cache[$name];
     }
