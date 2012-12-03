@@ -22,12 +22,12 @@ class page
 
         if($url)
         {
-            if(preg_match_all('/\(([\w:]+) +\-(>|&gt;) +([\w:]+)\)/', $url, $match))
+            if(preg_match_all('/\(([\w:]+) +\-> +([\w:]+)\)/', $url, $match))
             {
-                $patterns = $match[3];
+                $patterns = $match[2];
                 $this->params = $match[1];
 
-                $url = preg_replace('/(\([\w:]+ +\-(>|&gt;) +[\w:]+\))/i', '%', $url);
+                $url = preg_replace('/(\([\w:]+ +\-> +[\w:]+\))/i', '%', $url);
                 $url = preg_escape($url);
 
                 foreach($patterns as $pattern)

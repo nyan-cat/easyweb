@@ -8,7 +8,11 @@ class mysql_procedure extends procedure
     {
         parent::__construct($name, $params, $empty, $root, $output);
         $this->datasource = $datasource;
-        $this->item = $item;
+        $this->item = explode(',', $item);
+        foreach($this->item as &$value)
+        {
+            $value = trim($value);
+        }
         $this->body = preg_match('/[^;]*;\s*\S+/', $body) ? 'begin;' . trim(trim($body), ';') . ';commit;' : $body;
     }
 
@@ -36,7 +40,7 @@ class mysql_procedure extends procedure
                     while($row = $result->fetch_assoc())
                     {
                         $empty = false;
-                        $item = $doc->createElement($this->item);
+                        $item = $doc->createElement($this->item[$n]);
                         $root->appendChild($item);
 
                         foreach($row as $name => $value)

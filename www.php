@@ -20,6 +20,11 @@ class www
         return $this->vars->get($name);
     }
 
+    function insert_variable($name, $value)
+    {
+        return $this->vars->insert($name, $value);
+    }
+
     function local($alias)
     {
         return $this->locale->get($alias);

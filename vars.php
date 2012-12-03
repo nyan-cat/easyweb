@@ -10,11 +10,6 @@ class vars
         return $this->vars[$name];
     }
 
-    function set($name, $value)
-    {
-        $this->vars[$name] = $this->apply($value);
-    }
-
     function insert($name, $value)
     {
         !isset($this->vars[$name]) or runtime_error('Duplicate variable name: ' . $name);
