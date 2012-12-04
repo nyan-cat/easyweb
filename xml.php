@@ -79,6 +79,11 @@ class node implements ArrayAccess
         return $attribute ? $attribute->nodeValue : $default;
     }
 
+    function children()
+    {
+        return new nodeset($this->node->childNodes);
+    }
+
     function get()
     {
         return $this->node;

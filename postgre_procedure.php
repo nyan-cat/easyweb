@@ -2,7 +2,7 @@
 
 require_once('procedure.php');
 
-class mysql_procedure extends procedure
+class postgre_procedure extends procedure
 {
     function __construct($datasource, $name, $params, $empty, $root, $item, $body, $output = array())
     {
@@ -20,7 +20,7 @@ class mysql_procedure extends procedure
     {
         $this->validate($args);
         
-        $mysqli = $this->datasource->get();
+        $pg = $this->datasource->get();
 
         if($this->query($args) === false)
         {
@@ -81,7 +81,7 @@ class mysql_procedure extends procedure
 
     private function apply($query, $args)
     {
-        return preg_replace(array('/\[(\w+)\]/e', '/\$(\w+)/e'), array("\$this->replace('\\1', \$args)", "\$this->replace_escape('\\1', \$args)"), $query);
+        return preg_replace(array('/\[(\w+)]\]/e', '/\$(\w+)/e'), array("\$this->replace('\\1', $args)", "\$this->replace_escape('\\1', $args)"), $query);
     }
 
     private function replace($name, $args)
