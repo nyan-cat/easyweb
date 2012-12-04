@@ -11,13 +11,28 @@ class node implements ArrayAccess
 
     function offsetExists($offset)
     {
-        return $this->node->attributes->getNamedItem($offset) === null;
+        if($offset[0] == '@')
+        {
+            return $this->node->attributes->getNamedItem(substr($offset, 1)) !== null;
+        }
+        else
+        {
+            return $this->child($offset) !== null;
+        }
     }
 
     function offsetGet($offset)
     {
-        $attribute = $this->node->attributes->getNamedItem($offset) or runtime_error('Attribute not found: ' . $offset);
-        return $attribute->nodeValue;
+        if($offset[0] == '@')
+        {
+            $attribute = $this->node->attributes->getNamedItem(substr($offset, 1)) or runtime_error('Attribute not found: ' . $offset);
+            return $attribute->nodeValue;
+        }
+        else
+        {
+            $node = $this->child($offset) or runtime_error('Child node not found: ' . $offset);
+            return $node->nodeValue;
+        }
     }
 
     function offsetSet($offset, $value)
@@ -67,6 +82,18 @@ class node implements ArrayAccess
     function get()
     {
         return $this->node;
+    }
+
+    private function child($name)
+    {
+        foreach($this->node->childNodes as $node)
+        {
+            if($node->nodeName == $name)
+            {
+                return $node;
+            }
+        }
+        return null;
     }
 
     private $node;
