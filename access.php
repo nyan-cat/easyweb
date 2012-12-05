@@ -56,7 +56,7 @@ class access
 
     private function evaluate($expression)
     {
-        preg_match('/\A[\w\s\$\(\)]+\Z/', $expression) or runtime_error('Illegal characters in access expression: ' . $expression);
+        preg_match('/\A[\w\s\$\(\)\'<>=!]+\Z/', $expression) or runtime_error('Illegal characters in access expression: ' . $expression);
         return eval("return ($expression) ? 1 : 0;");
     }
 
