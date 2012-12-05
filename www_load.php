@@ -1,10 +1,8 @@
 <?php
 
 require_once('xml.php');
-require_once('mysql_datasource.php');
-require_once('mysql_procedure.php');
-require_once('postgresql_datasource.php');
-require_once('postgresql_procedure.php');
+require_once('pdo_datasource.php');
+require_once('pdo_procedure.php');
 require_once('page.php');
 require_once('template.php');
 
@@ -16,44 +14,34 @@ foreach($config->query('/config/vars//var') as $var)
     $this->vars->insert($var['@name'], $var['@value']);
 }
 
-foreach($config->query('/config/datasources//datasource[@type = "mysql"]') as $ds)
+function load_procedures($config, $types, $drivers)
 {
-    $datasource = new mysql_datasource($ds['@server'], $ds['@username'], $ds['@password'], $ds['@database'], $ds['@charset']);
-
-    foreach($config->query('/config/procedures//procedure[@datasource = "' . $ds['@name'] . '"]') as $procedure)
+    $procedures = array();
+    foreach($types as $type)
     {
-        $this->dispatcher->insert(new mysql_procedure
-        (
-            $datasource,
-            $procedure['@name'],
-            $config->query_assoc('param', $procedure, '@name', '@type'),
-            $procedure['@empty'] === 'true',
-            $procedure['@root'],
-            $procedure['@item'],
-            $procedure->value(),
-            $config->query_assoc('output', $procedure, '@name', '@transform')
-        ));
-    }
-}
+        $driver = $drivers[$type];
 
-foreach($config->query('/config/datasources//datasource[@type = "postgresql"]') as $ds)
-{
-    $datasource = new postgresql_datasource($ds['@server'], $ds['@username'], $ds['@password'], $ds['@database'], $ds['@charset']);
+        foreach($config->query('/config/datasources//datasource[@type = "' . $driver . '"]') as $ds)
+        {
+            $datasource = new pdo_datasource($driver, $ds['@server'], $ds['@username'], $ds['@password'], $ds['@database'], $ds['@charset']);
 
-    foreach($config->query('/config/procedures//procedure[@datasource = "' . $ds['@name'] . '"]') as $procedure)
-    {
-        $this->dispatcher->insert(new postgresql_procedure
-        (
-            $datasource,
-            $procedure['@name'],
-            $config->query_assoc('param', $procedure, '@name', '@type'),
-            $procedure['@empty'] === 'true',
-            $procedure['@root'],
-            $procedure['@item'],
-            $procedure->value(),
-            $config->query_assoc('output', $procedure, '@name', '@transform')
-        ));
+            foreach($config->query('/config/procedures//procedure[@datasource = "' . $ds['@name'] . '"]') as $procedure)
+            {
+                $procedures[] = new pdo_procedure
+                (
+                    $datasource,
+                    $procedure['@name'],
+                    $config->query_assoc('param', $procedure, '@name', '@type'),
+                    $procedure['@empty'] === 'true',
+                    $procedure['@root'],
+                    $procedure['@item'],
+                    $procedure->value(),
+                    $config->query_assoc('output', $procedure, '@name', '@transform')
+                );
+            }
+        }
     }
+    return $procedures;
 }
 
 function load_template($config, $node)
@@ -74,6 +62,39 @@ function load_template($config, $node)
         return null;
     }
 }
+
+foreach(load_procedures($config, array
+(
+    'cubrid',
+    'dblib',
+    'firebird',
+    'ibm',
+    'informix',
+    'mysql',
+    'oracle',
+    'odbc',
+    'postgresql',
+    'sqlite',
+    'mssql',
+    '4d'
+), array
+(
+    'cubrid'     => 'cubrid',
+    'dblib'      => 'dblib',
+    'firebird'   => 'firebird',
+    'ibm'        => 'ibm',
+    'informix'   => 'informix',
+    'mysql'      => 'mysql',
+    'oracle'     => 'oci',
+    'odbc'       => 'odbc',
+    'postgresql' => 'pgsql',
+    'sqlite'     => 'sqlite',
+    'mssql'      => 'sqlsrv',
+    '4d'         => '4d'
+)) as $procedure)
+{
+    $this->dispatcher->insert($procedure);
+};
 
 foreach($config->query('/config/pages//page') as $page)
 {
