@@ -24,6 +24,7 @@ class postgre_datasource
         if(!$this->pg)
         {
             $this->pg = pg_connect('host=' . $this->server . ' dbname=' . $this->database . ' user=' . $this->user . ' password=' . $this->password) or runtime_error("Can't connect to Postgre database: $database");
+            pg_set_client_encoding($this->pg, $this->charset) == 0 or runtime_error("Can't set client charset for Postgre database: $database");
         }
         return $this->pg;
     }
