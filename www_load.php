@@ -3,6 +3,8 @@
 require_once('xml.php');
 require_once('mysql_datasource.php');
 require_once('mysql_procedure.php');
+require_once('postgresql_datasource.php');
+require_once('postgresql_procedure.php');
 require_once('page.php');
 require_once('template.php');
 
@@ -21,6 +23,26 @@ foreach($config->query('/config/datasources//datasource[@type = "mysql"]') as $d
     foreach($config->query('/config/procedures//procedure[@datasource = "' . $ds['@name'] . '"]') as $procedure)
     {
         $this->dispatcher->insert(new mysql_procedure
+        (
+            $datasource,
+            $procedure['@name'],
+            $config->query_assoc('param', $procedure, '@name', '@type'),
+            $procedure['@empty'] === 'true',
+            $procedure['@root'],
+            $procedure['@item'],
+            $procedure->value(),
+            $config->query_assoc('output', $procedure, '@name', '@transform')
+        ));
+    }
+}
+
+foreach($config->query('/config/datasources//datasource[@type = "postgresql"]') as $ds)
+{
+    $datasource = new postgresql_datasource($ds['@server'], $ds['@username'], $ds['@password'], $ds['@database'], $ds['@charset']);
+
+    foreach($config->query('/config/procedures//procedure[@datasource = "' . $ds['@name'] . '"]') as $procedure)
+    {
+        $this->dispatcher->insert(new postgresql_procedure
         (
             $datasource,
             $procedure['@name'],
