@@ -48,10 +48,15 @@ class access
         {
             isset($this->roles[$name]) or runtime_error('Role not found: ' . $name);
             $expression = $this->vars->apply(vars::apply_assoc($this->roles[$name], $args));
-            $expression = preg_replace("/([\w:]+\([^\)]*\))/e", "\$this->dispatcher->parse_query_value('\\1');");
+            $expression = preg_replace("/([\w:]+\([^\)]*\))/e", "\$this->replace_query('\\1');");
             $this->role_cache[$name] = $this->evaluate($expression);
         }
         return $this->role_cache[$name];
+    }
+
+    private function replace_query($expression)
+    {
+        return '\'' . addslashes($this->dispatcher->parse_query_value(stripslashes($expression))) . '\'';
     }
 
     private function evaluate($expression)
