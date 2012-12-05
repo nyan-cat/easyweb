@@ -37,9 +37,9 @@ function wwwmd5($string)
     return md5($string);
 }
 
-function wwwquery($name, $args, $xpath)
+function wwwquery($name, $args)
 {
-    return xslt::top()->query_document($name, $args)->query($xpath)->get();
+    return xslt::top()->query_document($name, args_decode($args))->get();
 }
 
 function wwwregexreplace($subject, $find, $replace)

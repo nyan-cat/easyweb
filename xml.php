@@ -108,6 +108,7 @@ class nodeset implements Iterator
 {
     function __construct($nodeset)
     {
+        $this->nodeset = $nodeset;
         foreach($nodeset as $node)
         {
             $this->array[] = new node($node);
@@ -199,6 +200,11 @@ class xml
     function text()
     {
         return $this->xml->saveXML();
+    }
+
+    function get()
+    {
+        return $this->xml;
     }
 
     private $xml;

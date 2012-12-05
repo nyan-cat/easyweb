@@ -49,7 +49,7 @@ class www
 
     function query_document($name, $args)
     {
-        return new xml($dispatcher->query_document($name, $args));
+        return new xml($this->dispatcher->query_document($name, $args));
     }
 
     private function __construct($country, $language)
