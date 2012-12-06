@@ -4,15 +4,15 @@ require_once('xml.php');
 
 class locale
 {
-    function __construct($country, $language)
+    function __construct($language, $country)
     {
-        $this->setup($country, $language);
+        $this->setup($language, $country);
     }
 
-    function setup($country, $language)
+    function setup($language, $country)
     {
-        $this->country = $country;
         $this->language = $language;
+        $this->country = $country;
     }
 
     function load($filename)
@@ -33,8 +33,8 @@ class locale
         return isset($this->local[$alias]) ? $this->local[$alias] : "[Alias not found: $alias]";
     }
 
-    private $country;
     private $language;
+    private $country;
     private $local = array();
 }
 

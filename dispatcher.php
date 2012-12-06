@@ -15,7 +15,7 @@ class dispatcher
     function query_document($name, $args)
     {
         $procedure = $this->get($name, $args);
-        $mangled = $procedure->mangled();
+        $mangled = procedure::mangle_values($name, $args);
 
         if(!isset($this->cache[$mangled]))
         {

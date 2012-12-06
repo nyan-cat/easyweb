@@ -9,9 +9,9 @@ require_once('xslt.php');
 
 class www
 {
-    static function create($country, $language)
+    static function create($language, $country)
     {
-        $www = new www($country, $language);
+        $www = new www($language, $country);
         return $www;
     }
 
@@ -52,10 +52,10 @@ class www
         return new xml($this->dispatcher->query_document($name, $args));
     }
 
-    private function __construct($country, $language)
+    private function __construct($language, $country)
     {
         $this->vars = new vars();
-        $this->locale = new locale($country, $language);
+        $this->locale = new locale($language, $country);
         $this->locale->load(locale_location);
         $this->dispatcher = new dispatcher();
         $this->access = new access($this->vars, $this->dispatcher);

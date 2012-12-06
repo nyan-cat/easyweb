@@ -13,67 +13,109 @@ class pdo_procedure extends procedure
         {
             $value = trim($value);
         }
-        $this->body = $body;
+        $this->body = explode(';', trim(trim($body), ';'));
     }
 
     function query_document($args = array())
     {
         $this->validate($args);
-        
         $pdo = $this->datasource->get();
-        $query = $this->apply($this->body, $args);
+        $doc = new DOMDocument('1.0', 'utf-8');
+        $empty = true;
 
-        $result = $pdo->query($query);
-
-        if($result !== false)
+        if(count($this->body) > 1)
         {
-            $doc = new DOMDocument('1.0', 'utf-8');
-            $empty = true;
+            $autocommit = $pdo->getAttribute(PDO::ATTR_AUTOCOMMIT);
+            $pdo->setAttribute(PDO::ATTR_AUTOCOMMIT, false);
+            $pdo->beginTransaction();
             $n = 0;
 
-            do
+            foreach($this->body as $query)
             {
-                $root = $doc->createElement($this->root[$n]);
-                $doc->appendChild($root);
-
-                foreach($result->fetchAll(PDO::FETCH_ASSOC) as $row)
+                $query = $this->apply($query, $args);
+                if($result = $pdo->query($query))
                 {
-                    $empty = false;
-                    $item = $doc->createElement($this->item[$n]);
-                    $root->appendChild($item);
-
-                    foreach($row as $name => $value)
+                    $rows = $result->fetchAll(PDO::FETCH_ASSOC);
+                    if(count($rows))
                     {
-                        $node = $doc->createElement($name, $this->transform($name, $value));
-                        $item->appendChild($node);
+                        $empty = false;
+                        $root = $doc->createElement($this->root[$n]);
+                        $doc->appendChild($root);
+                        
+                        foreach($rows as $row)
+                        {
+                            $item = $doc->createElement($this->item[$n]);
+                            $root->appendChild($item);
+
+                            foreach($row as $name => $value)
+                            {
+                                $node = $doc->createElement($name, $this->transform($name, $value));
+                                $item->appendChild($node);
+                            }
+                        }
+                        ++$n;
                     }
                 }
-                ++$n;
+                else
+                {
+                    $pdo->setAttribute(PDO::ATTR_AUTOCOMMIT, $autocommit);
+                    $pdo->rollBack();
+                    runtime_error('PDO transaction failed: ' . $query . ' # ' . $this->error());
+                }
             }
-            while($result->nextRowset());
+
+            if(!$this->empty && $empty)
+            {
+                $pdo->setAttribute(PDO::ATTR_AUTOCOMMIT, $autocommit);
+                $pdo->rollBack();
+                runtime_error('PDO procedure returned empty result: ' . $query);
+            }
+
+            $pdo->commit() or runtime_error('PDO transaction commit failed: ' . $query . ' # ' . $this->error());
+        }
+        else
+        {
+            $query = $this->apply($this->body[0], $args);
+            if($result = $pdo->query($query))
+            {
+                $rows = $result->fetchAll(PDO::FETCH_ASSOC);
+                if(count($rows))
+                {
+                    $empty = false;
+                    $root = $doc->createElement($this->root[0]);
+                    $doc->appendChild($root);
+                    
+                    foreach($rows as $row)
+                    {
+                        $item = $doc->createElement($this->item[0]);
+                        $root->appendChild($item);
+
+                        foreach($row as $name => $value)
+                        {
+                            $node = $doc->createElement($name, $this->transform($name, $value));
+                            $item->appendChild($node);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                runtime_error('PDO query failed: ' . $query . ' # ' . $this->error());
+            }
 
             if(!$this->empty && $empty)
             {
                 runtime_error('PDO procedure returned empty result: ' . $query);
             }
+        }
 
-            return $doc;
-        }
-        else
-        {
-            runtime_error('PDO query failed: ' . $query . ' # ' . $this->error());
-        }
+        return $doc;
     }
 
     private function error()
     {
-        $info = $this->pdo->errorInfo();
+        $info = $this->datasource->get()->errorInfo();
         return $info[2];
-    }
-
-    private function query($args)
-    {
-        return $this->datasource->get()->multi_query($this->apply($this->body, $args));
     }
 
     private function apply($query, $args)
