@@ -28,15 +28,13 @@ class dispatcher
     {
         if(preg_match('/\A([\w:]+)\(([^\)]*)\)\Z/', $expression, $match))
         {
-            return $this->query_document($match[1], args_decode($match[2]));
+            return $this->query_document($match[1], args::decode($match[2]));
         }
         else
         {
             if(!isset($this->cache[$expression]))
             {
-                $xml = new xml();
-                $xml->load($expression);
-                $this->cache[$expression] = $xml;
+                $this->cache[$expression] = xml::load($expression);
             }
             return $this->cache[$expression];
         }

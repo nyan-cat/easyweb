@@ -4,8 +4,9 @@ require_once('exception.php');
 
 class router
 {
-    function __construct($access)
+    function __construct($vars, $access)
     {
+        $this->vars = $vars;
         $this->access = $access;
     }
 
@@ -27,11 +28,16 @@ class router
         {
             if($page->match($url, $args))
             {
+                $this->vars->push($args);
                 if($page->permission())
                 {
-                    if($this->access->query($page->permission(), $args))
+                    if($this->access->query($page->permission()))
                     {
                         return $page;
+                    }
+                    else
+                    {
+                        $this->vars->pop();
                     }
                 }
                 else
@@ -43,6 +49,7 @@ class router
         return null;
     }
 
+    private $vars;
     private $access;
     private $pages = array();
 }

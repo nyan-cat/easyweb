@@ -17,8 +17,7 @@ class locale
 
     function load($filename)
     {
-        $locale = new xml();
-        $locale->load($filename);
+        $locale = xml::load($filename);
         foreach($locale->query('/local//*[count(*)=0]') as $node)
         {
             $path = explode(':', str_replace('/', ':', trim($node->path(), '/')));

@@ -22,6 +22,11 @@ class post
         return $_POST[$name];
     }
 
+    static function hidden($name)
+    {
+        return $_POST[$name];
+    }
+
     static function textarea($name)
     {
         return $_POST[$name];

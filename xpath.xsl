@@ -4,7 +4,7 @@
     <xsl:output omit-xml-declaration="yes" encoding="utf-8" />
     <func:function name="www:access">
         <xsl:param name="expression" />
-        <func:result select="php:function('wwwaccess', string($expression))" />
+        <func:result select="php:function('wwwaccess', string($expression), .)" />
     </func:function>
     <func:function name="www:base64-decode">
         <xsl:param name="string" />

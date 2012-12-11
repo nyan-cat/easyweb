@@ -23,20 +23,22 @@ class validate
 
     private static $patterns = array
     (
-        'bool'       => '[01]',
-        'natural'    => '[1-9]\d*',
-        'int'        => '\-?\d+',
-        'real'       => '\-?\d+\.?\d*',
-        'uint'       => '\d+',
-        'uint:list'  => '[\d,]+',
-        'alpha2'     => '[a-z]{2}',
-        'ipv4'       => '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}',
-        'md5'        => '[\da-f]{32}',
-        'key'        => '[\d\.]+',
-        'tuple:list' => '[\d\.,\(\)]+',
-        'string'     => '.*',
-        'text'       => '[\s\S]*',
-        'email'      => '[\w\-]+@[\w\-\.]+'
+        'bool'            => '[01]',
+        'natural'         => '[1-9]\d*',
+        'int'             => '\-?\d+',
+        'real'            => '\-?\d+\.?\d*',
+        'uint'            => '\d+',
+        'uint:list'       => '[\d,]+',
+        'alpha2'          => '[a-z]{2}',
+        'ipv4'            => '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}',
+        'md5'             => '[\da-f]{32}',
+        'key'             => '[\d\.]+',
+        'tuple:list'      => '[\d\.,\(\)]+',
+        'string'          => '.+',
+        'string:optional' => '.*',
+        'text'            => '[\s\S]+',
+        'text:optional'   => '[\s\S]*',
+        'email'           => '[\w\-]+@[\w\-\.]+'
     );
 }
 

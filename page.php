@@ -54,6 +54,11 @@ class page
         return $this->template;
     }
 
+    function action()
+    {
+        return $this->action;
+    }
+
     function permission()
     {
         return $this->permission;

@@ -37,7 +37,14 @@ class node implements ArrayAccess
 
     function offsetSet($offset, $value)
     {
-        runtime_error('Call to private method');
+        if($offset[0] == '@')
+        {
+            $this->node->setAttribute(substr($offset, 1), $value);
+        }
+        else
+        {
+            runtime_error('Node value assignment is not supported');
+        }
     }
 
     function offsetUnset($offset)
@@ -79,9 +86,29 @@ class node implements ArrayAccess
         return $attribute ? $attribute->nodeValue : $default;
     }
 
+    function parent()
+    {
+        return new node($this->node->parentNode);
+    }
+
     function children()
     {
         return new nodeset($this->node->childNodes);
+    }
+
+    function insert($new, $node)
+    {
+        $this->node->insertBefore($new->get(), $node->get());
+    }
+
+    function replace($new, $old)
+    {
+        $this->node->replaceChild($new->get(), $old->get());
+    }
+
+    function remove($child)
+    {
+        $this->node->removeChild($child->get());
     }
 
     function get()
@@ -175,26 +202,48 @@ class xml
         $this->xml = $xml ? $xml : new DOMDocument();
     }
 
-    function load($filename)
+    static function load($filename)
     {
-        $this->xml->load(fs::normalize($filename));
-        $this->xml->xinclude();
+        $xml = new DOMDocument();
+        $xml->load(fs::normalize($filename));
+        $xml->xinclude();
+        return new xml($xml);
     }
 
-    function query($expression, $root = null)
+    function query($expression, $context = null)
     {
-        $xpath = new DOMXPath($this->xml);
-        return $root ? new nodeset($xpath->query($expression, $root->get())) : new nodeset($xpath->query($expression));
+        return $context ? new nodeset($this->xpath()->query($expression, $context->get())) : new nodeset($this->xpath()->query($expression));
     }
 
-    function query_assoc($expression, $root, $key, $value)
+    function evaluate($expression, $context = null)
+    {
+        $result = $this->xpath()->evaluate($expression, $context ? $context->get() : null);
+        return $result instanceof DOMNodeList ? $result->item(0)->nodeValue : $result;
+    }
+
+    function query_assoc($expression, $context, $key, $value)
     {
         $result = array();
-        foreach($this->query($expression, $root) as $node)
+        foreach($this->query($expression, $context) as $node)
         {
             $result[$node[$key]] = $node[$value];
         }
         return $result;
+    }
+
+    function create($name, $value = null)
+    {
+        return new node($value !== null ? $this->xml->createElement($name, $value) : $this->xml->createElement($name));
+    }
+
+    function import($node)
+    {
+        return new node($this->xml->importNode($node->get(), true));
+    }
+
+    function children()
+    {
+        return new nodeset($this->xml->childNodes);
     }
 
     function text()
@@ -207,7 +256,18 @@ class xml
         return $this->xml;
     }
 
+    private function xpath()
+    {
+        if(!$this->xpath)
+        {
+            $this->xpath = new DOMXPath($this->xml);
+            $this->xpath->registerNamespace('www', 'https://github.com/nyan-cat/easyweb');
+        }
+        return $this->xpath;
+    }
+
     private $xml;
+    private $xpath = null;
 }
 
 ?>

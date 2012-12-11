@@ -2,6 +2,7 @@
 
 require_once('exception.php');
 require_once('vars.php');
+require_once('xpression.php');
 
 class access
 {
@@ -9,67 +10,89 @@ class access
     {
         $this->vars = $vars;
         $this->dispatcher = $dispatcher;
+        $this->xpression = new xpression();
     }
 
-    function insert_role($name, $expression)
+    function insert_role($name, $xpression)
     {
-        !isset($this->roles[$name]) or runtime_error('Duplicate role: ' . $name);
-        $this->roles[$name] = $expression;
+        $mangled = $xpression->mangled();
+        !isset($this->roles[$mangled]) or runtime_error('Duplicate role: ' . $mangled);
+        $this->roles[$mangled] = $xpression;
     }
 
-    function insert_permission($name, $expression)
+    function insert_permission($name, $xpression)
     {
-        !isset($this->permissions[$name]) or runtime_error('Duplicate permission: ' . $name);
-        $this->permissions[$name] = $expression;
+        $mangled = $xpression->mangled();
+        !isset($this->permissions[$mangled]) or runtime_error('Duplicate permission: ' . $mangled);
+        $this->permissions[$mangled] = $xpression;
     }
 
-    function query($expression, $args = array())
+    function query($expression, $doc = null, $context = null)
     {
-        if(!isset($this->expression_cache[$expression]))
+        $expression = $this->vars->apply($expression, true);
+        if($doc)
         {
-            $this->expression_cache[$expression] = $this->evaluate(preg_replace('/([\w:]+)/e', "\$this->replace_permission('\1', \$args)", $expression));
+            $expression = preg_replace('/([\w:]+\w)\(([^\)]+)\)/e', "\$this->replace_xpath('\\1', '\\2', \$doc, \$context)", $expression);
         }
-        return $this->expression_cache[$expression];
+        $expression = preg_replace('/([\w:]+\w)\(([^\)]+)\)/e', "\$this->replace_permission('\\1', '\\2')", $expression);
+        return $doc ? $doc->evaluate($expression, $context) : xpression::evaluate($expression);
     }
 
-    private function replace_permission($name, $args = array())
+    private function permission($name, $args)
     {
-        if(!isset($this->permission_cache[$name]))
-        {
-            isset($this->permissions[$name]) or runtime_error('Permission not found: ' . $name);
-            $this->permission_cache[$name] = $this->evaluate(preg_replace('/([\w:]+)/e', "\$this->replace_role('\1', \$args);", $this->permissions[$name]));
-        }
-        return $this->permission_cache[$name];
+        $mangled = xpression::mangle($name, $args);
+        isset($this->permissions[$mangled]) or runtime_error('Permission not found: ' . $mangled);
+        return $this->permissions[$mangled];
     }
 
-    private function replace_role($name, $args = array())
+    private function role($name, $args)
     {
-        if(!isset($this->role_cache[$name]))
+        $mangled = xpression::mangle($name, $args);
+        isset($this->roles[$mangled]) or runtime_error('Role not found: ' . $mangled);
+        return $this->roles[$mangled];
+    }
+
+    private function replace_xpath($permission, $args, $doc, $context)
+    {
+        $args = stripslashes($args);
+        $args = args::decode($args);
+        foreach($args as $name => &$value)
         {
-            isset($this->roles[$name]) or runtime_error('Role not found: ' . $name);
-            $expression = $this->vars->apply(vars::apply_assoc($this->roles[$name], $args));
-            $expression = preg_replace("/([\w:]+\([^\)]*\))/e", "\$this->replace_query('\\1');");
-            $this->role_cache[$name] = $this->evaluate($expression);
+            if(preg_match('/\A\w+\Z/', $value))
+            {
+                $value = $doc->evaluate($value, $context);
+            }
         }
-        return $this->role_cache[$name];
+        return $permission . '(' . args::encode($args) . ')';
+    }
+
+    private function replace_permission($name, $args)
+    {
+        $args = stripslashes($args);
+        $args = args::decode($args);
+        $expression = $this->permission($name, $args)->get($args);
+        return preg_replace('/([\w:]+\w)\(([^\)]+)\)/e', "\$this->replace_role('\\1', '\\2');", $expression);
+    }
+
+    private function replace_role($name, $args)
+    {
+        $args = stripslashes($args);
+        $args = args::decode($args);
+        $expression = $this->role($name, $args)->get($args);
+        $expression = $this->vars->apply($expression, true);
+        return preg_replace('/(([\w:]+\w)\(([^\)]+)\))/e', "\$this->replace_query('\\1', '\\2')", $expression);
     }
 
     private function replace_query($expression)
     {
-        return '\'' . addslashes($this->dispatcher->parse_query_value(stripslashes($expression))) . '\'';
-    }
-
-    private function evaluate($expression)
-    {
-        preg_match('/\A[\w\s\$\(\)\'<>=!]+\Z/', $expression) or runtime_error('Illegal characters in access expression: ' . $expression);
-        return eval("return ($expression) ? 1 : 0;");
+        $expression = stripslashes($expression);
+        $result = $this->dispatcher->parse_query_value($this->vars->apply($expression));
+        return args::quote($result);
     }
 
     private $vars;
     private $dispatcher;
-    private $expression_cache = array();
-    private $permission_cache = array();
-    private $role_cache = array();
+    private $xpression;
     private $roles = array();
     private $permissions = array();
 }

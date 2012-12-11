@@ -10,10 +10,13 @@ class procedure
         $this->mangled = self::mangle($name, $params);
         $this->params = $params;
         $this->empty = $empty;
-        $this->root = explode(',', $root);
-        foreach($this->root as &$value)
+        if($root)
         {
-            $value = trim($value);
+            $this->root = explode(',', $root);
+            foreach($this->root as &$value)
+            {
+                $value = trim($value);
+            }
         }
 
         foreach($output as $name => &$transform)

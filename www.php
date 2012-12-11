@@ -30,16 +30,20 @@ class www
         return $this->locale->get($alias);
     }
 
-    function access($expression)
+    function access($expression, $doc = null, $context = null)
     {
-        return $this->access->query($expression);
+        return $this->access->query($expression, $doc, $context);
     }
 
     function request_document($url)
     {
         if($page = $this->router->match($url, $args))
         {
-            return new xml($this->render($page, $args));
+            foreach($args as $name => $value)
+            {
+                $this->insert_variable("url:$name", $value);
+            }
+            return $this->render($page, $args);
         }
         else
         {
@@ -49,7 +53,7 @@ class www
 
     function query_document($name, $args)
     {
-        return new xml($this->dispatcher->query_document($name, $args));
+        return $this->dispatcher->query_document($name, $args);
     }
 
     private function __construct($language, $country)
@@ -59,7 +63,7 @@ class www
         $this->locale->load(locale_location);
         $this->dispatcher = new dispatcher();
         $this->access = new access($this->vars, $this->dispatcher);
-        $this->router = new router($this->access);
+        $this->router = new router($this->vars, $this->access);
         $this->xslt = new xslt();
 
         include('www_load.php');
@@ -67,7 +71,20 @@ class www
 
     private function render($page, $args)
     {
-        return $this->render_template($page->template(), $args);
+        if($action = $page->action())
+        {
+            include fs::normalize($action);
+            action($this);
+        }
+
+        if($template = $page->template())
+        {
+            return $this->render_template($template, $args);
+        }
+        else
+        {
+            return null;
+        }
     }
 
     private function render_template($template, $args)
@@ -78,54 +95,53 @@ class www
     private function render_xslt($template, $xsl, $xml, $args = array())
     {
         $this->xslt->import($xsl, $args);
-        $document = $this->xslt->transform($xml ? $this->dispatcher->parse_query_document($xml) : new DOMDocument(), $this);
+        $document = $this->xslt->transform($xml ? $this->dispatcher->parse_query_document($xml) : new xml(), $this);
         $this->replace_www($template, $document, $args);
         return $document;
     }
 
     private function replace_www($template, $document, $args = array())
     {
-        $xpath = new DOMXPath($document);
-        $xpath->registerNamespace('www', 'https://github.com/nyan-cat/easyweb');
-        foreach($xpath->query('//www:*') as $node)
+        foreach($document->query('//www:*') as $node)
         {
-            switch($node->nodeName)
+            switch($node->name())
             {
             case 'www:template':
-                $nested = $this->render_template($template->get($node->attributes->getNamedItem('name')->nodeValue), $args);
+                $nested = $this->render_template($template->get($node['@name']), $args);
                 break;
             case 'www:xslt':
-                $params = $node->attributes->getNamedItem('args');
-                $nested = $this->render_xslt($template, $node->attributes->getNamedItem('xsl')->nodeValue, $node->attributes->getNamedItem('xml')->nodeValue, $params ? args_decode($params->nodeValue) : array());
+                $params = $node->attribute('@args');
+                $nested = $this->render_xslt($template, $node['@xsl'], $node['@xml'], $params ? args::decode($params) : array());
                 break;
             case 'www:style':
-                $src = $node->attributes->getNamedItem('src')->nodeValue;
-                $nested = $document->createElement('link');
-                $nested->setAttribute('rel', 'stylesheet');
-                $nested->setAttribute('href', $src . '?' . fs::crc32($src));
+                $src = $node['@src'];
+                $nested = $document->create('link');
+                $nested['@rel'] = 'stylesheet';
+                $nested['@href'] = $src . '?' . fs::crc32($src);
                 break;
             case 'www:script':
-                $src = $node->attributes->getNamedItem('src')->nodeValue;
-                $nested = $document->createElement('script', '');
-                $nested->setAttribute('type', 'text/javascript');
-                $nested->setAttribute('src', $src . '?' . fs::crc32($src));
+                $src = $node['@src'];
+                $nested = $document->create('script', '');
+                $nested['@type'] = 'text/javascript';
+                $nested['@src'] = $src . '?' . fs::crc32($src);
                 break;
             case 'www:bbcode':
                 break;
             default:
-                runtime_error('Unknown extension tag: ' . $node->nodeName);
+                runtime_error('Unknown extension tag: ' . $node->name());
             }
-            if($nested instanceof DOMDocument)
+            if($nested instanceof xml)
             {
-                foreach($nested->childNodes as $child)
+                $parent = $node->parent();
+                foreach($nested->children() as $child)
                 {
-                    $node->parentNode->insertBefore($document->importNode($child, true), $node);
+                    $parent->insert($document->import($child), $node);
                 }
-                $node->parentNode->removeChild($node);
+                $parent->remove($node);
             }
             else
             {
-                $node->parentNode->replaceChild($nested, $node);
+                $node->parent()->replace($nested, $node);
             }
         }
     }

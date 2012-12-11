@@ -6,8 +6,7 @@ require_once('pdo_procedure.php');
 require_once('page.php');
 require_once('template.php');
 
-$config = new xml();
-$config->load(config_location);
+$config = xml::load(config_location);
 
 foreach($config->query('/config/vars//var') as $var)
 {
@@ -32,9 +31,9 @@ function load_procedures($config, $types, $drivers)
                     $datasource,
                     $procedure['@name'],
                     $config->query_assoc('param', $procedure, '@name', '@type'),
-                    $procedure['@empty'] === 'true',
-                    $procedure['@root'],
-                    $procedure['@item'],
+                    $procedure->attribute('empty') === 'true',
+                    $procedure->attribute('root'),
+                    $procedure->attribute('item'),
                     $procedure->value(),
                     $config->query_assoc('output', $procedure, '@name', '@transform')
                 );
@@ -111,12 +110,22 @@ foreach($config->query('/config/pages//page') as $page)
 
 foreach($config->query('/config/roles//role') as $role)
 {
-    $this->access->insert_role($role['@name'], $role['@value']);
+    $this->access->insert_role($role['@name'], new xpression
+    (
+        $role->value(),
+        $role['@name'],
+        $config->query_assoc('param', $role, '@name', '@type')
+    ));
 }
 
 foreach($config->query('/config/permissions//permission') as $permission)
 {
-    $this->access->insert_permission($permission['@name'], $permission['@value']);
+    $this->access->insert_permission($permission['@name'], new xpression
+    (
+        $permission->value(),
+        $permission['@name'],
+        $config->query_assoc('param', $permission, '@name', '@type')
+    ));
 }
 
 ?>

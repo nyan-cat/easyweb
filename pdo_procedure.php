@@ -8,10 +8,13 @@ class pdo_procedure extends procedure
     {
         parent::__construct($name, $params, $empty, $root, $output);
         $this->datasource = $datasource;
-        $this->item = explode(',', $item);
-        foreach($this->item as &$value)
+        if($item)
         {
-            $value = trim($value);
+            $this->item = explode(',', $item);
+            foreach($this->item as &$value)
+            {
+                $value = trim($value);
+            }
         }
         $this->body = explode(';', trim(trim($body), ';'));
     }
@@ -20,6 +23,11 @@ class pdo_procedure extends procedure
     {
         $this->validate($args);
         $pdo = $this->datasource->get();
+        return new xml($this->root && $this->item ? $this->query($pdo, $args) : $this->execute($pdo, $args));
+    }
+
+    private function query($pdo, $args)
+    {
         $doc = new DOMDocument('1.0', 'utf-8');
         $empty = true;
 
@@ -41,7 +49,7 @@ class pdo_procedure extends procedure
                         $empty = false;
                         $root = $doc->createElement($this->root[$n]);
                         $doc->appendChild($root);
-                        
+
                         foreach($rows as $row)
                         {
                             $item = $doc->createElement($this->item[$n]);
@@ -58,16 +66,16 @@ class pdo_procedure extends procedure
                 }
                 else
                 {
-                    $pdo->setAttribute(PDO::ATTR_AUTOCOMMIT, $autocommit);
                     $pdo->rollBack();
+                    $pdo->setAttribute(PDO::ATTR_AUTOCOMMIT, $autocommit);
                     runtime_error('PDO transaction failed: ' . $query . ' # ' . $this->error());
                 }
             }
 
             if(!$this->empty && $empty)
             {
-                $pdo->setAttribute(PDO::ATTR_AUTOCOMMIT, $autocommit);
                 $pdo->rollBack();
+                $pdo->setAttribute(PDO::ATTR_AUTOCOMMIT, $autocommit);
                 runtime_error('PDO procedure returned empty result: ' . $query);
             }
 
@@ -112,6 +120,39 @@ class pdo_procedure extends procedure
         return $doc;
     }
 
+    private function execute($pdo, $args)
+    {
+        if(count($this->body) > 1)
+        {
+            $autocommit = $pdo->getAttribute(PDO::ATTR_AUTOCOMMIT);
+            $pdo->setAttribute(PDO::ATTR_AUTOCOMMIT, false);
+            $pdo->beginTransaction();
+
+            foreach($this->body as $query)
+            {
+                $query = $this->apply($query, $args);
+                if(!$pdo->query($query))
+                {
+                    $pdo->rollBack();
+                    $pdo->setAttribute(PDO::ATTR_AUTOCOMMIT, $autocommit);
+                    runtime_error('PDO transaction failed: ' . $query . ' # ' . $this->error());
+                }
+            }
+
+            $pdo->commit() or runtime_error('PDO transaction commit failed: ' . $query . ' # ' . $this->error());
+        }
+        else
+        {
+            $query = $this->apply($this->body[0], $args);
+            if(!$pdo->query($query))
+            {
+                runtime_error('PDO query failed: ' . $query . ' # ' . $this->error());
+            }
+        }
+
+        return null;
+    }
+
     private function error()
     {
         $info = $this->datasource->get()->errorInfo();
@@ -132,7 +173,7 @@ class pdo_procedure extends procedure
     private function replace_escape($name, $args)
     {
         isset($args[$name]) or runtime_error('Unknown procedure parameter: ' . $name);
-        return '\'' . $this->datasource->get()->quote($args[$name]) . '\'';
+        return $this->datasource->get()->quote($args[$name]);
     }
 
     private $datasource;

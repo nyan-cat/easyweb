@@ -2,9 +2,11 @@
 
 require_once('filesystem.php');
 
-function wwwaccess($expression)
+function wwwaccess($expression, $node)
 {
-    return xslt::top()->access($expression);
+    $doc = new xml($node[0]->ownerDocument);
+    $context = new node($node[0]);
+    return xslt::top()->access($expression, $doc, $context);
 }
 
 function wwwbase64decode($string)
@@ -39,7 +41,7 @@ function wwwmd5($string)
 
 function wwwquery($name, $args)
 {
-    return xslt::top()->query_document($name, args_decode($args))->get();
+    return xslt::top()->query_document($name, args::decode($args))->get();
 }
 
 function wwwregexreplace($subject, $find, $replace)
@@ -122,8 +124,9 @@ class xslt
     function transform($xml, $www)
     {
         self::push($www);
-        return $this->xslt->transformToDoc($xml);
+        $result = new xml($this->xslt->transformToDoc($xml->get()));
         self::pop();
+        return $result;
     }
 
     private static $stack = array();
