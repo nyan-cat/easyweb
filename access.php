@@ -13,11 +13,11 @@ class access
         $this->xpression = new xpression();
     }
 
-    function insert_role($name, $xpression)
+    function insert_group($name, $xpression)
     {
         $mangled = $xpression->mangled();
-        !isset($this->roles[$mangled]) or runtime_error('Duplicate role: ' . $mangled);
-        $this->roles[$mangled] = $xpression;
+        !isset($this->groups[$mangled]) or runtime_error('Duplicate group: ' . $mangled);
+        $this->groups[$mangled] = $xpression;
     }
 
     function insert_permission($name, $xpression)
@@ -45,11 +45,11 @@ class access
         return $this->permissions[$mangled];
     }
 
-    private function role($name, $args)
+    private function group($name, $args)
     {
         $mangled = xpression::mangle($name, $args);
-        isset($this->roles[$mangled]) or runtime_error('Role not found: ' . $mangled);
-        return $this->roles[$mangled];
+        isset($this->groups[$mangled]) or runtime_error('Group not found: ' . $mangled);
+        return $this->groups[$mangled];
     }
 
     private function replace_xpath($permission, $args, $doc, $context)
@@ -71,14 +71,14 @@ class access
         $args = stripslashes($args);
         $args = args::decode($args);
         $expression = $this->permission($name, $args)->get($args);
-        return preg_replace('/([\w:]+\w)\(([^\)]+)\)/e', "\$this->replace_role('\\1', '\\2');", $expression);
+        return preg_replace('/([\w:]+\w)\(([^\)]+)\)/e', "\$this->replace_group('\\1', '\\2');", $expression);
     }
 
-    private function replace_role($name, $args)
+    private function replace_group($name, $args)
     {
         $args = stripslashes($args);
         $args = args::decode($args);
-        $expression = $this->role($name, $args)->get($args);
+        $expression = $this->group($name, $args)->get($args);
         $expression = $this->vars->apply($expression, true);
         return preg_replace('/(([\w:]+\w)\(([^\)]+)\))/e', "\$this->replace_query('\\1', '\\2')", $expression);
     }
@@ -93,7 +93,7 @@ class access
     private $vars;
     private $dispatcher;
     private $xpression;
-    private $roles = array();
+    private $groups = array();
     private $permissions = array();
 }
 

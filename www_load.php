@@ -108,13 +108,13 @@ foreach($config->query('/config/pages//page') as $page)
     ));
 }
 
-foreach($config->query('/config/roles//role') as $role)
+foreach($config->query('/config/groups//group') as $group)
 {
-    $this->access->insert_role($role['@name'], new xpression
+    $this->access->insert_group($group['@name'], new xpression
     (
-        $role->value(),
-        $role['@name'],
-        $config->query_assoc('param', $role, '@name', '@type')
+        $group->value(),
+        $group['@name'],
+        $config->query_assoc('param', $group, '@name', '@type')
     ));
 }
 
