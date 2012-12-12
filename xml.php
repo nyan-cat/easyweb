@@ -231,6 +231,11 @@ class xml
         return $result;
     }
 
+    function append($node)
+    {
+        $this->xml->appendChild($node->get());
+    }
+
     function create($name, $value = null)
     {
         return new node($value !== null ? $this->xml->createElement($name, $value) : $this->xml->createElement($name));
