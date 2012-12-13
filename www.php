@@ -7,8 +7,8 @@ require_once('access.php');
 require_once('page.php');
 require_once('template.php');
 require_once('router.php');
-require_once('pdo_datasource.php');
-require_once('pdo_procedure.php');
+require_once('sql_datasource.php');
+require_once('sql_procedure.php');
 require_once('xslt.php');
 
 class www
@@ -17,7 +17,8 @@ class www
     {
         if($www = fs::read(cache_location))
         {
-            return unserialize($www);
+            $www = unserialize($www);
+            return $www;
         }
         else
         {

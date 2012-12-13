@@ -284,6 +284,11 @@ class xml
         return new nodeset($this->xml->childNodes);
     }
 
+    function blank()
+    {
+        return !$this->xml->hasChildNodes();
+    }
+
     function render()
     {
         return $this->xml->saveXML();

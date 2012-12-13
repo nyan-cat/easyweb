@@ -1,9 +1,5 @@
 <?php
 
-require_once('xml.php');
-require_once('pdo_datasource.php');
-require_once('pdo_procedure.php');
-
 $config = xml::load(config_location);
 
 foreach($config->query('/config/vars//var') as $var)
@@ -20,11 +16,11 @@ function load_procedures($config, $types, $drivers)
 
         foreach($config->query('/config/datasources//datasource[@type = "' . $driver . '"]') as $ds)
         {
-            $datasource = new pdo_datasource($driver, $ds['@server'], $ds['@username'], $ds['@password'], $ds['@database'], $ds['@charset']);
+            $datasource = new sql_datasource($driver, $ds['@server'], $ds['@username'], $ds['@password'], $ds['@database'], $ds['@charset']);
 
             foreach($config->query('/config/procedures//procedure[@datasource = "' . $ds['@name'] . '"]') as $procedure)
             {
-                $procedures[] = new pdo_procedure
+                $procedures[] = new sql_procedure
                 (
                     $datasource,
                     $procedure['@name'],
