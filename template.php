@@ -4,9 +4,10 @@ require_once('exception.php');
 
 class template
 {
-    function __construct($src, $doc = null)
+    function __construct($src, $args = array(), $doc = null)
     {
         $this->src = $src;
+        $this->args = $args;
         $this->doc = $doc;
     }
 
@@ -22,6 +23,11 @@ class template
         return $this->src;
     }
 
+    function args()
+    {
+        return $this->args;
+    }
+
     function document()
     {
         return $this->doc ? $this->doc : ($this->parent ? $this->parent->document() : null);
@@ -34,6 +40,7 @@ class template
     }
 
     private $src;
+    private $args;
     private $doc;
     private $parent = null;
     private $children = array();

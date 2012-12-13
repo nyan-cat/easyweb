@@ -25,7 +25,7 @@ function load_procedures($config, $types, $drivers)
                     $datasource,
                     $procedure['@name'],
                     $config->query_assoc('param', $procedure, '@name', '@type'),
-                    $procedure->attribute('empty') === 'true',
+                    $procedure->attribute('empty') !== 'false',
                     $procedure->attribute('root'),
                     $procedure->attribute('item'),
                     $procedure->value(),
@@ -41,7 +41,7 @@ function load_template($config, $node)
 {
     if($node)
     {
-        $template = new template($node['@src'], $node->attribute('xml'));
+        $template = new template($node['@src'], args::decode($node->attribute('args', '')), $node->attribute('xml'));
 
         foreach($config->query('template', $node) as $child)
         {
@@ -95,7 +95,6 @@ foreach($config->query('/config/pages//page') as $page)
     (
         $page->attribute('url'),
         load_template($config, $config->query('template', $page)->first()),
-        args::decode($page->attribute('args', '')),
         $page->attribute('action'),
         $page->attribute('permission'),
         $page->attribute('code', '200'),

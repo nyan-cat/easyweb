@@ -59,6 +59,11 @@ class sql
         }
     }
 
+    function quote($value)
+    {
+        return $this->pdo->quote($value);
+    }
+
     private function push($error)
     {
         $this->stack[] = $error;

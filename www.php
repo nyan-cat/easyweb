@@ -91,7 +91,7 @@ class www
 
         if($template = $page->template())
         {
-            return $this->render_template($template, $page->args());
+            return $this->render_template($template);
         }
         else
         {
@@ -99,9 +99,9 @@ class www
         }
     }
 
-    private function render_template($template, $args)
+    private function render_template($template)
     {
-        return $this->render_xslt($template, $template->source(), $template->document(), $args);
+        return $this->render_xslt($template, $template->source(), $template->document(), $template->args());
     }
 
     private function render_xslt($template, $xsl, $xml, $args = array())
@@ -119,7 +119,7 @@ class www
             switch($node->name())
             {
             case 'www:template':
-                $nested = $this->render_template($template->get($node['@name']), $args);
+                $nested = $this->render_template($template->get($node['@name']));
                 break;
             case 'www:xslt':
                 $params = $node->attribute('@args');

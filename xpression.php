@@ -4,12 +4,6 @@ class xpression
 {
     function __construct($expression = '', $name = '', $params = array())
     {
-        if(!self::$xml)
-        {
-            self::$xml = new DOMDocument();
-            self::$xpath = new DOMXPath(self::$xml);
-        }
-
         $this->mangled = self::mangle($name, $params);
         $this->params = $params;
         $this->expression = $expression;
@@ -36,6 +30,11 @@ class xpression
 
     static function evaluate($xpath)
     {
+        if(!self::$xml)
+        {
+            self::$xml = new DOMDocument();
+            self::$xpath = new DOMXPath(self::$xml);
+        }
         return self::$xpath->evaluate($xpath);
     }
 
