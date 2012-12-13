@@ -55,7 +55,7 @@ class www
             {
                 $this->insert_variable("url:$name", $value);
             }
-            return $this->render($page, $args);
+            return $this->render($page);
         }
         else
         {
@@ -81,7 +81,7 @@ class www
         include('www_load.php');
     }
 
-    private function render($page, $args)
+    private function render($page)
     {
         if($action = $page->action())
         {
@@ -91,7 +91,7 @@ class www
 
         if($template = $page->template())
         {
-            return $this->render_template($template, $args);
+            return $this->render_template($template, $page->args());
         }
         else
         {

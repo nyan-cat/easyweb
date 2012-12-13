@@ -12,9 +12,10 @@ function preg_escape($pattern)
 
 class page
 {
-    function __construct($url = null, $template = null, $action = null, $permission = null, $code = '200', $message = 'OK')
+    function __construct($url = null, $template = null, $args = array(), $action = null, $permission = null, $code = '200', $message = 'OK')
     {
         $this->template = $template;
+        $this->args = $args;
         $this->action = $action;
         $this->permission = $permission;
         $this->code = $code;
@@ -54,6 +55,11 @@ class page
         return $this->template;
     }
 
+    function args()
+    {
+        return $this->args;
+    }
+
     function action()
     {
         return $this->action;
@@ -84,6 +90,7 @@ class page
     private $url;
     private $params = array();
     private $template;
+    private $args;
     private $action;
     private $permission;
     private $code;

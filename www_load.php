@@ -95,6 +95,7 @@ foreach($config->query('/config/pages//page') as $page)
     (
         $page->attribute('url'),
         load_template($config, $config->query('template', $page)->first()),
+        args::decode($page->attribute('args', '')),
         $page->attribute('action'),
         $page->attribute('permission'),
         $page->attribute('code', '200'),
