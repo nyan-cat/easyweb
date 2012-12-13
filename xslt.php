@@ -73,23 +73,12 @@ class xslt
 {
     function __construct()
     {
-        $this->xslt = new XSLTProcessor();
-        $this->xslt->registerPHPFunctions(array
-        (
-            'wwwaccess',
-            'wwwbase64decode',
-            'wwwbase64encode',
-            'wwwcrc32',
-            'wwwescapeuri',
-            'wwwlocal',
-            'wwwregexreplace',
-            'wwwreplace',
-            'wwwmd5',
-            'wwwquery',
-            'wwwrfc822',
-            'wwwrfc2822',
-            'wwwvar'
-        ));
+        $this->initialize();
+    }
+
+    function __wakeup()
+    {
+        $this->initialize();
     }
 
     static function push($www)
@@ -127,6 +116,27 @@ class xslt
         $result = new xml($this->xslt->transformToDoc($xml->get()));
         self::pop();
         return $result;
+    }
+
+    private function initialize()
+    {
+        $this->xslt = new XSLTProcessor();
+        $this->xslt->registerPHPFunctions(array
+        (
+            'wwwaccess',
+            'wwwbase64decode',
+            'wwwbase64encode',
+            'wwwcrc32',
+            'wwwescapeuri',
+            'wwwlocal',
+            'wwwregexreplace',
+            'wwwreplace',
+            'wwwmd5',
+            'wwwquery',
+            'wwwrfc822',
+            'wwwrfc2822',
+            'wwwvar'
+        ));
     }
 
     private static $stack = array();

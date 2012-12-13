@@ -4,15 +4,27 @@ require_once('vars.php');
 require_once('locale.php');
 require_once('dispatcher.php');
 require_once('access.php');
+require_once('page.php');
+require_once('template.php');
 require_once('router.php');
+require_once('pdo_datasource.php');
+require_once('pdo_procedure.php');
 require_once('xslt.php');
 
 class www
 {
     static function create($language, $country)
     {
-        $www = new www($language, $country);
-        return $www;
+        if($www = fs::read(cache_location))
+        {
+            return unserialize($www);
+        }
+        else
+        {
+            $www = new www($language, $country);
+            fs::write(cache_location, serialize($www));
+            return $www;
+        }
     }
 
     function variable($name)
@@ -115,13 +127,13 @@ class www
                 break;
             case 'www:style':
                 $src = $node['@src'];
-                $nested = $document->create('link');
+                $nested = $document->element('link');
                 $nested['@rel'] = 'stylesheet';
                 $nested['@href'] = $src . '?' . fs::crc32($src);
                 break;
             case 'www:script':
                 $src = $node['@src'];
-                $nested = $document->create('script', '');
+                $nested = $document->element('script', '');
                 $nested['@type'] = 'text/javascript';
                 $nested['@src'] = $src . '?' . fs::crc32($src);
                 break;

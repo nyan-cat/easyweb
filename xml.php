@@ -80,6 +80,19 @@ class node implements ArrayAccess
         }
     }
 
+    function attributes()
+    {
+        $attributes = array();
+        if($this->node->hasAttributes())
+        {
+            foreach($this->node->attributes as $name => $node)
+            {
+                $attributes[$name] = $node->nodeValue;
+            }
+        }
+        return $attributes;
+    }
+
     function attribute($name, $default = null)
     {
         $attribute = $this->node->attributes->getNamedItem($name);
@@ -96,6 +109,11 @@ class node implements ArrayAccess
         return new nodeset($this->node->childNodes);
     }
 
+    function append($node)
+    {
+        $this->node->appendChild($node->get());
+    }
+
     function insert($new, $node)
     {
         $this->node->insertBefore($new->get(), $node->get());
@@ -109,6 +127,16 @@ class node implements ArrayAccess
     function remove($child)
     {
         $this->node->removeChild($child->get());
+    }
+
+    function element()
+    {
+        return $this->node instanceof DOMElement;
+    }
+
+    function text()
+    {
+        return $this->node instanceof DOMText;
     }
 
     function get()
@@ -236,9 +264,14 @@ class xml
         $this->xml->appendChild($node->get());
     }
 
-    function create($name, $value = null)
+    function element($name, $value = null)
     {
         return new node($value !== null ? $this->xml->createElement($name, $value) : $this->xml->createElement($name));
+    }
+
+    function text($content)
+    {
+        return new node($this->xml->createTextNode($content));
     }
 
     function import($node)
@@ -251,7 +284,7 @@ class xml
         return new nodeset($this->xml->childNodes);
     }
 
-    function text()
+    function render()
     {
         return $this->xml->saveXML();
     }

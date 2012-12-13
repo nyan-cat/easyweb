@@ -1,6 +1,7 @@
 <?php
 
 require_once('xml.php');
+require_once('xtree.php');
 
 class locale
 {
@@ -35,14 +36,14 @@ class locale
             }
             $path = explode(':', str_replace('/', ':', trim($node->path(), '/')));
             array_shift($path);
-            $this->local[implode(':', $path)] = $doc->get();
+            $this->local[implode(':', $path)] = xtree::create($doc);
         }
     }
 
     function get($alias)
     {
         $alias .= ':' . $this->language;
-        return isset($this->local[$alias]) ? $this->local[$alias] : "[Alias not found: $alias]";
+        return isset($this->local[$alias]) ? $this->local[$alias]->xml()->get() : "[Alias not found: $alias]";
     }
 
     private $language;

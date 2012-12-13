@@ -3,8 +3,6 @@
 require_once('xml.php');
 require_once('pdo_datasource.php');
 require_once('pdo_procedure.php');
-require_once('page.php');
-require_once('template.php');
 
 $config = xml::load(config_location);
 
