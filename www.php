@@ -17,8 +17,7 @@ class www
     {
         if($www = fs::read(cache_location))
         {
-            $www = unserialize($www);
-            return $www;
+            return unserialize($www);
         }
         else
         {
