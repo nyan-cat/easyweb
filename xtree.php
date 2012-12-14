@@ -48,11 +48,11 @@ class xtree
         if($xtree->name)
         {
             $node = $xml->element($xtree->name);
-            foreach ($xtree->attributes as $name => $value)
+            foreach($xtree->attributes as $name => $value)
             {
                 $node["@$name"] = $value;
             }
-            foreach ($xtree->children as $child)
+            foreach($xtree->children as $child)
             {
                 $node->append(self::node($xml, $child));
             }

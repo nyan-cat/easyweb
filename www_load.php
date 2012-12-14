@@ -29,7 +29,8 @@ function load_procedures($config, $types, $drivers)
                     $procedure->attribute('root'),
                     $procedure->attribute('item'),
                     $procedure->value(),
-                    $config->query_assoc('output', $procedure, '@name', '@transform')
+                    $config->query_assoc('output', $procedure, '@name', '@transform'),
+                    $procedure->attribute('permission')
                 );
             }
         }

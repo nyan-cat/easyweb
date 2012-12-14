@@ -4,9 +4,9 @@ require_once('procedure.php');
 
 class sql_procedure extends procedure
 {
-    function __construct($datasource, $name, $params, $empty, $root, $item, $body, $output = array())
+    function __construct($datasource, $name, $params, $empty, $root, $item, $body, $output = array(), $permission = null)
     {
-        parent::__construct($name, $params, $empty, $root, $output);
+        parent::__construct($name, $params, $empty, $root, $output, $permission);
         $this->datasource = $datasource;
         if($item)
         {

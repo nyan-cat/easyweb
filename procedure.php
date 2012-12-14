@@ -5,7 +5,7 @@ require_once('validate.php');
 
 class procedure
 {
-    function __construct($name, $params, $empty, $root, $output = array())
+    function __construct($name, $params, $empty, $root, $output = array(), $permission = null)
     {
         $this->mangled = self::mangle($name, $params);
         $this->params = $params;
@@ -27,6 +27,8 @@ class procedure
                 $value = trim($value);
             }
         }
+
+        $this->permission = $permission;
     }
 
     function validate($args)
@@ -40,6 +42,11 @@ class procedure
     function mangled()
     {
         return $this->mangled;
+    }
+
+    function permission()
+    {
+        return $this->permission;
     }
 
     static function mangle($procedure, $args)
@@ -122,6 +129,7 @@ class procedure
     protected $empty;
     protected $root;
     private $output;
+    private $permission;
 }
 
 ?>

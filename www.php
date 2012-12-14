@@ -75,6 +75,7 @@ class www
         $this->locale->load(locale_location);
         $this->dispatcher = new dispatcher();
         $this->access = new access($this->vars, $this->dispatcher);
+        $this->dispatcher->attach($this->access);
         $this->router = new router($this->vars, $this->access);
         $this->xslt = new xslt();
 
