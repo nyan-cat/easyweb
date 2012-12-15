@@ -68,6 +68,11 @@ class www
         return $this->dispatcher->query_document($name, $args);
     }
 
+    function query($name, $args)
+    {
+        $this->dispatcher->query_document($name, $args);
+    }
+
     private function __construct($language, $country)
     {
         $this->vars = new vars();
