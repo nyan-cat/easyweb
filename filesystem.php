@@ -9,6 +9,11 @@ class fs
         return website_root . $filename;
     }
 
+    static function exists($filename)
+    {
+        return file_exists(fs::normalize($filename));
+    }
+
     static function read($filename)
     {
         $normalized = fs::normalize($filename);

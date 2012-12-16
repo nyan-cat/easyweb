@@ -232,9 +232,17 @@ class xml
 
     static function load($filename)
     {
+        fs::exists($filename) or runtime_error('File not found: ' . $filename);
         $xml = new DOMDocument();
         $xml->load(fs::normalize($filename));
         $xml->xinclude();
+        return new xml($xml);
+    }
+
+    static function parse($string)
+    {
+        $xml = new DOMDocument();
+        $xml->loadXML($string);
         return new xml($xml);
     }
 
@@ -277,6 +285,11 @@ class xml
     function import($node)
     {
         return new node($this->xml->importNode($node->get(), true));
+    }
+
+    function root()
+    {
+        return new node($this->xml->documentElement);
     }
 
     function children()

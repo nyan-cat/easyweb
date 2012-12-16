@@ -7,7 +7,7 @@ foreach($config->query('/config/vars//var') as $var)
     $this->vars->insert($var['@name'], $var['@value']);
 }
 
-function load_procedures($config, $types, $drivers)
+function load_procedures($config, $vars, $types, $drivers)
 {
     $procedures = array();
     foreach($types as $type)
@@ -22,6 +22,7 @@ function load_procedures($config, $types, $drivers)
             {
                 $procedures[] = new sql_procedure
                 (
+                    $vars,
                     $datasource,
                     $procedure['@name'],
                     $config->query_assoc('param', $procedure, '@name', '@type'),
@@ -57,7 +58,7 @@ function load_template($config, $node)
     }
 }
 
-foreach(load_procedures($config, array
+foreach(load_procedures($config, $this->vars, array
 (
     'cubrid',
     'dblib',

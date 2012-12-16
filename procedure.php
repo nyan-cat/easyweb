@@ -5,8 +5,9 @@ require_once('validate.php');
 
 class procedure
 {
-    function __construct($name, $params, $empty, $root, $output = array(), $permission = null)
+    function __construct($vars, $name, $params, $empty, $root, $output = array(), $permission = null)
     {
+        $this->vars = $vars;
         $this->mangled = self::mangle($name, $params);
         $this->params = $params;
         $this->empty = $empty;
@@ -28,6 +29,7 @@ class procedure
             }
         }
 
+        $this->output = $output;
         $this->permission = $permission;
     }
 
@@ -67,7 +69,7 @@ class procedure
         return $procedure;
     }
 
-    protected function transform($name, $value)
+    protected function transform($xml, $name, $value)
     {
         if(isset($this->output[$name]) && !empty($this->output[$name]))
         {
@@ -75,55 +77,64 @@ class procedure
             {
                 switch($transform)
                 {
-                case 'none':
-                    break;
+                case 'xml':
+                    return $this->xml($xml, $name, $value);
                 case 'vars':
-                    $value = $value; // TODO: Apply vars
+                    $value = $this->vars->apply($value);
                     break;
                 case 'json2xml':
-                    $value = $this->json2xml(json_decode($value, true));
-                    break;
+                    return $this->json2xml($xml, $name, json_decode($value, true));
                 case 'nl2p':
-                    $value = $this->nl2p($value);
-                    break;
+                    return $this->nl2p($xml, $name, $value);
                 default:
                     runtime_error('Unknown transform: ' . $transform);
                 }
             }
-            return $value;
+            return $xml->element($name, $value);
         }
         else
         {
-            return nl2br(htmlspecialchars($value));
+            return $xml->element($name, nl2br($value));
         }
     }
 
-    private function json2xml($nvp) // TODO: Return DOM instead of text
+    private function xml($xml, $name, $value)
     {
-        $result = '';
-        if(is_array($nvp))
+        return $xml->import(xml::parse("<$name>$value</$name>")->root());
+    }
+
+    private function json2xml($xml, $name, $nvp)
+    {
+        is_array($nvp) or runtime_error('JSON to XML transform failed');
+
+        $node = $xml->element($name);
+
+        foreach($nvp as $key => $value)
         {
-            foreach($nvp as $key => $value)
+            $key = is_numeric($key) ? 'element' : $key;
+            if(is_array($value))
             {
-                $key = is_numeric($key) ? 'token' : $key;
-                if(is_array($value))
-                {
-                    $result .= "<$key>" . $this->json2xml($value) . "</$key>";
-                }
-                else
-                {
-                    $result .= "<$key>$value</$key>";
-                }
+                $node->append($this->json2xml($xml, $key, $value));
+            }
+            else
+            {
+                $node->append($xml->element($key, $value));
             }
         }
-        return $result;
+        return $node;
     }
 
-    private function nl2p($value)
+    private function nl2p($xml, $name, $value)
     {
-        return '<p>' . preg_replace("/([\n]{1,})/i", "</p>\n<p>", trim(htmlspecialchars($value))) . '</p>';
+        $node = $xml->element($name);
+        foreach(preg_split("/(\r\n|\n|\r)/", $value) as $p)
+        {
+            $node->append($xml->element('p', $p));
+        }
+        return $node;
     }
 
+    private $vars;
     private $mangled;
     private $params;
     protected $empty;

@@ -4,9 +4,9 @@ require_once('procedure.php');
 
 class sql_procedure extends procedure
 {
-    function __construct($datasource, $name, $params, $empty, $root, $item, $body, $output = array(), $permission = null)
+    function __construct($vars, $datasource, $name, $params, $empty, $root, $item, $body, $output = array(), $permission = null)
     {
-        parent::__construct($name, $params, $empty, $root, $output, $permission);
+        parent::__construct($vars, $name, $params, $empty, $root, $output, $permission);
         $this->datasource = $datasource;
         if($item)
         {
@@ -41,7 +41,7 @@ class sql_procedure extends procedure
 
                     foreach($row as $name => $value)
                     {
-                        $node = $xml->element($name, $this->transform($name, $value));
+                        $node = $this->transform($xml, $name, $value);
                         $item->append($node);
                     }
                 }
