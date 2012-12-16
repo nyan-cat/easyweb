@@ -64,6 +64,19 @@ function wwwrfc2822($datetime)
     return date(DATE_RFC2822, strtotime($datetime));
 }
 
+function wwwsequence($count)
+{
+    $xml = new xml();
+    $sequence = $xml->element('sequence');
+    $xml->append($sequence);
+    for($n = 1; $n <= $count; ++$n)
+    {
+        $number = $xml->element('number', $n);
+        $sequence->append($number);
+    }
+    return $xml->get();
+}
+
 function wwwvar($name)
 {
     return xslt::top()->variable($name);
@@ -135,6 +148,7 @@ class xslt
             'wwwquery',
             'wwwrfc822',
             'wwwrfc2822',
+            'wwwsequence',
             'wwwvar'
         ));
     }

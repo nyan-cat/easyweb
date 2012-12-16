@@ -55,6 +55,10 @@
         <xsl:param name="datetime" />
         <func:result select="php:function('wwwrfc2822', string($datetime))" />
     </func:function>
+    <func:function name="www:sequence">
+        <xsl:param name="count" />
+        <func:result select="php:function('wwwsequence', string($count))" />
+    </func:function>
     <func:function name="www:var">
         <xsl:param name="name" />
         <func:result select="php:function('wwwvar', string($name))" />
