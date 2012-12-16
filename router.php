@@ -22,8 +22,9 @@ class router
         return $this->pages[$name];
     }
 
-    function match($url, &$args)
+    function match($url, &$args = null)
     {
+        $args = array();
         foreach($this->pages as $page)
         {
             if($page->match($url, $args))

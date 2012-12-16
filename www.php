@@ -51,19 +51,17 @@ class www
 
     function request_document($url, &$response = null)
     {
-        if($page = $this->router->match($url, $args))
+        $page = $this->router->match($url, $args);
+        if(!$page)
         {
-            foreach($args as $name => $value)
-            {
-                $this->insert_variable("url:$name", $value);
-            }
-            $response = new response($page->code(), $page->message());
-            return $this->render($page);
+            $page = $this->router->get('404');
         }
-        else
+        foreach($args as $name => $value)
         {
-            return null;
+            $this->insert_variable("url:$name", $value);
         }
+        $response = new response($page->code(), $page->message());
+        return $this->render($page);
     }
 
     function query_document($name, $args = array())
