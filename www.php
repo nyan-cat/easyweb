@@ -10,6 +10,7 @@ require_once('router.php');
 require_once('sql_datasource.php');
 require_once('sql_procedure.php');
 require_once('xslt.php');
+require_once('bbcode.php');
 
 class www
 {
@@ -144,6 +145,9 @@ class www
                 $nested['@src'] = $src . '?' . fs::crc32($src);
                 break;
             case 'www:bbcode':
+                $allow = $node->attribute('allow');
+                $deny = $node->attribute('deny');
+                $nested = bbcode::parse($node, $allow ? preg_split('/, */', $allow) : null, $deny ? preg_split('/, */', $deny) : null);
                 break;
             default:
                 runtime_error('Unknown extension tag: ' . $node->name());
@@ -159,7 +163,7 @@ class www
             }
             else
             {
-                $node->parent()->replace($nested, $node);
+                $node->parent()->replace($node, $nested);
             }
         }
     }

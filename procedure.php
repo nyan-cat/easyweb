@@ -100,7 +100,7 @@ class procedure
 
     private function xml($xml, $name, $value)
     {
-        return $xml->import(xml::parse("<$name>$value</$name>")->root());
+        return $xml->import(xml::parse("<?xml version=\"1.0\" encoding=\"utf-8\" ?><$name>$value</$name>")->root());
     }
 
     private function json2xml($xml, $name, $nvp)

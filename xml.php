@@ -119,7 +119,7 @@ class node implements ArrayAccess
         $this->node->insertBefore($new->get(), $node->get());
     }
 
-    function replace($new, $old)
+    function replace($old, $new)
     {
         $this->node->replaceChild($new->get(), $old->get());
     }
