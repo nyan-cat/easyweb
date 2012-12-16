@@ -11,6 +11,7 @@ require_once('sql_datasource.php');
 require_once('sql_procedure.php');
 require_once('xslt.php');
 require_once('bbcode.php');
+require_once('response.php');
 
 class www
 {
@@ -48,7 +49,7 @@ class www
         return $this->access->query($expression, $doc, $context);
     }
 
-    function request_document($url)
+    function request_document($url, &$response = null)
     {
         if($page = $this->router->match($url, $args))
         {
@@ -56,6 +57,7 @@ class www
             {
                 $this->insert_variable("url:$name", $value);
             }
+            $response = new response($page->code(), $page->message());
             return $this->render($page);
         }
         else

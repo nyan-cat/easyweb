@@ -64,6 +64,16 @@ class page
         return $this->permission;
     }
 
+    function code()
+    {
+        return $this->code;
+    }
+
+    function message()
+    {
+        return $this->message;
+    }
+
     function match($url, &$args)
     {
         if($this->url && preg_match($this->url, $url, $match))
