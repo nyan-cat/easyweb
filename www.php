@@ -15,11 +15,11 @@ class www
 {
     static function create($language, $country)
     {
-        /*if($www = fs::read(cache_location))
+        if($www = fs::read(cache_location))
         {
             return unserialize($www);
         }
-        else*/
+        else
         {
             $www = new www($language, $country);
             fs::write(cache_location, serialize($www));
