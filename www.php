@@ -12,6 +12,7 @@ require_once('sql_procedure.php');
 require_once('xslt.php');
 require_once('bbcode.php');
 require_once('response.php');
+require_once('session.php');
 
 class www
 {

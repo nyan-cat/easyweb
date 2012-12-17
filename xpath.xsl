@@ -59,6 +59,11 @@
         <xsl:param name="count" />
         <func:result select="php:function('wwwsequence', string($count))" />
     </func:function>
+    <func:function name="www:session">
+        <xsl:param name="type" />
+        <xsl:param name="name" />
+        <func:result select="php:function('wwwsession', string($type), string($name))" />
+    </func:function>
     <func:function name="www:var">
         <xsl:param name="name" />
         <func:result select="php:function('wwwvar', string($name))" />

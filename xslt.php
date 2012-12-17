@@ -77,6 +77,39 @@ function wwwsequence($count)
     return $xml->get();
 }
 
+function wwwsession($type, $name)
+{
+    $xml = new xml();
+    switch($type)
+    {
+    case 'value':
+        $xml->append($xml->element($name, session::value($name)));
+        break;
+
+    case 'vector':
+        foreach(session::vector($name) as $value)
+        {
+            $xml->append($xml->element('value', $value));
+        }
+        break;
+
+    case 'map':
+        foreach(session::map($name) as $key => $value)
+        {
+            $xml->append($xml->element($key, $value));
+        }
+        break;
+
+    case 'xml':
+        $xml = session::xml($name);
+        break;
+
+    default:
+        runtime_error('Unknown session variable type: ' . $type);
+    }
+    return $xml->get();
+}
+
 function wwwvar($name)
 {
     return xslt::top()->variable($name);
@@ -149,6 +182,7 @@ class xslt
             'wwwrfc822',
             'wwwrfc2822',
             'wwwsequence',
+            'wwwsession',
             'wwwvar'
         ));
     }
