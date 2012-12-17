@@ -246,10 +246,10 @@ class xml
         return new xml($xml);
     }
 
-    static function json($name, $json)
+    static function json($root, $json)
     {
         $xml = new xml();
-        $xml->append(self::assoc_node($xml, $name, @json_decode($json, true)));
+        $xml->append(self::assoc_node($xml, $root, @json_decode($json, true)));
     }
 
     static function assoc_node($xml, $name, $assoc)
