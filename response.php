@@ -8,6 +8,11 @@ class response
         $this->message = $message;
     }
 
+    function location($url)
+    {
+        $this->headers['Location'] = $url;
+    }
+
     function flush()
     {
         header('HTTP/' . $this->version . ' ' . $this->code . ' ' . $this->message);

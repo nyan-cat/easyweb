@@ -62,7 +62,7 @@ class www
             $this->insert_variable("url:$name", $value);
         }
         $response = new response($page->code(), $page->message());
-        return $this->render($page);
+        return $this->render($page, $response);
     }
 
     function query_document($name, $args = array())
@@ -94,12 +94,12 @@ class www
         include('www_load.php');
     }
 
-    private function render($page)
+    private function render($page, $response)
     {
         if($action = $page->action())
         {
             include fs::normalize($action);
-            action($this);
+            action($this, $response);
         }
 
         if($template = $page->template())
