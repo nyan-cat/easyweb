@@ -83,7 +83,7 @@ class procedure
                     $value = $this->vars->apply($value);
                     break;
                 case 'json2xml':
-                    return $this->json2xml($xml, $name, json_decode($value, true));
+                    return xml::assoc_node($xml, $name, json_decode($value, true));
                 case 'nl2p':
                     return $this->nl2p($xml, $name, $value);
                 default:
@@ -101,27 +101,6 @@ class procedure
     private function xml($xml, $name, $value)
     {
         return $xml->import(xml::parse("<?xml version=\"1.0\" encoding=\"utf-8\" ?><$name>$value</$name>")->root());
-    }
-
-    private function json2xml($xml, $name, $nvp)
-    {
-        is_array($nvp) or runtime_error('JSON to XML transform failed');
-
-        $node = $xml->element($name);
-
-        foreach($nvp as $key => $value)
-        {
-            $key = is_numeric($key) ? 'element' : $key;
-            if(is_array($value))
-            {
-                $node->append($this->json2xml($xml, $key, $value));
-            }
-            else
-            {
-                $node->append($xml->element($key, $value));
-            }
-        }
-        return $node;
     }
 
     private function nl2p($xml, $name, $value)

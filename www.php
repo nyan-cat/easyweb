@@ -75,6 +75,11 @@ class www
         $this->dispatcher->query_document($name, $args);
     }
 
+    function evaluate($name, $args = array())
+    {
+        return $this->dispatcher->evaluate($name, $args);
+    }
+
     private function __construct($language, $country)
     {
         $this->vars = new vars();

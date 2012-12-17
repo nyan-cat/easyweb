@@ -104,6 +104,10 @@ function wwwsession($type, $name)
         $xml = session::xml($name);
         break;
 
+    case 'object':
+        $xml = xml::json($name, session::value($name));
+        break;
+
     default:
         runtime_error('Unknown session variable type: ' . $type);
     }

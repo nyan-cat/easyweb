@@ -61,6 +61,11 @@ class sql_procedure extends procedure
         return $xml;
     }
 
+    function evaluate($args = array())
+    {
+        return $this->query_document($args)->query('/*[position() = 1]/*[position() = 1]/*[position() = 1]')->checked_first()->checked_value();
+    }
+
     private function single()
     {
         return count($this->body) <= 1;

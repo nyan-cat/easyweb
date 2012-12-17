@@ -78,6 +78,22 @@ class session
         }
     }
 
+    static function object($name, $value = null)
+    {
+        if(is_null($value))
+        {
+            self::assert($name);
+            (($object = @json_decode($_SESSION[$name])) !== false and is_object($object)) or runtime_error('Session fetched variable is not an object: ' . $name);
+            return $object;
+        }
+        else
+        {
+            self::assert();
+            is_object($value) or runtime_error('Session stored variable is not an object: ' . $name);
+            $_SESSION[$name] = json_encode($value);
+        }
+    }
+
     static private function assert($name = null)
     {
         isset($_SESSION) or runtime_error('Session is not started');

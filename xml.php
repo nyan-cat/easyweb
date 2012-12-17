@@ -246,6 +246,33 @@ class xml
         return new xml($xml);
     }
 
+    static function json($name, $json)
+    {
+        $xml = new xml();
+        $xml->append(self::assoc_node($xml, $name, @json_decode($json, true)));
+    }
+
+    static function assoc_node($xml, $name, $assoc)
+    {
+        is_array($assoc) or runtime_error('Associative array expected');
+
+        $node = $xml->element($name);
+
+        foreach($assoc as $key => $value)
+        {
+            $key = is_numeric($key) ? 'element' : $key;
+            if(is_array($value))
+            {
+                $node->append(self::assoc_node($xml, $key, $value));
+            }
+            else
+            {
+                $node->append($xml->element($key, $value));
+            }
+        }
+        return $node;
+    }
+
     function query($expression, $context = null)
     {
         return $context ? new nodeset($this->xpath()->query($expression, $context->get())) : new nodeset($this->xpath()->query($expression));

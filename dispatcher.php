@@ -33,6 +33,22 @@ class dispatcher
         return $this->cache[$mangled];
     }
 
+    function evaluate($name, $args)
+    {
+        $procedure = $this->get($name, $args);
+        if($permission = $procedure->permission())
+        {
+            $this->access->query(vars::apply_assoc($permission, $args, true)) or runtime_error('Procedure ' . $name . ' doesn\'t meet permission ' . $permission);
+        }
+        $mangled = procedure::mangle_values($name, $args);
+
+        if(!isset($this->cache[$mangled]))
+        {
+            $this->cache[$mangled] = $procedure->evaluate($args);
+        }
+        return $this->cache[$mangled];
+    }
+
     function parse_query_document($expression)
     {
         if(preg_match('/\A([\w:]+)\(([^\)]*)\)\Z/', $expression, $match))
@@ -49,9 +65,20 @@ class dispatcher
         }
     }
 
-    function parse_query_value($expression)
+    function parse_evaluate($expression)
     {
-        return $this->parse_query_document($expression)->query('/*[position() = 1]/*[position() = 1]/*[position() = 1]')->checked_first()->checked_value();
+        if(preg_match('/\A([\w:]+)\(([^\)]*)\)\Z/', $expression, $match))
+        {
+            return $this->evaluate($match[1], args::decode($match[2]));
+        }
+        else
+        {
+            if(!isset($this->cache[$expression]))
+            {
+                $this->cache[$expression] = xml::load($expression);
+            }
+            return $this->cache[$expression];
+        }
     }
 
     private function get($name, $args)
