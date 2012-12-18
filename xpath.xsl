@@ -26,6 +26,12 @@
         <xsl:param name="alias" />
         <func:result select="php:function('wwwlocal', string($alias))" />
     </func:function>
+    <func:function name="www:paginate">
+        <xsl:param name="page" />
+        <xsl:param name="count" />
+        <xsl:param name="size" />
+        <func:result select="php:function('wwwpaginate', string($page), string($count), string($size))" />
+    </func:function>
     <func:function name="www:regex-replace">
         <xsl:param name="subject" />
         <xsl:param name="find" />

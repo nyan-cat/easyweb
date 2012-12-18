@@ -34,6 +34,46 @@ function wwwlocal($alias)
     return xslt::top()->local($alias);
 }
 
+function wwwpaginate($page, $count, $size)
+{
+    $begin = $page - (int)($size / 2);
+    $end = $begin + $size;
+    if($begin < 1)
+    {
+        $begin = 1;
+        $end = min($count, $size);
+    }
+    if($end > $count)
+    {
+        $begin = max(1, $count - $size);
+        $end = $count;
+    }
+    $previous = max(1, $page - 1);
+    $next = min($count, $page + 1);
+
+    $xml = new xml();
+
+    $pages = $xml->element('pages');
+    $xml->append($pages);
+    
+    if($previous != $page)
+    {
+        $pages->append($xml->element('previous', $previous));
+    }
+
+    for($n = $begin; $n <= $end; ++$n)
+    {
+        $pages->append($xml->element('page', $n));
+    }
+
+    if($next != $page)
+    {
+        $pages->append($xml->element('next', $next));
+    }
+
+    return $xml->get();
+}
+
 function wwwmd5($string)
 {
     return md5($string);
@@ -179,6 +219,7 @@ class xslt
             'wwwcrc32',
             'wwwescapeuri',
             'wwwlocal',
+            'wwwpaginate',
             'wwwregexreplace',
             'wwwreplace',
             'wwwmd5',
