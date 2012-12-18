@@ -34,9 +34,9 @@ function wwwlocal($alias)
     return xslt::top()->local($alias);
 }
 
-function wwwpaginate($page, $count, $size)
+function wwwpaginate($current, $count, $size)
 {
-    $begin = $page - (int)($size / 2);
+    $begin = $current - (int)($size / 2);
     $end = $begin + $size;
     if($begin < 1)
     {
@@ -48,25 +48,30 @@ function wwwpaginate($page, $count, $size)
         $begin = max(1, $count - $size);
         $end = $count;
     }
-    $previous = max(1, $page - 1);
-    $next = min($count, $page + 1);
+    $previous = max(1, $current - 1);
+    $next = min($count, $current + 1);
 
     $xml = new xml();
 
     $pages = $xml->element('pages');
     $xml->append($pages);
     
-    if($previous != $page)
+    if($previous != $current)
     {
         $pages->append($xml->element('previous', $previous));
     }
 
     for($n = $begin; $n <= $end; ++$n)
     {
-        $pages->append($xml->element('page', $n));
+        $page = $xml->element('page', $n);
+        if($n == $current)
+        {
+            $page['@current'] = 'current';
+        }
+        $pages->append($page);
     }
 
-    if($next != $page)
+    if($next != $current)
     {
         $pages->append($xml->element('next', $next));
     }
