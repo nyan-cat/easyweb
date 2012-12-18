@@ -86,7 +86,7 @@ class access
     private function replace_query($expression)
     {
         $expression = stripslashes($expression);
-        $result = $this->dispatcher->parse_evaluate($this->vars->apply($expression));
+        $result = $this->dispatcher->parse_query($this->vars->apply($expression), false);
         return args::quote($result);
     }
 

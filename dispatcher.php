@@ -17,7 +17,7 @@ class dispatcher
         $this->procedures[$mangled] = $procedure;
     }
 
-    function query_document($name, $args)
+    function query($name, $args, $document)
     {
         $procedure = $this->get($name, $args);
         if($permission = $procedure->permission())
@@ -28,48 +28,16 @@ class dispatcher
 
         if(!isset($this->cache[$mangled]))
         {
-            $this->cache[$mangled] = $procedure->query_document($args);
+            $this->cache[$mangled] = $procedure->query($args, $document);
         }
         return $this->cache[$mangled];
     }
 
-    function evaluate($name, $args)
-    {
-        $procedure = $this->get($name, $args);
-        if($permission = $procedure->permission())
-        {
-            $this->access->query(vars::apply_assoc($permission, $args, true)) or runtime_error('Procedure ' . $name . ' doesn\'t meet permission ' . $permission);
-        }
-        $mangled = procedure::mangle_values($name, $args);
-
-        if(!isset($this->cache[$mangled]))
-        {
-            $this->cache[$mangled] = $procedure->evaluate($args);
-        }
-        return $this->cache[$mangled];
-    }
-
-    function parse_query_document($expression)
+    function parse_query($expression, $document)
     {
         if(preg_match('/\A([\w:]+)\(([^\)]*)\)\Z/', $expression, $match))
         {
-            return $this->query_document($match[1], args::decode($match[2]));
-        }
-        else
-        {
-            if(!isset($this->cache[$expression]))
-            {
-                $this->cache[$expression] = xml::load($expression);
-            }
-            return $this->cache[$expression];
-        }
-    }
-
-    function parse_evaluate($expression)
-    {
-        if(preg_match('/\A([\w:]+)\(([^\)]*)\)\Z/', $expression, $match))
-        {
-            return $this->evaluate($match[1], args::decode($match[2]));
+            return $this->query($match[1], args::decode($match[2]), $document);
         }
         else
         {

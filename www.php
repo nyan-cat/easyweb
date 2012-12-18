@@ -20,7 +20,9 @@ class www
     {
         if($www = fs::read(cache_location))
         {
-            return unserialize($www);
+            $www = unserialize($www);
+            $www->locale->setup($language, $country);
+            return $www;
         }
         else
         {
@@ -50,7 +52,7 @@ class www
         return $this->access->query($expression, $doc, $context);
     }
 
-    function request_document($url, &$response = null)
+    function request($url, &$response = null)
     {
         $page = $this->router->match($url, $args);
         if(!$page)
@@ -65,19 +67,14 @@ class www
         return $this->render($page, $response);
     }
 
-    function query_document($name, $args = array())
-    {
-        return $this->dispatcher->query_document($name, $args);
-    }
-
     function query($name, $args = array())
     {
-        $this->dispatcher->query_document($name, $args);
+        return $this->dispatcher->query($name, $args, true);
     }
 
     function evaluate($name, $args = array())
     {
-        return $this->dispatcher->evaluate($name, $args);
+        return $this->dispatcher->query($name, $args, false);
     }
 
     private function __construct($language, $country)
@@ -120,7 +117,7 @@ class www
     private function render_xslt($template, $xsl, $xml, $args = array())
     {
         $this->xslt->import($xsl, $args);
-        $document = $this->xslt->transform($xml ? $this->dispatcher->parse_query_document($xml) : new xml(), $this);
+        $document = $this->xslt->transform($xml ? $this->dispatcher->parse_query($xml, true) : new xml(), $this);
         $this->replace_www($template, $document, $args);
         return $document;
     }

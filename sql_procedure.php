@@ -19,7 +19,7 @@ class sql_procedure extends procedure
         $this->body = explode(';', trim(trim($body), ';'));
     }
 
-    function query_document($args = array())
+    function query($args, $document)
     {
         $this->validate($args);
         $sql = $this->datasource->get();
@@ -58,12 +58,7 @@ class sql_procedure extends procedure
             $this->single() or $sql->commit();
         }
 
-        return $xml;
-    }
-
-    function evaluate($args = array())
-    {
-        return $this->query_document($args)->query('/*[position() = 1]/*[position() = 1]/*[position() = 1]')->checked_first()->checked_value();
+        return $document ? $xml : $xml->evaluate('/*[position() = 1]/*[position() = 1]/*[position() = 1]/text()');
     }
 
     private function single()
