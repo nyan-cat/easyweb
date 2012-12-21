@@ -18,7 +18,9 @@ class www
 {
     static function create($language, $country)
     {
-        if($www = fs::read(cache_location))
+        $cache = cache_location . 'cache.tmp';
+
+        if($www = fs::read($cache))
         {
             $www = unserialize($www);
             $www->locale->setup($language, $country);
@@ -27,7 +29,7 @@ class www
         else
         {
             $www = new www($language, $country);
-            fs::write(cache_location, serialize($www));
+            fs::write($cache, serialize($www));
             return $www;
         }
     }
@@ -126,14 +128,37 @@ class www
     {
         foreach($document->query('//www:*') as $node)
         {
+            $nested = null;
             switch($node->name())
             {
             case 'www:template':
                 $nested = $this->render_template($template->get($node['@name']));
                 break;
             case 'www:xslt':
-                $params = $node->attribute('@args');
-                $nested = $this->render_xslt($template, $node['@xsl'], $node['@xml'], $params ? args::decode($params) : array());
+                $args = $node->attribute('args');
+                if(($cache = $node->attribute('cache')) === null)
+                {
+                    $nested = $this->render_xslt($template, $node['@xsl'], $node['@xml'], $args ? args::decode($args) : array());
+                }
+                else
+                {
+                    $cache = args::decode($cache);
+                    $filename = cache_location . md5($node['@xsl'] . $node['@xml'] . $args ? $args : '') . '.xml';
+
+                    if(!fs::exists($filename))
+                    {
+                        fs::write($filename, $this->render_xslt($template, $node['@xsl'], $node['@xml'], $args ? args::decode($args) : array())->render());
+                    }
+
+                    $fragment = fs::checked_read($filename);
+
+                    if(!empty($cache))
+                    {
+                        $fragment = var::apply_assoc($fragment, $cache);
+                    }
+
+                    $nested = $document->fragment($fragment);
+                }
                 break;
             case 'www:style':
                 $src = $node['@src'];

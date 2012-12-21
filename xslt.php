@@ -193,6 +193,7 @@ class xslt
 
     function import($filename, $params = array())
     {
+        fs::exists($filename) or runtime_error('XSL stylesheet not found: ' . $filename);
         $xsl = new DOMDocument();
         $xsl->load(fs::normalize($filename));
         $import = $xsl->createElementNS('http://www.w3.org/1999/XSL/Transform', 'xsl:import');

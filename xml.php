@@ -232,7 +232,7 @@ class xml
 
     static function load($filename)
     {
-        fs::exists($filename) or runtime_error('File not found: ' . $filename);
+        fs::exists($filename) or runtime_error('XML document not found: ' . $filename);
         $xml = new DOMDocument();
         $xml->load(fs::normalize($filename));
         $xml->xinclude();
@@ -307,6 +307,18 @@ class xml
     function text($content)
     {
         return new node($this->xml->createTextNode($content));
+    }
+
+    function cdata($content)
+    {
+        return new node($this->xml->createCDATASection($content));
+    }
+
+    function fragment($content)
+    {
+        $fragment = $this->xml->createDocumentFragment();
+        $fragment->appendXML($content);
+        return new node($fragment);
     }
 
     function import($node)
