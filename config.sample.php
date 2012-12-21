@@ -12,7 +12,7 @@ define('config_location', '/path/to/config.xml');
 # Relative path and filename of the website localizatoin XML.
 define('locale_location', '/path/to/locale.xml');
 
-# Relative path and filename of the website cache. Folder of the cache file should be writeable for everyone. Warning: not implemented in draft.
-define('cache_location',  '/path/to/cache.tmp');
+# Relative path of the website cache folder. This folder should be writeable for everyone.
+define('cache_location',  '/path/to/cache/');
 
 ?>
