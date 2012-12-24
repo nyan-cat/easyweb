@@ -26,6 +26,10 @@
         <xsl:param name="alias" />
         <func:result select="php:function('wwwlocal', string($alias))" />
     </func:function>
+    <func:function name="www:locale">
+        <xsl:param name="name" />
+        <func:result select="php:function('wwwlocale', string($name))" />
+    </func:function>
     <func:function name="www:paginate">
         <xsl:param name="current" />
         <xsl:param name="count" />

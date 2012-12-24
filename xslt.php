@@ -34,6 +34,20 @@ function wwwlocal($alias)
     return xslt::top()->local($alias);
 }
 
+function wwwlocale($name)
+{
+    $locale = xslt::top()->locale();
+    switch($name)
+    {
+    case 'country':
+        return $locale->country();
+    case 'language':
+        return $locale->language();
+    default:
+        runtime_error('Unknown locale parameter name: ' . $name);
+    }
+}
+
 function wwwpaginate($current, $count, $size)
 {
     $begin = $current - (int)($size / 2);
@@ -225,6 +239,7 @@ class xslt
             'wwwcrc32',
             'wwwescapeuri',
             'wwwlocal',
+            'wwwlocale',
             'wwwpaginate',
             'wwwregexreplace',
             'wwwreplace',

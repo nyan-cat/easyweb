@@ -13,6 +13,7 @@ require_once('xslt.php');
 require_once('bbcode.php');
 require_once('response.php');
 require_once('session.php');
+require_once('post.php');
 
 class www
 {
@@ -47,6 +48,11 @@ class www
     function local($alias)
     {
         return $this->locale->get($alias);
+    }
+
+    function locale($alias)
+    {
+        return $this->locale;
     }
 
     function access($expression, $doc = null, $context = null)
@@ -154,7 +160,7 @@ class www
 
                     if(!empty($cache))
                     {
-                        $fragment = var::apply_assoc($fragment, $cache);
+                        $fragment = vars::apply_assoc($fragment, $cache);
                     }
 
                     $nested = $document->fragment($fragment);

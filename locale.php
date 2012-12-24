@@ -40,6 +40,16 @@ class locale
         }
     }
 
+    function language()
+    {
+        return $this->language;
+    }
+
+    function country()
+    {
+        return $this->country;
+    }
+
     function get($alias)
     {
         $alias .= ':' . $this->language;
