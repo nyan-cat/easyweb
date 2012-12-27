@@ -1,19 +1,21 @@
 <?php
 
-require_once('vars.php');
-require_once('locale.php');
-require_once('dispatcher.php');
-require_once('access.php');
-require_once('page.php');
-require_once('template.php');
-require_once('router.php');
-require_once('sql_datasource.php');
-require_once('sql_procedure.php');
-require_once('xslt.php');
-require_once('bbcode.php');
-require_once('response.php');
-require_once('session.php');
-require_once('post.php');
+require_once(www_root . 'vars.php');
+require_once(www_root . 'locale.php');
+require_once(www_root . 'dispatcher.php');
+require_once(www_root . 'access.php');
+require_once(www_root . 'page.php');
+require_once(www_root . 'template.php');
+require_once(www_root . 'router.php');
+require_once(www_root . 'sql_datasource.php');
+require_once(www_root . 'sql_procedure.php');
+require_once(www_root . 'solr_datasource.php');
+require_once(www_root . 'solr_procedure.php');
+require_once(www_root . 'xslt.php');
+require_once(www_root . 'bbcode.php');
+require_once(www_root . 'response.php');
+require_once(www_root . 'session.php');
+require_once(www_root . 'post.php');
 
 class www
 {

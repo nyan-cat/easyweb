@@ -7,7 +7,7 @@ foreach($config->query('/config/vars//var') as $var)
     $this->vars->insert($var['@name'], $var['@value']);
 }
 
-function load_procedures($config, $vars, $types, $drivers)
+function load_sql_procedures($config, $vars, $types, $drivers)
 {
     $procedures = array();
     foreach($types as $type)
@@ -58,7 +58,7 @@ function load_template($config, $node)
     }
 }
 
-foreach(load_procedures($config, $this->vars, array
+foreach(load_sql_procedures($config, $this->vars, array
 (
     'cubrid',
     'dblib',
@@ -90,6 +90,31 @@ foreach(load_procedures($config, $this->vars, array
 {
     $this->dispatcher->insert($procedure);
 };
+
+foreach($config->query('/config/datasources//datasource[@type = "solr"]') as $ds)
+{
+    $datasource = new solr_datasource($ds['@server'], $ds['@port'], $ds['@url'], $ds['@username'], $ds['@password']);
+
+    foreach($config->query('/config/procedures//procedure[@datasource = "' . $ds['@name'] . '"]') as $procedure)
+    {
+        $this->dispatcher->insert(new solr_procedure
+        (
+            $this->vars,
+            $datasource,
+            $procedure['@name'],
+            $config->query_assoc('param', $procedure, '@name', '@type'),
+            $procedure->attribute('empty') !== 'false',
+            $procedure->attribute('root'),
+            $procedure['@core'],
+            $procedure['@method'],
+            $procedure->value(),
+            $procedure->attribute('offset'),
+            $procedure->attribute('count'),
+            $config->query_assoc('output', $procedure, '@name', '@transform'),
+            $procedure->attribute('permission')
+        ));
+    }
+}
 
 foreach($config->query('/config/pages//page') as $page)
 {
