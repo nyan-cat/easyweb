@@ -52,6 +52,16 @@ class node implements ArrayAccess
         runtime_error('Call to private method');
     }
 
+    function uri()
+    {
+        return $this->node->namespaceURI;
+    }
+
+    function ns()
+    {
+        return $this->node->prefix;
+    }
+
     function name()
     {
         return $this->node->nodeName;
@@ -344,6 +354,11 @@ class xml
     function render()
     {
         return $this->xml->saveXML();
+    }
+
+    function register($uri, $namespace)
+    {
+        $this->xpath()->registerNamespace($namespace, $uri);
     }
 
     function get()

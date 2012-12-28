@@ -87,6 +87,19 @@ class www
         return $this->dispatcher->query($name, $args, false);
     }
 
+    function register_xsl($uri, $namespace, $name, $handler)
+    {
+        if(!isset($this->xsl[$namespace]))
+        {
+            $this->xsl[$namespace] = array();
+        }
+        $this->xsl[$namespace]["$namespace:$name"] = array
+        (
+            'uri' => $uri,
+            'handler' => $handler
+        );
+    }
+
     private function __construct($language, $country)
     {
         $this->vars = new vars();
@@ -128,7 +141,16 @@ class www
     {
         $this->xslt->import($xsl, $args);
         $document = $this->xslt->transform($xml ? $this->dispatcher->parse_query($xml, true) : new xml(), $this);
-        $this->replace_www($template, $document, $args);
+        foreach($this->xsl as $namespace => $extension)
+        {
+            $uri = reset($extension)['uri'];
+            $document->register($uri, $namespace);
+        }
+        do
+        {
+            $this->replace_www($template, $document, $args);
+        }
+        while($this->replace_xsl($document));
         return $document;
     }
 
@@ -190,21 +212,39 @@ class www
                 $nested = bbcode::parse($node, $allow ? preg_split('/, */', $allow) : null, $deny ? preg_split('/, */', $deny) : null);
                 break;
             default:
-                runtime_error('Unknown extension tag: ' . $node->name());
+                runtime_error('Unknown extension element: ' . $node->name());
             }
-            if($nested instanceof xml)
+            self::replace_node($document, $node, $nested);
+        }
+    }
+
+    private function replace_xsl($document)
+    {
+        $extensions = false;
+        foreach($document->query('//' . implode(':*|//', array_keys($this->xsl)) . ':*') as $node)
+        {
+            isset($this->xsl[$node->ns()][$node->name()]) or runtime_error('Unknown user extension element: ' . $node->name());
+            $extensions = true;
+            $handler = $this->xsl[$node->ns()][$node->name()]['handler'];
+            self::replace_node($document, $node, $handler($node));
+        }
+        return $extensions;
+    }
+
+    static private function replace_node($document, $old, $new)
+    {
+        if($new instanceof xml)
+        {
+            $parent = $old->parent();
+            foreach($new->children() as $child)
             {
-                $parent = $node->parent();
-                foreach($nested->children() as $child)
-                {
-                    $parent->insert($document->import($child), $node);
-                }
-                $parent->remove($node);
+                $parent->insert($document->import($child), $old);
             }
-            else
-            {
-                $node->parent()->replace($node, $nested);
-            }
+            $parent->remove($old);
+        }
+        else
+        {
+            $old->parent()->replace($old, $new);
         }
     }
 
@@ -214,6 +254,7 @@ class www
     private $access;
     private $router;
     private $xslt;
+    private $xsl = array();
 }
 
 ?>
