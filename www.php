@@ -144,25 +144,29 @@ class www
                 break;
             case 'www:xslt':
                 $args = $node->attribute('args');
-                if(($cache = $node->attribute('cache')) === null)
+                if($node->attribute('cache') !== 'true')
                 {
                     $nested = $this->render_xslt($template, $node['@xsl'], $node['@xml'], $args ? args::decode($args) : array());
                 }
                 else
                 {
-                    $cache = args::decode($cache);
+                    $cache_args = $node->attribute('cache-args') ? $node->attribute('cache-args') : array();
+                    $cache_lifetime = $node->attribute('cache-lifetime');
+                    is_null($cache_lifetime) or is_numeric($cache_lifetime) or runtime_error('Cache lifetime should be numeric: ' . $cache_lifetime);
+
+                    $cache_args = args::decode($cache_args);
                     $filename = cache_location . md5($node['@xsl'] . $node['@xml'] . $args ? $args : '') . '.xml';
 
-                    if(!fs::exists($filename))
+                    if(!fs::exists($filename) || ($cache_lifetime && ($cache_lifetime > time() - fs::modification($filename))))
                     {
                         fs::write($filename, $this->render_xslt($template, $node['@xsl'], $node['@xml'], $args ? args::decode($args) : array())->render());
                     }
 
                     $fragment = fs::checked_read($filename);
 
-                    if(!empty($cache))
+                    if(!empty($cache_args))
                     {
-                        $fragment = vars::apply_assoc($fragment, $cache);
+                        $fragment = vars::apply_assoc($fragment, $cache_args);
                     }
 
                     $nested = $document->fragment($fragment);

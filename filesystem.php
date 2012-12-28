@@ -38,6 +38,11 @@ class fs
         file_put_contents($normalized, $content);
     }
 
+    static function modification($filename)
+    {
+        return filemtime(fs::normalize($filename));
+    }
+
     static function crc32($filename)
     {
         return hash_file('crc32', fs::normalize($filename));
