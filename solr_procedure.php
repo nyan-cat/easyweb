@@ -48,7 +48,17 @@ class solr_procedure extends procedure
                 $root->append($item);
                 foreach($doc as $name => $value)
                 {
-                    if(!is_array($value) && $name != '_version_')
+                    if(is_array($value))
+                    {
+                        $array = $xml->element($name);
+                        $item->append($array);
+                        foreach($value as $element)
+                        {
+                            $element = $xml->element('element', $element);
+                            $array->append($element);
+                        }
+                    }
+                    else
                     {
                         $node = $xml->element($name, $value);
                         $item->append($node);

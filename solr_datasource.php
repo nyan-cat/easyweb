@@ -22,7 +22,6 @@ class solr_datasource
                 'login'    => $this->username,
                 'password' => $this->password,
                 'path'     => $this->url . $core
-                /*'wt'       => SOLR_PHP_NATIVE_RESPONSE_WRITER,*/
             ));
         }
         return $this->client[$core];
