@@ -150,7 +150,7 @@ class www
         {
             $this->replace_www($template, $document, $args);
         }
-        while($this->replace_xsl($document));
+        while(!empty($this->xsl) && $this->replace_xsl($document));
         return $document;
     }
 
