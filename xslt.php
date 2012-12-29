@@ -75,7 +75,7 @@ function wwwpaginate($current, $count, $size)
         $pages->append($xml->element('previous', $previous));
     }
 
-    for($n = $begin; $n <= $end; ++$n)
+    for($n = $begin; $n < $end; ++$n)
     {
         $page = $xml->element('page', $n);
         if($n == $current)
