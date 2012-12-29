@@ -116,6 +116,21 @@ foreach($config->query('/config/datasources//datasource[@type = "solr"]') as $ds
     }
 }
 
+foreach($config->query('/config/procedures//procedure[@datasource = "geoip"]') as $procedure)
+{
+    $this->dispatcher->insert(new geoip_procedure
+    (
+        $this->vars,
+        $procedure['@name'],
+        $config->query_assoc('param', $procedure, '@name', '@type'),
+        $procedure->attribute('empty') !== 'false',
+        $procedure->attribute('root'),
+        $procedure['@method'],
+        $config->query_assoc('output', $procedure, '@name', '@transform'),
+        $procedure->attribute('permission')
+    ));
+}
+
 foreach($config->query('/config/pages//page') as $page)
 {
     $this->router->insert($page['@name'], new page

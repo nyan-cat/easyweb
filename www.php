@@ -11,6 +11,7 @@ require_once(www_root . 'sql_datasource.php');
 require_once(www_root . 'sql_procedure.php');
 require_once(www_root . 'solr_datasource.php');
 require_once(www_root . 'solr_procedure.php');
+require_once(www_root . 'geoip_procedure.php');
 require_once(www_root . 'xslt.php');
 require_once(www_root . 'bbcode.php');
 require_once(www_root . 'response.php');
@@ -111,7 +112,7 @@ class www
         $this->router = new router($this->vars, $this->access);
         $this->xslt = new xslt();
 
-        include('www_load.php');
+        include(www_root . 'www_load.php');
     }
 
     private function render($page, $response)
@@ -191,6 +192,14 @@ class www
                         $fragment = vars::apply_assoc($fragment, $cache_args);
                     }
 
+                    $nested = $document->fragment($fragment);
+                }
+                break;
+            case 'www:xquery':
+                {
+                    require_once(www_root . 'thirdparty/xquerylite/class_xquery_lite.php');
+                    $xq = new XqueryLite();
+                    $fragment = $xq->evaluate_xqueryl(fs::checked_read($node['@src']));
                     $nested = $document->fragment($fragment);
                 }
                 break;
