@@ -4,6 +4,8 @@ require_once('filesystem.php');
 
 class node implements ArrayAccess
 {
+    const xpath_mask = '/[^@^\w^\-]/';
+
     function __construct($node)
     {
         $this->node = $node;
@@ -11,7 +13,11 @@ class node implements ArrayAccess
 
     function offsetExists($offset)
     {
-        if($offset[0] == '@')
+        if(preg_match(self::xpath_mask, $offset))
+        {
+            return $this->xpath()->query($offset)->length;
+        }
+        else if($offset[0] == '@')
         {
             return $this->node->attributes->getNamedItem(substr($offset, 1)) !== null;
         }
@@ -23,7 +29,11 @@ class node implements ArrayAccess
 
     function offsetGet($offset)
     {
-        if($offset[0] == '@')
+        if(preg_match(self::xpath_mask, $offset))
+        {
+            return $this->xpath()->evaluate($offset);
+        }
+        else if($offset[0] == '@')
         {
             $attribute = $this->node->attributes->getNamedItem(substr($offset, 1)) or runtime_error('Attribute not found: ' . $offset);
             return $attribute->nodeValue;
@@ -37,19 +47,32 @@ class node implements ArrayAccess
 
     function offsetSet($offset, $value)
     {
-        if($offset[0] == '@')
+        if(preg_match(self::xpath_mask, $offset))
+        {
+            $list = $this->xpath()->query($offset);
+            if($list->length == 1)
+            {
+                $list->item(0)->nodeValue = $value;
+            }
+            else
+            {
+                runtime_error('Node array set for node set is not supported');
+            }
+        }
+        else if($offset[0] == '@')
         {
             $this->node->setAttribute(substr($offset, 1), $value);
         }
         else
         {
-            runtime_error('Node value assignment is not supported');
+            $node = $this->child($offset) or runtime_error('Child node not found: ' . $offset);
+            $node->nodeValue = $value;
         }
     }
 
     function offsetUnset($offset)
     {
-        runtime_error('Call to private method');
+        runtime_error('Node array unset is not supported');
     }
 
     function uri()
@@ -166,7 +189,18 @@ class node implements ArrayAccess
         return null;
     }
 
+    private function xpath()
+    {
+        if(!$this->xpath)
+        {
+            $this->xpath = new DOMXPath($this->node->ownerDocument);
+            $this->xpath->registerNamespace('www', 'https://github.com/nyan-cat/easyweb');
+        }
+        return $this->xpath;
+    }
+
     private $node;
+    private $xpath = null;
 }
 
 class nodeset implements Iterator
@@ -223,6 +257,11 @@ class nodeset implements Iterator
         return isset($this->array[$this->position]);
     }
 
+    function size()
+    {
+        return count($this->array);
+    }
+
     function get()
     {
         return $this->nodeset;
@@ -233,11 +272,40 @@ class nodeset implements Iterator
     private $array = array();
 }
 
-class xml
+class xml implements ArrayAccess
 {
     function __construct($xml = null)
     {
         $this->xml = $xml ? $xml : new DOMDocument();
+    }
+
+    function offsetExists($offset)
+    {
+        $list = $this->xpath()->query($offset);
+        return $list->length;
+    }
+
+    function offsetGet($offset)
+    {
+        return $this->evaluate($offset);
+    }
+
+    function offsetSet($offset, $value)
+    {
+        $list = $this->xpath()->query($offset);
+        if($list->length == 1)
+        {
+            $list->item(0)->nodeValue = $value;
+        }
+        else
+        {
+            runtime_error('XML array set for node set is not supported');
+        }
+    }
+
+    function offsetUnset($offset)
+    {
+        runtime_error('XML array unset is not supported');
     }
 
     static function load($filename)
