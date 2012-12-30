@@ -228,7 +228,25 @@ class nodeset implements Iterator
         }
         else
         {
-            runtime_error('XML node set is null');
+            runtime_error('XML node set is empty');
+        }
+    }
+
+    function last()
+    {
+        return count($this->array) ? $this->array[count($this->array) - 1] : null;
+    }
+
+    function checked_last()
+    {
+        $node = $this->last();
+        if($node !== null)
+        {
+            return $node;
+        }
+        else
+        {
+            runtime_error('XML node set is empty');
         }
     }
 
