@@ -27,9 +27,11 @@ class solr_procedure extends procedure
                 $doc->addField($name, $value);
             }
             $solr->addDocument($doc);
+            $solr->request("<commit/>");
             break;
         case 'delete':
             $solr->deleteByQuery(vars::apply_assoc($this->body, $args));
+            $solr->request("<commit/>");
             break;
         case 'query':
             $root = $xml->element($this->root[0]);
