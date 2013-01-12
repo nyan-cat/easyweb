@@ -95,9 +95,16 @@ class node implements ArrayAccess
         return $this->node->getNodePath();
     }
 
-    function value()
+    function value($value = null)
     {
-        return $this->node->nodeValue;
+        if($value)
+        {
+            $this->node->nodeValue = $value;
+        }
+        else
+        {
+            return $this->node->nodeValue;
+        }
     }
 
     function checked_value()

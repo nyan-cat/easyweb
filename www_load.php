@@ -31,7 +31,8 @@ function load_sql_procedures($config, $vars, $types, $drivers)
                     $procedure->attribute('item'),
                     $procedure->value(),
                     $config->query_assoc('output', $procedure, '@name', '@transform'),
-                    $procedure->attribute('permission')
+                    $procedure->attribute('permission'),
+                    $procedure->attribute('cache') !== 'false'
                 );
             }
         }
@@ -105,13 +106,16 @@ foreach($config->query('/config/datasources//datasource[@type = "solr"]') as $ds
             $config->query_assoc('param', $procedure, '@name', '@type'),
             $procedure->attribute('empty') !== 'false',
             $procedure->attribute('root'),
+            $procedure->attribute('item'),
             $procedure['@core'],
             $procedure['@method'],
             $procedure->value(),
+            $config->query_assoc('order-by', $procedure, '@name', '@order'),
             $procedure->attribute('offset'),
             $procedure->attribute('count'),
             $config->query_assoc('output', $procedure, '@name', '@transform'),
-            $procedure->attribute('permission')
+            $procedure->attribute('permission'),
+            $procedure->attribute('cache') !== 'false'
         ));
     }
 }

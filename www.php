@@ -20,8 +20,13 @@ require_once(www_root . 'post.php');
 
 class www
 {
-    static function create($language, $country)
+    static function create($language, $country, $types = array())
     {
+        foreach($types as $name => $pattern)
+        {
+            validate::register($name, $pattern);
+        }
+
         $cache = cache_location . 'cache.tmp';
 
         if($www = fs::read($cache))
@@ -34,6 +39,7 @@ class www
         {
             $www = new www($language, $country);
             fs::write($cache, serialize($www));
+            $www->vars->initialize();
             return $www;
         }
     }
@@ -50,10 +56,17 @@ class www
 
     function local($alias)
     {
-        return $this->locale->get($alias);
+        $xml = $this->locale->get($alias);
+
+        foreach($xml->query('//text()') as $text)
+        {
+            $text->value($this->vars->apply($text->value()));
+        }
+
+        return $xml;
     }
 
-    function locale($alias)
+    function locale()
     {
         return $this->locale;
     }
@@ -75,7 +88,20 @@ class www
             $this->insert_variable("url:$name", $value);
         }
         $response = new response($page->code(), $page->message());
-        return $this->render($page, $response);
+        $xml = $this->render($page, $response);
+        foreach($xml->query('//a') as $a)
+        {
+            $parent = $a->parent();
+            if($a->attribute('href') === $url)
+            {
+                foreach($xml->query('* | text()', $a) as $child)
+                {
+                    $parent->insert($child, $a);
+                }
+                $parent->remove($a);
+            }
+        }
+        return $xml;
     }
 
     function query($name, $args = array())
@@ -135,7 +161,7 @@ class www
 
     private function render_template($template)
     {
-        return $this->render_xslt($template, $template->source(), $template->document(), $template->args());
+        return $this->render_xslt($template, $template->source(), $this->vars->apply($template->document()), $this->vars->apply($template->args()));
     }
 
     private function render_xslt($template, $xsl, $xml, $args = array())

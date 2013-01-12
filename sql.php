@@ -6,7 +6,7 @@ class sql
     {
         $this->pdo = new PDO("$driver:host=$server;dbname=$database;charset=$charset", $username, $password, array
         (
-            PDO::ATTR_PERSISTENT => true
+            PDO::ATTR_PERSISTENT => false
         ));
     }
 

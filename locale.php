@@ -53,7 +53,16 @@ class locale
     function get($alias)
     {
         $alias .= ':' . $this->language;
-        return isset($this->local[$alias]) ? $this->local[$alias]->xml()->get() : "[Alias not found: $alias]";
+        if(isset($this->local[$alias]))
+        {
+            return $this->local[$alias]->xml();
+        }
+        else
+        {
+            $xml = new xml();
+            $xml->append($xml->text("[Alias not found: $alias]"));
+            return $xml;
+        }
     }
 
     private $language;

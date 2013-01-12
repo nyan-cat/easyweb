@@ -2,13 +2,22 @@
 
 class solr_procedure extends procedure
 {
-    function __construct($vars, $datasource, $name, $params, $empty, $root, $core, $method, $body, $offset = null, $count = null, $output = array(), $permission = null)
+    function __construct($vars, $datasource, $name, $params, $empty, $root, $item, $core, $method, $body, $order_by, $offset = null, $count = null, $output = array(), $permission = null, $cache = true)
     {
-        parent::__construct($vars, $name, $params, $empty, $root, $output, $permission);
+        parent::__construct($vars, $name, $params, $empty, $root, $output, $permission, $cache);
         $this->datasource = $datasource;
+        if($item)
+        {
+            $this->item = explode(',', $item);
+            foreach($this->item as &$value)
+            {
+                $value = trim($value);
+            }
+        }
         $this->core = $core;
         $this->method = $method;
         $this->body = trim($body);
+        $this->order_by = $order_by;
         $this->offset = $offset;
         $this->count = $count;
     }
@@ -21,12 +30,30 @@ class solr_procedure extends procedure
         switch($this->method)
         {
         case 'add':
-            $doc = new SolrInputDocument();
-            foreach($args as $name => $value)
+            !empty($args) or runtime_error('Solr add method should accept parameters');
+            if(is_array(reset($args)))
             {
-                $doc->addField($name, $value);
+                $docs = array();
+                foreach(reset($args) as $document)
+                {
+                    $doc = new SolrInputDocument();
+                    foreach($document as $name => $value)
+                    {
+                        $doc->addField($name, $value);
+                    }
+                    $docs[] = $doc;
+                }
+                $solr->addDocuments($docs);
             }
-            $solr->addDocument($doc);
+            else
+            {
+                $doc = new SolrInputDocument();
+                foreach($args as $name => $value)
+                {
+                    $doc->addField($name, $value);
+                }
+                $solr->addDocument($doc);
+            }
             $solr->request("<commit/>");
             break;
         case 'delete':
@@ -37,35 +64,48 @@ class solr_procedure extends procedure
             $root = $xml->element($this->root[0]);
             $xml->append($root);
             $query = new SolrQuery(vars::apply_assoc($this->body, $args));
+            foreach($this->order_by as $name => $order)
+            {
+                $query->addSortField($name, $order == 'desc' ? SolrQuery::ORDER_DESC : SolrQuery::ORDER_ASC);
+            }
             if(!is_null($this->offset))
             {
-                $query->setStart($this->offset - 1);
+                $query->setStart(vars::apply_assoc($this->offset, $args));
             }
-            is_null($this->count) or $query->setRows($this->count);
+            is_null($this->count) or $query->setRows(vars::apply_assoc($this->count, $args));
             $response = $solr->query($query);
             $object = $response->getResponse();
-            foreach($object['response']['docs'] as $doc)
+            if(is_array($object['response']['docs']))
             {
-                $item = $xml->element('doc');
-                $root->append($item);
-                foreach($doc as $name => $value)
+                $root['@matched'] = $object['response']['numFound'];
+
+                foreach($object['response']['docs'] as $doc)
                 {
-                    if(is_array($value))
+                    $item = $xml->element($this->item[0]);
+                    $root->append($item);
+                    foreach($doc as $name => $value)
                     {
-                        $array = $xml->element($name);
-                        $item->append($array);
-                        foreach($value as $element)
+                        if(is_array($value))
                         {
-                            $element = $xml->element('element', $element);
-                            $array->append($element);
+                            $array = $xml->element($name);
+                            $item->append($array);
+                            foreach($value as $element)
+                            {
+                                $element = $xml->element('element', $element);
+                                $array->append($element);
+                            }
+                        }
+                        else
+                        {
+                            $node = $this->transform($xml, $name, $value);
+                            $item->append($node);
                         }
                     }
-                    else
-                    {
-                        $node = $xml->element($name, $value);
-                        $item->append($node);
-                    }
                 }
+            }
+            else
+            {
+                $this->empty or runtime_error('Procedure returned an empty result: ' . $this->mangled());
             }
             break;
         default:
@@ -75,6 +115,7 @@ class solr_procedure extends procedure
     }
 
     private $datasource;
+    private $item;
     private $core;
     private $method;
     private $body;

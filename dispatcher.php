@@ -24,13 +24,20 @@ class dispatcher
         {
             $this->access->query(vars::apply_assoc($permission, $args, true)) or runtime_error('Procedure ' . $name . ' doesn\'t meet permission ' . $permission);
         }
-        $mangled = procedure::mangle_values($name, $args);
 
-        if(!isset($this->cache[$mangled]))
+        if($procedure->cache())
         {
-            $this->cache[$mangled] = $procedure->query($args, $document);
+            $mangled = procedure::mangle_values($name, $args);
+            if(!isset($this->cache[$mangled]))
+            {
+                $this->cache[$mangled] = $procedure->query($args, $document);
+            }
+            return $this->cache[$mangled];
         }
-        return $this->cache[$mangled];
+        else
+        {
+            return $procedure->query($args, $document);
+        }
     }
 
     function parse_query($expression, $document)

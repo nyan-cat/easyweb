@@ -31,7 +31,7 @@ function wwwescapeuri($uri)
 
 function wwwlocal($alias)
 {
-    return xslt::top()->local($alias);
+    return xslt::top()->local($alias)->get();
 }
 
 function wwwlocale($name)
@@ -50,6 +50,13 @@ function wwwlocale($name)
 
 function wwwpaginate($current, $count, $size)
 {
+    $xml = new xml();
+
+    if($count < 2)
+    {
+        return $xml->get();
+    }
+
     $begin = $current - (int)($size / 2);
     $end = $begin + $size;
     if($begin < 1)
@@ -65,8 +72,6 @@ function wwwpaginate($current, $count, $size)
     $previous = max(1, $current - 1);
     $next = min($count, $current + 1);
 
-    $xml = new xml();
-
     $pages = $xml->element('pages');
     $xml->append($pages);
     
@@ -75,7 +80,7 @@ function wwwpaginate($current, $count, $size)
         $pages->append($xml->element('previous', $previous));
     }
 
-    for($n = $begin; $n < $end; ++$n)
+    for($n = $begin; $n <= $end; ++$n)
     {
         $page = $xml->element('page', $n);
         if($n == $current)

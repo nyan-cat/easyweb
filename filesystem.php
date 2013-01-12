@@ -45,6 +45,7 @@ class fs
 
     static function crc32($filename)
     {
+        fs::exists($filename) or runtime_error('File not found: ' . $filename);
         return hash_file('crc32', fs::normalize($filename));
     }
 }

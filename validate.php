@@ -18,7 +18,13 @@ class validate
 
     static function assert($type, $value)
     {
-        validate::match($type, $value) or runtime_error($value . ' doesn\'t match to ' . $type . ' -> ' . validate::$patterns[$type]);
+        $type == 'mixed' or validate::match($type, $value) or runtime_error($value . ' doesn\'t match to ' . $type . ' -> ' . validate::$patterns[$type]);
+    }
+
+    static function register($type, $pattern)
+    {
+        !isset(self::$patterns[$type]) or runtime_error('Duplicate type: ' . $type);
+        self::$patterns[$type] = $pattern;
     }
 
     private static $patterns = array

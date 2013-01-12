@@ -7,14 +7,38 @@ class vars
     const names_flat      = '\w+';
     const names_objective = '[\w:]+\w';
 
-    function __construct()
+    function __wakeup()
     {
         $this->initialize();
     }
 
-    function __wakeup()
+    function initialize()
     {
-        $this->initialize();
+        $top = array
+        (
+            'user:agent' => $_SERVER['HTTP_USER_AGENT'],
+            'user:ip'    => $_SERVER['REMOTE_ADDR']
+        );
+
+        foreach($_GET as $name => $value)
+        {
+            $top["get:$name"] = $value;
+        }
+
+        foreach($_POST as $name => $value)
+        {
+            $top["post:$name"] = $value;
+        }
+
+        if(isset($_SESSION))
+        {
+            foreach($_SESSION as $name => $value)
+            {
+                $top["session:$name"] = $value;
+            }
+        }
+
+        $this->push($top);
     }
 
     function get($name)
@@ -56,35 +80,6 @@ class vars
         return preg_replace('/\$(' . $names . ')/e', "self::replace_assoc('\\1', \$vars, \$quotes)", $string);
     }
 
-    private function initialize()
-    {
-        $top = array
-        (
-            'user:agent' => $_SERVER['HTTP_USER_AGENT'],
-            'user:ip'    => $_SERVER['REMOTE_ADDR']
-        );
-
-        foreach($_GET as $name => $value)
-        {
-            $top["get:$name"] = $value;
-        }
-
-        foreach($_POST as $name => $value)
-        {
-            $top["post:$name"] = $value;
-        }
-
-        if(isset($_SESSION))
-        {
-            foreach($_SESSION as $name => $value)
-            {
-                $top["session:$name"] = $value;
-            }
-        }
-
-        $this->vars = array($top);
-    }
-
     private function replace($name, $quotes)
     {
         $top = &$this->vars[count($this->vars) - 1];
@@ -96,7 +91,7 @@ class vars
         return isset($vars[$name]) ? ($quotes ? args::quote($vars[$name]) : $vars[$name]) : '$' . $name;
     }
 
-    private $vars;
+    private $vars = array(array());
 }
 
 ?>

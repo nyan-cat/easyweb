@@ -5,7 +5,7 @@ require_once('validate.php');
 
 class procedure
 {
-    function __construct($vars, $name, $params, $empty, $root, $output = array(), $permission = null)
+    function __construct($vars, $name, $params, $empty, $root, $output = array(), $permission = null, $cache = true)
     {
         $this->vars = $vars;
         $this->mangled = self::mangle($name, $params);
@@ -31,6 +31,7 @@ class procedure
 
         $this->output = $output;
         $this->permission = $permission;
+        $this->cache = $cache;
     }
 
     function validate($args)
@@ -51,6 +52,11 @@ class procedure
         return $this->permission;
     }
 
+    function cache()
+    {
+        return $this->cache;
+    }
+
     static function mangle($procedure, $args)
     {
         foreach($args as $name => $vt)
@@ -64,7 +70,7 @@ class procedure
     {
         foreach($args as $name => $value)
         {
-            $procedure .= "[$name -> $value]";
+            $procedure .= is_array($value) ? "[$name]" : "[$name -> $value]"; //  TODO: mixed parameters cache issue
         }
         return $procedure;
     }
@@ -77,6 +83,8 @@ class procedure
             {
                 switch($transform)
                 {
+                case 'none':
+                    return $xml->element($name, htmlspecialchars($value));
                 case 'xml':
                     return $this->xml($xml, $name, $value);
                 case 'vars':
@@ -90,11 +98,11 @@ class procedure
                     runtime_error('Unknown transform: ' . $transform);
                 }
             }
-            return $xml->element($name, $value);
+            return $xml->element($name, htmlspecialchars($value));
         }
         else
         {
-            return $xml->element($name, nl2br($value));
+            return $this->nl2br($xml, $name, $value);
         }
     }
 
@@ -103,12 +111,23 @@ class procedure
         return $xml->import(xml::parse("<?xml version=\"1.0\" encoding=\"utf-8\" ?><$name>$value</$name>")->root());
     }
 
+    private function nl2br($xml, $name, $value)
+    {
+        $node = $xml->element($name);
+        foreach(preg_split("/(\r\n|\n|\r)/", $value) as $n => $text)
+        {
+            !$n or $node->append($xml->element('br'));
+            $node->append($xml->text($text));
+        }
+        return $node;
+    }
+
     private function nl2p($xml, $name, $value)
     {
         $node = $xml->element($name);
         foreach(preg_split("/(\r\n|\n|\r)/", $value) as $p)
         {
-            $node->append($xml->element('p', $p));
+            $node->append($xml->element('p', htmlspecialchars($p)));
         }
         return $node;
     }
@@ -120,6 +139,7 @@ class procedure
     protected $root;
     private $output;
     private $permission;
+    private $cache;
 }
 
 ?>
