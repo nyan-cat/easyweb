@@ -39,7 +39,17 @@ class solr_procedure extends procedure
                     $doc = new SolrInputDocument();
                     foreach($document as $name => $value)
                     {
-                        $doc->addField($name, $value);
+                        if(is_array($value))
+                        {
+                            foreach($value as $element)
+                            {
+                                $doc->addField($name, $element);
+                            }
+                        }
+                        else
+                        {
+                            $doc->addField($name, $value);
+                        }
                     }
                     $docs[] = $doc;
                 }

@@ -45,7 +45,7 @@ class image
     function fit_to_width_copy($width)
     {
         $new_width = $width;
-        $new_height = ($width * $this->height) / $this->width;
+        $new_height = (int)(($width * $this->height) / $this->width);
         $image = imagecreatetruecolor($new_width, $new_height);
         imagecopyresampled($image, $this->resource, 0, 0, 0, 0, $new_width, $new_height, $this->width, $this->height);
         return new image($image, $new_width, $new_height);
@@ -53,7 +53,7 @@ class image
 
     function fit_to_height_copy($height)
     {
-        $new_width = ($height * $this->width) / $this->height;
+        $new_width = (int)(($height * $this->width) / $this->height);
         $new_height = $height;
         $image = imagecreatetruecolor($new_width, $new_height);
         imagecopyresampled($image, $this->resource, 0, 0, 0, 0, $new_width, $new_height, $this->width, $this->height);

@@ -10,8 +10,9 @@ class router
         $this->access = $access;
     }
 
-    function insert($name, $page)
+    function insert($page)
     {
+        $name = $page->name();
         !isset($this->pages[$name]) or runtime_error('Duplicate page: ' . $name);
         $this->pages[$name] = $page;
     }

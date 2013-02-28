@@ -4,10 +4,14 @@ require_once('exception.php');
 
 class post
 {
+    static function exists($name)
+    {
+        return isset($_POST[$name]);
+    }
+
     static function checkbox($name)
     {
-        isset($_POST[$name]) or runtime_error('POST checkbox not found: ' . $name);
-        return strtolower($_POST[$name]) == 'on';
+        return isset($_POST[$name]) and strtolower($_POST[$name]) == 'on';
     }
 
     static function radio($name)

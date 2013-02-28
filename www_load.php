@@ -137,14 +137,16 @@ foreach($config->query('/config/procedures//procedure[@datasource = "geoip"]') a
 
 foreach($config->query('/config/pages//page') as $page)
 {
-    $this->router->insert($page['@name'], new page
+    $this->router->insert(new page
     (
+        $page['@name'],
         $page->attribute('url'),
         load_template($config, $config->query('template', $page)->first()),
         $page->attribute('action'),
         $page->attribute('permission'),
         $page->attribute('code', '200'),
-        $page->attribute('message', 'OK')
+        $page->attribute('message', 'OK'),
+        $page->attribute('content-type', 'text/html; charset=utf-8')
     ));
 }
 

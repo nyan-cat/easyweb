@@ -2,10 +2,11 @@
 
 class response
 {
-    function __construct($code = '200', $message = 'OK')
+    function __construct($code, $message, $content_type)
     {
         $this->code = $code;
         $this->message = $message;
+        $this->headers['Content-Type'] = $content_type;
     }
 
     function location($url)
@@ -20,6 +21,11 @@ class response
         {
             header("$name: $value");
         }
+    }
+
+    function xml()
+    {
+        return preg_match('/\Atext\/xml;/i', $this->headers['Content-Type']);
     }
 
     private $version = '1.1';

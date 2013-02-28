@@ -4,16 +4,16 @@ class files
 {
     static function get($pattern = '.*')
     {
-        $pattern = '\A' . $pattern . '\Z';
+        $pattern = '/\A' . $pattern . '\Z/';
         $list = array();
 
-        foreach ($_FILES as $input)
+        foreach ($_FILES as $name => $input)
         {
             if(is_array($input['error']))
             {
                 foreach($input['error'] as $n => $error)
                 {
-                    if($error == UPLOAD_ERR_OK && preg_match($pattern, $input['tmp_name'][$n]) == 1)
+                    if($error == UPLOAD_ERR_OK && preg_match($pattern, $name) == 1)
                     {
                         $list[] = array
                         (
@@ -25,7 +25,7 @@ class files
             }
             else
             {
-                if($input['error'] == UPLOAD_ERR_OK && preg_match($pattern, $input['tmp_name']) == 1)
+                if($input['error'] == UPLOAD_ERR_OK && preg_match($pattern, $name) == 1)
                 {
                     $list[] = array
                     (

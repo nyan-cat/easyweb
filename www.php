@@ -87,19 +87,25 @@ class www
         {
             $this->insert_variable("url:$name", $value);
         }
-        $response = new response($page->code(), $page->message());
+        $this->insert_variable('page:url', $url);
+        $this->insert_variable('page:name', $page->name());
+        $response = new response($page->code(), $page->message(), $page->content_type());
         $xml = $this->render($page, $response);
-        foreach($xml->query('//a') as $a)
+        if($xml)
         {
-            $parent = $a->parent();
-            if($a->attribute('href') === $url)
+            foreach($xml->query('//a') as $a)
             {
-                foreach($xml->query('* | text()', $a) as $child)
+                $parent = $a->parent();
+                if($a->attribute('href') === $url)
                 {
-                    $parent->insert($child, $a);
+                    foreach($xml->query('* | text()', $a) as $child)
+                    {
+                        $parent->insert($child, $a);
+                    }
+                    $parent->remove($a);
                 }
-                $parent->remove($a);
             }
+            
         }
         return $xml;
     }
@@ -204,11 +210,11 @@ class www
                     is_null($cache_lifetime) or is_numeric($cache_lifetime) or runtime_error('Cache lifetime should be numeric: ' . $cache_lifetime);
 
                     $cache_args = args::decode($cache_args);
-                    $filename = cache_location . md5($node['@xsl'] . $node['@xml'] . $args ? $args : '') . '.xml';
+                    $filename = cache_location . md5($node['@xsl'] . $node['@xml'] . ($args ? $args : '')) . '.xml';
 
                     if(!fs::exists($filename) || ($cache_lifetime && ($cache_lifetime > time() - fs::modification($filename))))
                     {
-                        fs::write($filename, $this->render_xslt($template, $node['@xsl'], $node['@xml'], $args ? args::decode($args) : array())->render());
+                        fs::write($filename, $this->render_xslt($template, $node['@xsl'], $node['@xml'], $args ? args::decode($args) : array())->render(false));
                     }
 
                     $fragment = fs::checked_read($filename);

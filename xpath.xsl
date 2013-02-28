@@ -22,6 +22,19 @@
         <xsl:param name="uri" />
         <func:result select="php:function('wwwescapeuri', string($uri))" />
     </func:function>
+    <func:function name="www:unescape-uri">
+        <xsl:param name="uri" />
+        <func:result select="php:function('wwwunescapeuri', string($uri))" />
+    </func:function>
+    <func:function name="www:evaluate">
+        <xsl:param name="name" />
+        <xsl:param name="args" select="''" />
+        <func:result select="php:function('wwwevaluate', $name, string($args))" />
+    </func:function>
+    <func:function name="www:format-number">
+        <xsl:param name="number" />
+        <func:result select="php:function('wwwformatnumber', string($number))" />
+    </func:function>
     <func:function name="www:local">
         <xsl:param name="alias" />
         <func:result select="php:function('wwwlocal', string($alias))" />
@@ -29,6 +42,11 @@
     <func:function name="www:locale">
         <xsl:param name="name" />
         <func:result select="php:function('wwwlocale', string($name))" />
+    </func:function>
+    <func:function name="www:morph">
+        <xsl:param name="template" />
+        <xsl:param name="seed" />
+        <func:result select="php:function('wwwmorph', string($template), string($seed))" />
     </func:function>
     <func:function name="www:paginate">
         <xsl:param name="current" />
@@ -73,6 +91,16 @@
         <xsl:param name="type" />
         <xsl:param name="name" />
         <func:result select="php:function('wwwsession', string($type), string($name))" />
+    </func:function>
+    <func:function name="www:split">
+        <xsl:param name="subject" />
+        <xsl:param name="pattern" />
+        <func:result select="php:function('wwwsplit', string($subject), string($pattern))" />
+    </func:function>
+    <func:function name="www:tokenize">
+        <xsl:param name="subject" />
+        <xsl:param name="pattern" />
+        <func:result select="php:function('wwwtokenize', string($subject), string($pattern))" />
     </func:function>
     <func:function name="www:var">
         <xsl:param name="name" />

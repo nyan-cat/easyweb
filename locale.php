@@ -81,7 +81,7 @@ class locale
         'ga', 'gd', 'gl', 'gn', 'gu', 'gv',
         'ha', 'he', 'hi', 'ho', 'hr', 'ht', 'hu', 'hy', 'hz',
         'ia', 'id', 'ie', 'ii', 'ik', 'io', 'is', 'it', 'iu',
-        'ja', 'jv',
+        'ja', 'jp', 'jv',
         'ka', 'ki', 'kj', 'kk', 'kl', 'km', 'kn', 'ko', 'ks', 'ku', 'kv', 'kw', 'ky',
         'la', 'lb', 'li', 'ln', 'lo', 'lt', 'lv',
         'mg', 'mh', 'mi', 'mk', 'ml', 'mn', 'mo', 'mr', 'ms', 'mt', 'my',

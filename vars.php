@@ -25,11 +25,6 @@ class vars
             $top["get:$name"] = $value;
         }
 
-        foreach($_POST as $name => $value)
-        {
-            $top["post:$name"] = $value;
-        }
-
         if(isset($_SESSION))
         {
             foreach($_SESSION as $name => $value)

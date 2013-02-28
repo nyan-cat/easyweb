@@ -16,6 +16,24 @@ class session
         }
     }
 
+    static function exists($name)
+    {
+        self::assert();
+        return isset($_SESSION[$name]);
+    }
+
+    static function erase($name)
+    {
+        self::assert();
+        unset($_SESSION[$name]);
+    }
+
+    static function checked_erase($name)
+    {
+        self::assert($name);
+        unset($_SESSION[$name]);
+    }
+
     static function value($name, $value = null)
     {
         if(is_null($value))

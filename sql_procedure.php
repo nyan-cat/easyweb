@@ -27,7 +27,9 @@ class sql_procedure extends procedure
 
         $this->single() or $sql->begin();
 
-        foreach($this->body as $n => $query)
+        $n = 0;
+
+        foreach($this->body as $query)
         {
             if($rows = $sql->query($this->apply($query, $args)))
             {
@@ -45,6 +47,8 @@ class sql_procedure extends procedure
                         $item->append($node);
                     }
                 }
+
+                ++$n;
             }
         }
 

@@ -30,12 +30,13 @@ class access
     function query($expression, $doc = null, $context = null)
     {
         $expression = $this->vars->apply($expression, true);
-        if($doc)
+        /*if($doc)
         {
             $expression = preg_replace('/([\w:]+\w)\(([^\)]+)\)/e', "\$this->replace_xpath('\\1', '\\2', \$doc, \$context)", $expression);
-        }
+        }*/
         $expression = preg_replace('/([\w:]+\w)\(([^\)]+)\)/e', "\$this->replace_permission('\\1', '\\2')", $expression);
-        return $doc ? $doc->evaluate($expression, $context) : xpression::evaluate($expression);
+        //return $doc ? $doc->evaluate($expression, $context) : xpression::evaluate($expression);
+        return xpression::evaluate($expression);
     }
 
     private function permission($name, $args)

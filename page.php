@@ -12,13 +12,15 @@ function preg_escape($pattern)
 
 class page
 {
-    function __construct($url = null, $template = null, $action = null, $permission = null, $code = '200', $message = 'OK')
+    function __construct($name, $url, $template, $action, $permission, $code, $message, $content_type)
     {
+        $this->name = $name;
         $this->template = $template;
         $this->action = $action;
         $this->permission = $permission;
         $this->code = $code;
         $this->message = $message;
+        $this->content_type = $content_type;
 
         if($url)
         {
@@ -49,6 +51,11 @@ class page
         }
     }
 
+    function name()
+    {
+        return $this->name;
+    }
+
     function template()
     {
         return $this->template;
@@ -74,6 +81,11 @@ class page
         return $this->message;
     }
 
+    function content_type()
+    {
+        return $this->content_type;
+    }
+
     function match($url, &$args)
     {
         if($this->url && preg_match($this->url, $url, $match))
@@ -91,6 +103,7 @@ class page
         }
     }
 
+    private $name;
     private $url;
     private $params = array();
     private $template;
@@ -98,6 +111,7 @@ class page
     private $permission;
     private $code;
     private $message;
+    private $content_type;
 }
 
 ?>

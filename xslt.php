@@ -1,6 +1,7 @@
 <?php
 
 require_once('filesystem.php');
+require_once('morpher.php');
 
 function wwwaccess($expression, $node)
 {
@@ -29,6 +30,21 @@ function wwwescapeuri($uri)
     return urlencode($uri);
 }
 
+function wwwunescapeuri($uri)
+{
+    return urldecode($uri);
+}
+
+function wwwevaluate($name, $args)
+{
+    return xslt::top()->evaluate($name, args::decode($args));
+}
+
+function wwwformatnumber($number)
+{
+    return number_format($number, 0, '', ' ');
+}
+
 function wwwlocal($alias)
 {
     return xslt::top()->local($alias)->get();
@@ -46,6 +62,11 @@ function wwwlocale($name)
     default:
         runtime_error('Unknown locale parameter name: ' . $name);
     }
+}
+
+function wwwmorph($template, $seed)
+{
+    return morpher::get($template, $seed);
 }
 
 function wwwpaginate($current, $count, $size)
@@ -105,7 +126,7 @@ function wwwmd5($string)
 
 function wwwquery($name, $args)
 {
-    return xslt::top()->query_document($name, args::decode($args))->get();
+    return xslt::top()->query($name, args::decode($args))->get();
 }
 
 function wwwregexreplace($subject, $find, $replace)
@@ -178,6 +199,30 @@ function wwwsession($type, $name)
     return $xml->get();
 }
 
+function wwwsplit($subject, $pattern)
+{
+    $xml = new xml();
+    foreach(preg_split("/$pattern/", $subject) as $string)
+    {
+        var_dump($string);
+        $xml->append($xml->text($string));
+    }
+    return $xml->get();
+}
+
+function wwwtokenize($subject, $pattern)
+{
+    $xml = new xml();
+    if(preg_match_all("/($pattern)/", $subject, $matches))
+    {
+        foreach($matches[1] as $string)
+        {
+            $xml->append($xml->text($string));
+        }
+    }
+    return $xml->get();
+}
+
 function wwwvar($name)
 {
     return xslt::top()->variable($name);
@@ -222,6 +267,11 @@ class xslt
         $xsl->firstChild->insertBefore($import, $xsl->firstChild->firstChild);
         $xsl->xinclude();
         $this->xslt->importStylesheet($xsl);
+        foreach($this->params as $name => $value)
+        {
+            $this->xslt->removeParameter('', $name);
+        }
+        $this->params = $params;
         $this->xslt->setParameter('', $params);
     }
 
@@ -243,8 +293,12 @@ class xslt
             'wwwbase64encode',
             'wwwcrc32',
             'wwwescapeuri',
+            'wwwunescapeuri',
+            'wwwevaluate',
+            'wwwformatnumber',
             'wwwlocal',
             'wwwlocale',
+            'wwwmorph',
             'wwwpaginate',
             'wwwregexreplace',
             'wwwreplace',
@@ -254,12 +308,15 @@ class xslt
             'wwwrfc2822',
             'wwwsequence',
             'wwwsession',
+            'wwwsplit',
+            'wwwtokenize',
             'wwwvar'
         ));
     }
 
     private static $stack = array();
     private $xslt;
+    private $params = array();
 }
 
 ?>

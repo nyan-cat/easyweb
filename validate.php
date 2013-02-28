@@ -44,7 +44,7 @@ class validate
         'string:optional' => '.*',
         'text'            => '[\s\S]+',
         'text:optional'   => '[\s\S]*',
-        'email'           => '[\w\-]+@[\w\-\.]+'
+        'email'           => '[\w\-\.]+@[\w\-\.]+'
     );
 }
 

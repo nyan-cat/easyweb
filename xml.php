@@ -444,9 +444,21 @@ class xml implements ArrayAccess
         return !$this->xml->hasChildNodes();
     }
 
-    function render()
+    function render($declaration = true)
     {
-        return $this->xml->saveXML();
+        if($declaration)
+        {
+            return $this->xml->saveXML();
+        }
+        else
+        {
+            $xml = '';
+            foreach($this->children() as $child)
+            {
+                $xml .= $this->xml->saveXML($child->get());
+            }
+            return $xml;
+        }
     }
 
     function register($uri, $namespace)
