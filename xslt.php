@@ -45,6 +45,19 @@ function wwwformatnumber($number)
     return number_format($number, 0, '', ' ');
 }
 
+function wwwjoin($list, $separator)
+{
+    $result = array();
+
+    $nodeset = new nodeset($list);
+
+    foreach($nodeset as $node)
+    {
+        $result[] = $node->value();
+    }
+    return implode($separator, $result);
+}
+
 function wwwlocal($alias)
 {
     return xslt::top()->local($alias)->get();
@@ -165,36 +178,39 @@ function wwwsequence($count)
 function wwwsession($type, $name)
 {
     $xml = new xml();
-    switch($type)
+    if(session::exists($name))
     {
-    case 'value':
-        $xml->append($xml->element($name, session::value($name)));
-        break;
-
-    case 'vector':
-        foreach(session::vector($name) as $value)
+        switch($type)
         {
-            $xml->append($xml->element('value', $value));
+        case 'value':
+            $xml->append($xml->element($name, session::value($name)));
+            break;
+
+        case 'vector':
+            foreach(session::vector($name) as $value)
+            {
+                $xml->append($xml->element('value', $value));
+            }
+            break;
+
+        case 'map':
+            foreach(session::map($name) as $key => $value)
+            {
+                $xml->append($xml->element($key, $value));
+            }
+            break;
+
+        case 'xml':
+            $xml = session::xml($name);
+            break;
+
+        case 'object':
+            $xml = xml::json($name, session::value($name));
+            break;
+
+        default:
+            runtime_error('Unknown session variable type: ' . $type);
         }
-        break;
-
-    case 'map':
-        foreach(session::map($name) as $key => $value)
-        {
-            $xml->append($xml->element($key, $value));
-        }
-        break;
-
-    case 'xml':
-        $xml = session::xml($name);
-        break;
-
-    case 'object':
-        $xml = xml::json($name, session::value($name));
-        break;
-
-    default:
-        runtime_error('Unknown session variable type: ' . $type);
     }
     return $xml->get();
 }
@@ -296,6 +312,7 @@ class xslt
             'wwwunescapeuri',
             'wwwevaluate',
             'wwwformatnumber',
+            'wwwjoin',
             'wwwlocal',
             'wwwlocale',
             'wwwmorph',

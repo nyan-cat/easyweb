@@ -16,9 +16,17 @@ class args
     {
         $args = array();
 
+        $separator = ',';
+
+        if(preg_match('/\A\[(.)\] +(.*)\Z/', $expression, $m))
+        {
+            $separator = $m[1];
+            $expression = $m[2];
+        }
+
         if(trim($expression) !== '')
         {
-            foreach(explode(',', $expression) as $nvp)
+            foreach(explode($separator, $expression) as $nvp)
             {
                 preg_match('/\A(\w+) +\-> +(.+)\Z/', trim($nvp), $match) or runtime_error('Bad arguments syntax: ' . $expression);
                 $args[trim($match[1])] = self::unquote($match[2]);

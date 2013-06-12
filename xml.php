@@ -15,7 +15,7 @@ class node implements ArrayAccess
     {
         if(preg_match(self::xpath_mask, $offset))
         {
-            return $this->xpath()->query($offset)->length;
+            return $this->xpath()->query($offset, $this->node)->length;
         }
         else if($offset[0] == '@')
         {
@@ -31,7 +31,24 @@ class node implements ArrayAccess
     {
         if(preg_match(self::xpath_mask, $offset))
         {
-            return $this->xpath()->evaluate($offset);
+            $result = $this->xpath()->evaluate($offset, $this->node);
+            if($result instanceof DOMNodeList)
+            {
+                if($result->length > 1)
+                {
+                    return new nodeset($result);
+                }
+                else
+                {
+                    return $result->item(0)->nodeValue;
+                }
+            }
+            else
+            {
+                return $result;
+            }
+
+            return $result instanceof DOMNodeList ? new nodeset($result) : $result;
         }
         else if($offset[0] == '@')
         {
@@ -49,7 +66,7 @@ class node implements ArrayAccess
     {
         if(preg_match(self::xpath_mask, $offset))
         {
-            $list = $this->xpath()->query($offset);
+            $list = $this->xpath()->query($offset, $this->node);
             if($list->length == 1)
             {
                 $list->item(0)->nodeValue = $value;
@@ -177,6 +194,11 @@ class node implements ArrayAccess
     function text()
     {
         return $this->node instanceof DOMText;
+    }
+
+    function cdata()
+    {
+        return $this->node instanceof DOMCdataSection;
     }
 
     function get()
@@ -339,6 +361,16 @@ class xml implements ArrayAccess
         $xml = new DOMDocument();
         $xml->load(fs::normalize($filename));
         $xml->xinclude();
+        return new xml($xml);
+    }
+
+    static function download($url)
+    {
+        $xml = new DOMDocument();
+        $allow_url_fopen = ini_get('allow_url_fopen');
+        ini_set('allow_url_fopen', 1);
+        $xml->load($url);
+        ini_set('allow_url_fopen', $allow_url_fopen);
         return new xml($xml);
     }
 
