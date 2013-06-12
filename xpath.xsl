@@ -35,6 +35,11 @@
         <xsl:param name="number" />
         <func:result select="php:function('wwwformatnumber', string($number))" />
     </func:function>
+    <func:function name="www:join">
+        <xsl:param name="list" />
+        <xsl:param name="separator" />
+        <func:result select="php:function('wwwjoin', $list, string($separator))" />
+    </func:function>
     <func:function name="www:local">
         <xsl:param name="alias" />
         <func:result select="php:function('wwwlocal', string($alias))" />
