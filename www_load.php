@@ -135,6 +135,28 @@ foreach($config->query('/config/procedures//procedure[@datasource = "geoip"]') a
     ));
 }
 
+foreach($config->query('/config/datasources//datasource[@type = "foursquare"]') as $ds)
+{
+    $datasource = new foursquare_datasource($ds['@client-id'], $ds['@client-secret']);
+
+    foreach($config->query('/config/procedures//procedure[@datasource = "' . $ds['@name'] . '"]') as $procedure)
+    {
+        $this->dispatcher->insert(new foursquare_procedure
+        (
+            $datasource,
+            $this->vars,
+            $procedure['@name'],
+            $procedure['@method'],
+            $config->query_assoc('param', $procedure, '@name', '@type'),
+            $procedure->attribute('empty') !== 'false',
+            $procedure->attribute('root'),
+            $config->query_assoc('output', $procedure, '@name', '@transform'),
+            $procedure->attribute('permission'),
+            $procedure->attribute('cache') !== 'false'
+        ));
+    }
+}
+
 foreach($config->query('/config/pages//page') as $page)
 {
     $this->router->insert(new page

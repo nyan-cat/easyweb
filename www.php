@@ -12,6 +12,8 @@ require_once(www_root . 'sql_procedure.php');
 require_once(www_root . 'solr_datasource.php');
 require_once(www_root . 'solr_procedure.php');
 require_once(www_root . 'geoip_procedure.php');
+require_once(www_root . 'foursquare_datasource.php');
+require_once(www_root . 'foursquare_procedure.php');
 require_once(www_root . 'xslt.php');
 require_once(www_root . 'bbcode.php');
 require_once(www_root . 'response.php');
