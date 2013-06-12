@@ -93,7 +93,7 @@ class page
             $args = array();
             for($n = 0; $n < count($this->params); ++$n)
             {
-                $args[$this->params[$n]] = $match[$n + 1];
+                $args[$this->params[$n]] = urldecode($match[$n + 1]);
             }
             return true;
         }
