@@ -34,7 +34,7 @@ class access
         {
             $expression = preg_replace('/([\w:]+\w)\(([^\)]+)\)/e', "\$this->replace_xpath('\\1', '\\2', \$doc, \$context)", $expression);
         }*/
-        $expression = preg_replace('/([\w:]+\w)\(([^\)]+)\)/e', "\$this->replace_permission('\\1', '\\2')", $expression);
+        $expression = preg_replace('/([\w:]+\w)\(([^\)]*)\)/e', "\$this->replace_permission('\\1', '\\2')", $expression);
         //return $doc ? $doc->evaluate($expression, $context) : xpression::evaluate($expression);
         return xpression::evaluate($expression);
     }
@@ -72,7 +72,7 @@ class access
         $args = stripslashes($args);
         $args = args::decode($args);
         $expression = $this->permission($name, $args)->get($args);
-        return preg_replace('/([\w:]+\w)\(([^\)]+)\)/e', "\$this->replace_group('\\1', '\\2');", $expression);
+        return preg_replace('/([\w:]+\w)\(([^\)]*)\)/e', "\$this->replace_group('\\1', '\\2');", $expression);
     }
 
     private function replace_group($name, $args)
@@ -81,7 +81,7 @@ class access
         $args = args::decode($args);
         $expression = $this->group($name, $args)->get($args);
         $expression = $this->vars->apply($expression, true);
-        return preg_replace('/(([\w:]+\w)\(([^\)]+)\))/e', "\$this->replace_query('\\1', '\\2')", $expression);
+        return preg_replace('/(([\w:]+\w)\(([^\)]*)\))/e', "\$this->replace_query('\\1', '\\2')", $expression);
     }
 
     private function replace_query($expression)

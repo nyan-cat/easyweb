@@ -23,7 +23,16 @@ class image
             $image = imagecreatefromjpeg($filename);
             break;
         case 'image/png':
-            $image = imagecreatefrompng($filename);
+            $image = imagecreatetruecolor($width, $height);
+            $white = imagecolorallocate($image, 255, 255, 255);
+            imagefill($image, 0, 0, $white);
+
+            $png = imagecreatefrompng($filename);
+            imagealphablending($png, true);
+            imagesavealpha($png, true);
+
+            imagecopy($image, $png, 0, 0, 0, 0, $width, $height);
+            imagedestroy($png);
             break;
         }
 
@@ -40,6 +49,19 @@ class image
     function save($filename, $quality = 80)
     {
         imagejpeg($this->resource, $filename, $quality);
+    }
+
+    function crop_copy($x, $y, $width, $height)
+    {
+        $image = imagecreatetruecolor($width, $height);
+        if(imagecopy($image, $this->resource, 0, 0, $x, $y, $width, $height))
+        {
+            return new image($image, $width, $height);
+        }
+        else
+        {
+            return null;
+        }
     }
 
     function fit_to_width_copy($width)

@@ -2,13 +2,42 @@
 
 class session
 {
-    static function start()
+    static function userid($id = 0, $domain = null)
     {
+            if($id)
+            {
+                $a = ($id + 47835 ) * 17;
+                $b = md5($id . $a . 'Hi, I\'m Daria. Ho to hell.');
+
+                setcookie('A', $a, time() + 10 * 86400 * 365, '/', '.' . $domain);
+                setcookie('B', $b, time() + 10 * 86400 * 365, '/', '.' . $domain);
+            }
+            else
+            {
+                $account_id = $_COOKIE['A'] / 17 - 47835;
+
+                if(md5($account_id . $_COOKIE['A'] . 'Hi, I\'m Daria. Ho to hell.') == $_COOKIE['B'])
+                {
+                    return $account_id;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+    }
+
+    static function start($domain)
+    {
+        session_set_cookie_params(0, '/', '.' . $domain);
         session_start();
     }
 
-    static function destroy()
+    static function destroy($domain)
     {
+        setcookie('A', '', 1, '/', '.' . $domain);
+        setcookie('B', '', 1, '/', '.' . $domain);
+        session_regenerate_id();
         session_destroy();
         if(isset($_SESSION))
         {
