@@ -29,13 +29,53 @@ class foursquare_procedure extends procedure
                         foreach($group->items as $item)
                         {
                             $image = $xml->element('image');
-                            $image->append($xml->element('url', $item->url));
                             $root->append($image);
+                            $image['@url'] = $item->url;
+
+                            foreach($item->sizes->items as $size)
+                            {
+                                $resampled = $xml->element('resampled');
+                                $image->append($resampled);
+                                $resampled['@url'] = $size->url;
+                                $resampled['@width'] = $size->width;
+                                $resampled['@height'] = $size->height;
+                                $resampled['@created'] = @date("Y-m-d H:i:s", $item->createdAt);
+                                $resampled['@user-id'] = $item->user->id;
+                                $resampled['@user-first-name'] = $item->user->firstName;
+                                $resampled['@user-last-name'] = isset($item->user->lastName) ? $item->user->lastName : '';
+                                $resampled['@user-gender'] = $item->user->gender;
+                                $resampled['@user-photo'] = $item->user->photo;
+                            }
                         }
                     }
                 }
             }
             break;
+
+        case 'venues':
+            isset($args['latitude']) or runtime_error('Foursquare latitude parameter not found');
+            isset($args['longitude']) or runtime_error('Foursquare longitude parameter not found');
+            $root = $xml->element($this->root[0]);
+            $xml->append($root);
+
+            if($result = json_decode(file_get_contents('https://api.foursquare.com/v2/venues/search?ll=' . $args['latitude'] . ',' . $args['longitude'] . '&' . $this->datasource->get())))
+            {
+                foreach($result->response->groups as $group)
+                {
+                    if($group->type == 'nearby')
+                    {
+                        foreach($group->items as $item)
+                        {
+                            $venue = $xml->element('venue');
+                            $root->append($venue);
+                            $venue['@id'] = $item->id;
+                            $venue['@name'] = $item->name;
+                        }
+                    }
+                }
+            }
+            break;
+
         default:
             runtime_error('Unknown Foursquare method: ' . $this->method);
         }
