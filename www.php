@@ -249,6 +249,18 @@ class www
                 $nested['@type'] = 'text/javascript';
                 $nested['@src'] = $src . '?' . fs::crc32($src);
                 break;
+            case 'www:img':
+                $src = $node['@src'];
+                $nested = $document->element('img');
+                $nested['@src'] = $src . '?' . crc32(fs::modification($src));
+                foreach($node->attributes() as $name => $value)
+                {
+                    if($name != 'src')
+                    {
+                        $nested['@' . $name] = $value;
+                    }
+                }
+                break;
             case 'www:bbcode':
                 $allow = $node->attribute('allow');
                 $deny = $node->attribute('deny');

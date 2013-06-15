@@ -42,7 +42,10 @@ class foursquare_procedure extends procedure
                                 $resampled['@created'] = @date("Y-m-d H:i:s", $item->createdAt);
                                 $resampled['@user-id'] = $item->user->id;
                                 $resampled['@user-first-name'] = $item->user->firstName;
-                                $resampled['@user-last-name'] = isset($item->user->lastName) ? $item->user->lastName : '';
+                                if(isset($item->user->lastName))
+                                {
+                                    $resampled['@user-last-name'] = $item->user->lastName;
+                                }
                                 $resampled['@user-gender'] = $item->user->gender;
                                 $resampled['@user-photo'] = $item->user->photo;
                             }
@@ -70,6 +73,18 @@ class foursquare_procedure extends procedure
                             $root->append($venue);
                             $venue['@id'] = $item->id;
                             $venue['@name'] = $item->name;
+                            $venue['@url'] = $item->canonicalUrl;
+
+                            foreach($item->categories as $cat)
+                            {
+                                $category = $xml->element('category');
+                                $venue->append($category);
+                                $category['@id'] = $cat->id;
+                                $category['@name'] = $cat->name;
+                                $category['@plural-name'] = $cat->pluralName;
+                                $category['@short-name'] = $cat->shortName;
+                                $category['@icon'] = $cat->icon;
+                            }
                         }
                     }
                 }

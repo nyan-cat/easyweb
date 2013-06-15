@@ -232,7 +232,7 @@ class node implements ArrayAccess
     private $xpath = null;
 }
 
-class nodeset implements Iterator
+class nodeset implements Iterator, Countable
 {
     function __construct($nodeset)
     {
@@ -305,6 +305,11 @@ class nodeset implements Iterator
     }
 
     function size()
+    {
+        return count($this->array);
+    }
+
+    function count()
     {
         return count($this->array);
     }
