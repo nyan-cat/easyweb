@@ -17,6 +17,7 @@ require_once(www_root . 'foursquare_procedure.php');
 require_once(www_root . 'xslt.php');
 require_once(www_root . 'bbcode.php');
 require_once(www_root . 'response.php');
+require_once(www_root . 'cookie.php');
 require_once(www_root . 'session.php');
 require_once(www_root . 'post.php');
 
