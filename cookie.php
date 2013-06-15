@@ -37,30 +37,24 @@ class cookie
             return null;
         }
 
-        $string = $value . $name . self::$salt . $_SERVER['HTTP_USER_AGENT'];
-        $hash = hash('sha512', $string);
-        $hash = hash('sha512', $hash . $string);
+        $data = $name . ':' . $value . ':' . $_SERVER['HTTP_USER_AGENT'];
 
-        if($digest === $hash)
+        if($digest === hash_hmac('sha512', $data, self::$salt))
         {
             return $value;
         }
 
-        $string = $value . $name . self::$salt . $_SERVER['HTTP_USER_AGENT'] . $_SERVER['REMOTE_ADDR'];
-        $hash = hash('sha512', $string);
-        $hash = hash('sha512', $hash . $string);
+        $data = $name . ':' . $value . ':' . $_SERVER['HTTP_USER_AGENT'] . ':' . $_SERVER['REMOTE_ADDR'];
 
-        return $digest === $hash ? $value : null;
+        return $digest === hash_hmac('sha512', $data, self::$salt) ? $value : null;
     }
 
     static function set_signed($name, $value, $bind_to_ip = false, $expire = null, $domain = null, $path = null)
     {
-        $string = $value . $name . self::$salt . $_SERVER['HTTP_USER_AGENT'] . ($bind_to_ip ? $_SERVER['REMOTE_ADDR'] : '');
-        $digest = hash('sha512', $string);
-        $digest = hash('sha512', $digest . $string);
+        $data = $name . ':' . $value . ':' . $_SERVER['HTTP_USER_AGENT'] . ($bind_to_ip ? (':' . $_SERVER['REMOTE_ADDR']) : '');
 
         self::set($name, $value, $expire, $domain, $path);
-        self::set($name . '_digest', $digest, $expire, $domain, $path);
+        self::set($name . '_digest', hash_hmac('sha512', $data, self::$salt), $expire, $domain, $path);
     }
 
     static function erase($name)
