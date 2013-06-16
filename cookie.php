@@ -57,10 +57,10 @@ class cookie
         self::set($name . '_digest', hash_hmac('sha512', $data, self::$salt), $expire, $domain, $path);
     }
 
-    static function erase($name)
+    static function erase($name, $expire = null, $domain = null, $path = null)
     {
-        setcookie($name, '', 1);
-        setcookie($name . '_digest', '', 1);
+        self::set($name, '', 1, $domain, $path);
+        self::set($name . '_digest', '', 1, $domain, $path);
     }
 
     private static $salt = 'Use cookie::start to initialize salt with unique string';
