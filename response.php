@@ -14,6 +14,11 @@ class response
         $this->headers['Location'] = $url;
     }
 
+    function content($content)
+    {
+        $this->content = $content;
+    }
+
     function flush()
     {
         header('HTTP/' . $this->version . ' ' . $this->code . ' ' . $this->message);
@@ -21,6 +26,7 @@ class response
         {
             header("$name: $value");
         }
+        echo $this->content;
     }
 
     function xml()
@@ -32,6 +38,7 @@ class response
     private $code;
     private $message;
     private $headers = array();
+    private $content = '';
 }
 
 ?>

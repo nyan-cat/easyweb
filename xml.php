@@ -424,9 +424,19 @@ class xml implements ArrayAccess
         return $result instanceof DOMNodeList ? $result->item(0)->nodeValue : $result;
     }
 
+    function query_array($expression, $context, $key, $value)
+    {
+        $result = [];
+        foreach($this->query($expression, $context) as $node)
+        {
+            $result[] = $node[$value];
+        }
+        return $result;
+    }
+
     function query_assoc($expression, $context, $key, $value)
     {
-        $result = array();
+        $result = [];
         foreach($this->query($expression, $context) as $node)
         {
             $result[$node[$key]] = $node[$value];

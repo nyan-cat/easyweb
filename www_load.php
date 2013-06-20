@@ -135,6 +135,31 @@ foreach($config->query('/config/procedures//procedure[@datasource = "geoip"]') a
     ));
 }
 
+foreach($config->query('/config/datasources//datasource[@type = "http"]') as $ds)
+{
+    $datasource = new http_datasource($ds['@url'], $ds['@content-type'], $ds->attribute('username'), $ds->attribute('password'));
+
+    foreach($config->query('/config/procedures//procedure[@datasource = "' . $ds['@name'] . '"]') as $procedure)
+    {
+        $this->dispatcher->insert(new http_procedure
+        (
+            $datasource,
+            $this->vars,
+            $procedure['@name'],
+            $procedure['@method'],
+            $procedure['@url'],
+            $config->query_assoc('param', $procedure, '@name', '@type'),
+            $config->query_array('get', $procedure, '@name'),
+            $config->query_array('post', $procedure, '@name'),
+            $procedure->attribute('content-type'),
+            $procedure->attribute('empty') !== 'false',
+            $procedure->attribute('root'),
+            $procedure->attribute('permission'),
+            $procedure->attribute('cache') !== 'false'
+        ));
+    }
+}
+
 foreach($config->query('/config/datasources//datasource[@type = "foursquare"]') as $ds)
 {
     $datasource = new foursquare_datasource($ds['@client-id'], $ds['@client-secret']);
