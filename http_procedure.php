@@ -30,18 +30,18 @@ class http_procedure extends procedure
         switch($this->method)
         {
         case 'get':
-            return self::to_xml(http::get($this->url, $get, $this->username, $this->password));
+            return self::to_xml(http::get($this->url, $get, $this->datasource['username'], $this->datasource['password']));
 
         case 'post':
             {
                 $post = [];
                 foreach($this->post as $param)
                 {
-                    isset($args[$post]) or runtime_error('Unknown HTTP procedure POST parameter: ' . $param);
+                    isset($args[$param]) or runtime_error('Unknown HTTP procedure POST parameter: ' . $param);
                     $post[$param] = $args[$param];
                 }
 
-                return self::to_xml(http::post($this->url, $post, $get, $this->username, $this->password));
+                return self::to_xml(http::post($this->url, $post, $get, $this->datasource['username'], $this->datasource['password']));
             }
 
         default:

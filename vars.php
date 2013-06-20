@@ -16,7 +16,7 @@ class vars
     {
         $top = array
         (
-            'user:agent' => $_SERVER['HTTP_USER_AGENT'],
+            'user:agent' => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '',
             'user:ip'    => $_SERVER['REMOTE_ADDR']
         );
 

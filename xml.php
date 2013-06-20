@@ -390,6 +390,7 @@ class xml implements ArrayAccess
     {
         $xml = new xml();
         $xml->append(self::assoc_node($xml, $root, @json_decode($json, true)));
+        return $xml;
     }
 
     static function assoc_node($xml, $name, $assoc)
@@ -424,12 +425,12 @@ class xml implements ArrayAccess
         return $result instanceof DOMNodeList ? $result->item(0)->nodeValue : $result;
     }
 
-    function query_array($expression, $context, $key, $value)
+    function query_array($expression, $context, $name)
     {
         $result = [];
         foreach($this->query($expression, $context) as $node)
         {
-            $result[] = $node[$value];
+            $result[] = $node[$name];
         }
         return $result;
     }

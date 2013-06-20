@@ -17,8 +17,7 @@ class http_datasource implements ArrayAccess
 
     function offsetGet($offset)
     {
-        isset($this->options[$offset]) or runtime_error('Unknown HTTP datasource option: ' . $offset);
-        return $this->options[$offset];
+        return isset($this->options[$offset]) ? $this->options[$offset] : null;
     }
 
     function offsetSet($offset, $value)
