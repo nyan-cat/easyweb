@@ -14,6 +14,10 @@
         <xsl:param name="string" />
         <func:result select="php:function('wwwbase64encode', string($string))" />
     </func:function>
+    <func:function name="www:codepoints-to-string">
+        <xsl:param name="number" />
+        <func:result select="php:function('wwwcodepointstostring', string($number))" />
+    </func:function>
     <func:function name="www:crc32">
         <xsl:param name="string" />
         <func:result select="php:function('wwwcrc32', string($string))" />

@@ -6,7 +6,21 @@ class post
 {
     static function exists($name)
     {
-        return isset($_POST[$name]);
+        if(is_array($name))
+        {
+            foreach($name as $key)
+            {
+                if(!isset($_POST[$key]))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        else
+        {
+            return isset($_POST[$name]);
+        }
     }
 
     static function checkbox($name)

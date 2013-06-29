@@ -21,10 +21,9 @@ class http_procedure extends procedure
         $xml = new xml();
 
         $get = [];
-        foreach($this->get as $param)
+        foreach($this->get as $name => $value)
         {
-            isset($args[$param]) or runtime_error('Unknown HTTP procedure GET parameter: ' . $param);
-            $get[$param] = $args[$param];
+            $get[$name] = vars::apply_assoc($value, $args);
         }
 
         switch($this->method)
@@ -35,10 +34,9 @@ class http_procedure extends procedure
         case 'post':
             {
                 $post = [];
-                foreach($this->post as $param)
+                foreach($this->post as $name => $value)
                 {
-                    isset($args[$param]) or runtime_error('Unknown HTTP procedure POST parameter: ' . $param);
-                    $post[$param] = $args[$param];
+                    $post[$name] = vars::apply_assoc($value, $args);
                 }
 
                 return self::to_xml(http::post($this->url, $post, $get, $this->datasource['username'], $this->datasource['password']));

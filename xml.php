@@ -455,6 +455,11 @@ class xml implements ArrayAccess
         return new node($value !== null ? $this->xml->createElement($name, $value) : $this->xml->createElement($name));
     }
 
+    function entity($name)
+    {
+        return new node($this->xml->createEntityReference($name));
+    }
+
     function text($content)
     {
         return new node($this->xml->createTextNode($content));

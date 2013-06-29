@@ -32,10 +32,17 @@ class fs
         }
     }
 
-    static function write($filename, $content)
+    static function write($filename, $content, $append = false)
     {
         $normalized = fs::normalize($filename);
-        file_put_contents($normalized, $content);
+        if($append)
+        {
+            file_put_contents($normalized, $content, FILE_APPEND);
+        }
+        else
+        {
+            file_put_contents($normalized, $content);
+        }
     }
 
     static function modification($filename)

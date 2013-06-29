@@ -20,6 +20,14 @@ function wwwbase64encode($string)
     return base64_encode($string);
 }
 
+function wwwcodepointstostring($number)
+{
+    $xml = new xml();
+    $entity = $xml->text("&#$number;");
+    $xml->append($entity);
+    return $xml->get();
+}
+
 function wwwcrc32($string)
 {
     return crc32($string);
@@ -307,6 +315,7 @@ class xslt
             'wwwaccess',
             'wwwbase64decode',
             'wwwbase64encode',
+            'wwwcodepointstostring',
             'wwwcrc32',
             'wwwescapeuri',
             'wwwunescapeuri',
