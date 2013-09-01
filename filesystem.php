@@ -45,6 +45,17 @@ class fs
         }
     }
 
+    static function delete($filename)
+    {
+        @unlink(fs::normalize($filename));
+    }
+
+    static function checked_delete($filename)
+    {
+        fs::exists($filename) or runtime_error('File not found: ' . $filename);
+        self::delete($filename);
+    }
+
     static function modification($filename)
     {
         return filemtime(fs::normalize($filename));

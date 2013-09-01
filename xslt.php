@@ -85,6 +85,11 @@ function wwwlocale($name)
     }
 }
 
+function wwwmd5($string)
+{
+    return md5($string);
+}
+
 function wwwmorph($template, $seed)
 {
     return morpher::get($template, $seed);
@@ -140,11 +145,6 @@ function wwwpaginate($current, $count, $size)
     return $xml->get();
 }
 
-function wwwmd5($string)
-{
-    return md5($string);
-}
-
 function wwwquery($name, $args)
 {
     return xslt::top()->query($name, args::decode($args))->get();
@@ -162,12 +162,12 @@ function wwwreplace($subject, $find, $replace)
 
 function wwwrfc822($datetime)
 {
-    return date(DATE_RFC822, strtotime($datetime));
+    return @date(DATE_RFC822, is_numeric($datetime) ? $datetime : strtotime($datetime));
 }
 
 function wwwrfc2822($datetime)
 {
-    return date(DATE_RFC2822, strtotime($datetime));
+    return @date(DATE_RFC2822, is_numeric($datetime) ? $datetime : strtotime($datetime));
 }
 
 function wwwsequence($count)
@@ -324,12 +324,12 @@ class xslt
             'wwwjoin',
             'wwwlocal',
             'wwwlocale',
+            'wwwmd5',
             'wwwmorph',
             'wwwpaginate',
+            'wwwquery',
             'wwwregexreplace',
             'wwwreplace',
-            'wwwmd5',
-            'wwwquery',
             'wwwrfc822',
             'wwwrfc2822',
             'wwwsequence',

@@ -63,6 +63,29 @@ class post
         isset($_POST[$name]) or runtime_error('POST select not found: ' . $name);
         return $_POST[$name];
     }
+
+    static function each($pattern, $handler)
+    {
+        foreach($_POST as $name => $value)
+        {
+            if(preg_match('/\A' . $pattern .'\Z/', $name, $matches))
+            {
+                $params = [];
+
+                foreach($matches as $n => $match)
+                {
+                    if($n != 0)
+                    {
+                        $params[] = $match;
+                    }
+                }
+
+                $params[] = $value;
+
+                call_user_func_array($handler, $params);
+            }
+        }
+    }
 }
 
 ?>
