@@ -81,7 +81,7 @@ class www
         return $this->access->query($expression, $doc, $context);
     }
 
-    function request($url, &$response = null)
+    function request($url, &$response = null, $remove_a = true)
     {
         $page = $this->router->match($url, $args);
         if(!$page)
@@ -96,7 +96,7 @@ class www
         $this->insert_variable('page:name', $page->name());
         $response = new response($page->code(), $page->message(), $page->content_type());
         $xml = $this->render($page, $response);
-        if($xml)
+        if($xml && $remove_a)
         {
             foreach($xml->query('//a') as $a)
             {

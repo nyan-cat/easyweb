@@ -228,7 +228,6 @@ function wwwsplit($subject, $pattern)
     $xml = new xml();
     foreach(preg_split("/$pattern/", $subject) as $string)
     {
-        var_dump($string);
         $xml->append($xml->text($string));
     }
     return $xml->get();

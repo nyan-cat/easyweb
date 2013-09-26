@@ -7,16 +7,14 @@ foreach($config->query('/config/vars//var') as $var)
     $this->vars->insert($var['@name'], $var['@value']);
 }
 
-function load_sql_procedures($config, $vars, $types, $drivers)
+function load_sql_procedures($config, $vars, $drivers)
 {
     $procedures = array();
-    foreach($types as $type)
+    foreach($drivers as $easyweb => $pdo)
     {
-        $driver = $drivers[$type];
-
-        foreach($config->query('/config/datasources//datasource[@type = "' . $driver . '"]') as $ds)
+        foreach($config->query('/config/datasources//datasource[@type = "' . $easyweb . '"]') as $ds)
         {
-            $datasource = new sql_datasource($driver, $ds['@server'], $ds['@username'], $ds['@password'], $ds['@database'], $ds['@charset']);
+            $datasource = new sql_datasource($pdo, $ds['@server'], $ds['@username'], $ds['@password'], $ds['@database'], $ds['@charset']);
 
             foreach($config->query('/config/procedures//procedure[@datasource = "' . $ds['@name'] . '"]') as $procedure)
             {
@@ -59,22 +57,8 @@ function load_template($config, $node)
     }
 }
 
-foreach(load_sql_procedures($config, $this->vars, array
-(
-    'cubrid',
-    'dblib',
-    'firebird',
-    'ibm',
-    'informix',
-    'mysql',
-    'oracle',
-    'odbc',
-    'postgresql',
-    'sqlite',
-    'mssql',
-    '4d'
-), array
-(
+foreach(load_sql_procedures($config, $this->vars,
+[
     'cubrid'     => 'cubrid',
     'dblib'      => 'dblib',
     'firebird'   => 'firebird',
@@ -87,7 +71,7 @@ foreach(load_sql_procedures($config, $this->vars, array
     'sqlite'     => 'sqlite',
     'mssql'      => 'sqlsrv',
     '4d'         => '4d'
-)) as $procedure)
+]) as $procedure)
 {
     $this->dispatcher->insert($procedure);
 };
