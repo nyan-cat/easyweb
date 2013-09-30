@@ -1,6 +1,6 @@
 <?php
 
-require_once('exception.php');
+require_once('datatype.php');
 
 class procedure
 {
@@ -10,21 +10,10 @@ class procedure
         $this->required = $required;
     }
 
-    function validate($params)
-    {
-        foreach($params as $name => $value)
-        {
-            validate::assert($this->params[$name], $value);
-        }
-    }
-
     function query($args)
     {
-        $result = $this->query_direct($args);
-        if(empty($result) and $this->required)
-        {
-            backend_error('bad_input', 'Empty response from procedure');
-        }
+        $this->validate($args);
+        return $this->query_direct($args);
     }
 
     static function mangle($name, $params)
@@ -32,8 +21,16 @@ class procedure
         return $name . '[' . implode(',', array_keys($params)) . ']';
     }
 
+    private function validate($args)
+    {
+        foreach($args as $name => $value)
+        {
+            datatype::assert($this->params[$name], $value);
+        }
+    }
+
     private $params;
-    private $required;
+    protected $required;
 }
 
 ?>

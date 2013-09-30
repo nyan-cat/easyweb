@@ -26,6 +26,12 @@ class sql
         $this->get()->setAttribute(PDO::ATTR_AUTOCOMMIT, true) or $this->error('SQL autocommit enabling failed');
     }
 
+    function rollback()
+    {
+        $this->get()->rollBack() or $this->error('SQL transaction rollback failed');
+        $this->get()->setAttribute(PDO::ATTR_AUTOCOMMIT, true) or $this->error('SQL autocommit enabling failed');
+    }
+
     function query($query)
     {
         if($result = $this->get()->query($query))

@@ -1,5 +1,8 @@
 <?php
 
+require_once('datatype.php');
+require_once('security.php');
+
 class method
 {
     function __construct($params, $action, $www)
@@ -25,17 +28,23 @@ class method
 
     function call($args)
     {
-        foreach($this->params as $name => $type)
+        foreach($this->params as $name => $param)
         {
-            isset($params[$name]) or backend_error('bad_input', "Missing parameter: $name");
-            preg_match($type['pattern'], $params[$name]) or backend_error('bad_input', "Parameter type mismatch: $name: " . $type['pattern'] . ' -> ' . $params[$name]);
-            if($type['secured'])
+            isset($args[$name]) or backend_error('bad_input', "Missing parameter: $name");
+            datatype::assert($param['type'], $args[$name]);
+
+            if($param['secure'])
             {
-                security::assert($params[$name]['value'], $params[$name]['digest']);
+                $args[$name] = security::unwrap($args[$name]);
             }
         }
 
         return $this->action->__invoke($args);
+    }
+
+    function schema()
+    {
+        return empty($this->params) ? (object) null : $this->params;
     }
 
     private $params;

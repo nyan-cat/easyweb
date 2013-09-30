@@ -10,32 +10,14 @@ class dispatcher
         $this->procedures[$mangled] = $procedure;
     }
 
-    function query($name, $params)
+    function query($name, $args)
     {
-        return $this->get($name, $params)->query($params);
+        return $this->get($name, $args)->query($args);
     }
 
-    function evaluate($name, $params)
+    function get($name, $args)
     {
-        $fetch = function($entity) use(&$fetch)
-        {
-            if(is_array($entity))
-            {
-                (count($entity) == 1 and isset($entity[0])) or backend_error('bad_query', 'Query result is not evaluateable');
-                return $fetch($entity[0]);
-            }
-            else
-            {
-                return $entity;
-            }
-        };
-
-        return $fetch($this->query($name, $params));
-    }
-
-    function get($name, $params)
-    {
-        $mangled = procedure::mangle($name, $params);
+        $mangled = procedure::mangle($name, $args);
         isset($this->procedures[$mangled]) or backend_error('bad_query', "Unknown procedure: $mangled");
         return $this->procedures[$mangled];
     }

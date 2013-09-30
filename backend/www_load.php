@@ -2,18 +2,14 @@
 
 $config = xml::load(config_location);
 
-foreach($config->query('/config/methods//method') as $method)
+if($schema = $config->root()->attribute('schema'))
 {
-    $params = [];
+    $this->schema = $schema;
+}
 
-    if($method->attribute('procedure'))
-    {
-        $this->methods[$method['@url']] = new method($params, $this->dispatcher->get($method['@procedure'], $params), $this);
-    }
-    else
-    {
-        $this->methods[$method['@url']] = new method($params, $method['@script'], $this);
-    }
+if($documentation = $config->root()->attribute('documentation'))
+{
+    $this->documentation = $documentation;
 }
 
 foreach(sql::drivers() as $type => $internal)
@@ -35,6 +31,37 @@ foreach(sql::drivers() as $type => $internal)
             ));
         }
     }
+}
+
+foreach($config->query('/config/methods//method') as $method)
+{
+    $params = [];
+
+    $url = $method['@url'];
+
+    if($procedure = $method->attribute('procedure'))
+    {
+        $action = $this->dispatcher->get($procedure, $params);
+    }
+    else if($script = $method->attribute('script'))
+    {
+        $action = $script;
+    }
+    else
+    {
+        backend_error('bad_config', "Unknown method type: $url");
+    }
+
+    foreach($config->query('param', $method) as $param)
+    {
+        $params[$param['@name']] =
+        [
+            'type'   => $param['@type'],
+            'secure' => $param->attribute('secure') === 'true'
+        ];
+    }
+
+    $this->methods[$url] = new method($params, $action, $this);
 }
 
 /*foreach($config->query('/config/datasources//datasource[@type = "solr"]') as $ds)

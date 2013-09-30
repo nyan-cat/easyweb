@@ -14,11 +14,9 @@ class sql_procedure extends procedure
 
     function query_direct($args)
     {
-        $this->validate($args);
-
-        if(is_array($this->body))
+        if(!is_array($this->body))
         {
-            $result = $sql->query($this->apply($this->body, $args));
+            $result = $this->sql->query($this->apply($this->body, $args));
             !($this->required and empty($result)) or backend_error('bad_query', 'SQL procedure returned empty result');
         }
         else
@@ -29,10 +27,18 @@ class sql_procedure extends procedure
 
             foreach($this->body as $query)
             {
-                $result[] = $sql->query($this->apply($query, $args));
+                $result[] = $this->sql->query($this->apply($query, $args));
             }
 
-            $sql->commit();
+            if(empty($result) and $this->required)
+            {
+                $this->sql->rollback();
+                backend_error('bad_input', 'Empty response from SQL procedure');
+            }
+            else
+            {
+                $this->sql->commit();
+            }
         }
 
         return $result;
