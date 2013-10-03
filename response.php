@@ -14,9 +14,16 @@ class response
         $this->headers['Location'] = $url;
     }
 
-    function content($content)
+    function content($content = null)
     {
-        $this->content = $content;
+        if($content)
+        {
+            $this->content = $content;
+        }
+        else
+        {
+            return $this->content;
+        }
     }
 
     function flush()

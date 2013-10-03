@@ -35,7 +35,8 @@ foreach(sql::drivers() as $type => $internal)
 
 foreach($config->query('/config/methods//method') as $method)
 {
-    $params = [];
+    $get = [];
+    $post = [];
 
     $url = $method['@url'];
 
@@ -52,16 +53,27 @@ foreach($config->query('/config/methods//method') as $method)
         backend_error('bad_config', "Unknown method type: $url");
     }
 
-    foreach($config->query('param', $method) as $param)
+    foreach($config->query('get', $method) as $param)
     {
-        $params[$param['@name']] =
+        $get[$param['@name']] =
         [
             'type'   => $param['@type'],
             'secure' => $param->attribute('secure') === 'true'
         ];
     }
 
-    $this->methods[$url] = new method($params, $action, $this);
+    foreach($config->query('post', $method) as $param)
+    {
+        !isset($get[$param['@name']]) or backend_error('bad_config', 'Duplicate parameter name for method ' . $url . ': ' . $param['@name']);
+
+        $post[$param['@name']] =
+        [
+            'type'   => $param['@type'],
+            'secure' => $param->attribute('secure') === 'true'
+        ];
+    }
+
+    $this->methods[$url] = new method($method['@type'], $get, $post, $action, $this);
 }
 
 /*foreach($config->query('/config/datasources//datasource[@type = "solr"]') as $ds)

@@ -5,9 +5,12 @@ require_once('security.php');
 
 class method
 {
-    function __construct($params, $action, $www)
+    function __construct($type, $get, $post, $action, $www)
     {
-        $this->params = $params;
+        $this->type = $type;
+        $this->get = $get;
+        $this->post = $post;
+        $this->params = array_merge($get, $post);
 
         if(is_string($action))
         {
@@ -42,11 +45,24 @@ class method
         return $this->action->__invoke($args);
     }
 
-    function schema()
+    function match($type, $get, $post)
     {
-        return empty($this->params) ? (object) null : $this->params;
+        return $this->type == $type and sort(array_keys($this->get)) == sort(array_keys($get)) and sort(array_keys($this->post)) == sort(array_keys($post));
     }
 
+    function assert($type, $get, $post)
+    {
+        $this->match($type, $get, $post) or backend_error('bad_request', 'Request parameters doesn\'t match to schema');
+    }
+
+    function schema()
+    {
+        return [$this->type, $this->get, $this->post];
+    }
+
+    private $type;
+    private $get;
+    private $post;
     private $params;
     private $action;
 }

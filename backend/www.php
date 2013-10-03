@@ -4,6 +4,8 @@ require_once(www_root . 'xml.php');
 require_once(www_root . 'backend/method.php');
 require_once(www_root . 'backend/sql.php');
 require_once(www_root . 'backend/sql_procedure.php');
+require_once(www_root . 'backend/foursquare.php');
+require_once(www_root . 'backend/foursquare_procedure.php');
 require_once(www_root . 'backend/dispatcher.php');
 
 class www
@@ -16,13 +18,14 @@ class www
         include('www_load.php');
     }
 
-    function call($url, $args)
+    function request($type, $url, $post = [])
     {
         $query = parse_url($url);
         $path = $query['path'];
 
         if(isset($this->methods[$path]))
         {
+            $method = $this->methods[$path];
             $get = [];
 
             if(isset($query['query']))
@@ -32,7 +35,8 @@ class www
 
             try
             {
-                return $this->success->__invoke( $this->methods[$path]->call(array_merge($args, $get)) );
+                $method->assert($type, $get, $post);
+                return $this->success->__invoke( $method->call(array_merge($get, $post)) );
             }
             catch(Exception $e)
             {
@@ -64,11 +68,25 @@ class www
                 $method['@url'] = $url;
                 $methods->append($method);
 
-                foreach($m->schema() as $name => $param)
+                list($type, $get, $post) = $m->schema();
+
+                $method['@type'] = strtoupper($type);
+
+                foreach($get as $name => $param)
                 {
-                    $p = $xml->element('param');
+                    $g = $xml->element('get');
+                    $g['@name'] = $name;
+                    $g['@type'] = $param['type'];
+                    $g['@secure'] = $param['secure'] ? 'true' : 'false';
+                    $method->append($g);
+                }
+
+                foreach($post as $name => $param)
+                {
+                    $p = $xml->element('post');
                     $p['@name'] = $name;
                     $p['@type'] = $param['type'];
+                    $p['@secure'] = $param['secure'] ? 'true' : 'false';
                     $method->append($p);
                 }
             }
@@ -112,6 +130,11 @@ class www
         };
 
         return $fetch($this->query($name, $args));
+    }
+
+    function __call($name, $args)
+    {
+        return $this->query($name, $args[0]);
     }
 
     static function encode($object)
