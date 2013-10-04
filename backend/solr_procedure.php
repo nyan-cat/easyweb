@@ -2,11 +2,11 @@
 
 class solr_procedure extends procedure
 {
-    function __construct($params, $required, $solr, $core, $method, $body, $order_by, $offset = null, $count = null)
+    function __construct($name, $params, $required, $solr, $core, $method, $body, $order_by, $offset = null, $count = null)
     {
         in_array($method, ['add', 'delete', 'query']) or backend_error('bad_config', "Unknown Solr method: $method");
 
-        parent::__construct($params, $required);
+        parent::__construct($params, self::make_id($name, $params), $required);
 
         $this->solr = $solr;
         $this->core = $core;

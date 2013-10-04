@@ -2,14 +2,23 @@
 
 class foursquare_procedure extends procedure
 {
-    function __construct($method, $required, $foursquare)
+    function __construct($name, $method, $required, $foursquare)
     {
         switch($method)
         {
-        case 'photos': parent::__construct(['venue_id' => 'string'], $required); break;
-        case 'venues': parent::__construct(['latitude' => 'real', 'longitude' => 'real'], $required); break;
-        default: backend_error('bad_config', "Unknown Foursquare method: $method");
+        case 'photos':
+            $params = ['venue_id' => 'string'];
+            break;
+
+        case 'venues':
+            $params = ['latitude' => 'real', 'longitude' => 'real'];
+            break;
+
+        default:
+            backend_error('bad_config', "Unknown Foursquare method: $method");
         }
+
+        parent::__construct($params, self::make_id($name, $params), $required);
 
         $this->method = $method;
         $this->foursquare = $foursquare;
@@ -65,6 +74,8 @@ class foursquare_procedure extends procedure
                 }
             }
 
+            !(empty($photos) and $this->required) or backend_error('bad_input', 'Empty response from Froursquare procedure');
+
             return $photos;
 
         case 'venues':
@@ -107,6 +118,8 @@ class foursquare_procedure extends procedure
                     }
                 }
             }
+
+            !(empty($venues) and $this->required) or backend_error('bad_input', 'Empty response from Froursquare procedure');
             
             return $venues;
         }

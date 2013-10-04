@@ -223,6 +223,7 @@
                         <tr>
                             <th>Name</th>
                             <th>Type</th>
+                            <th>Required</th>
                             <th>Secure</th>
                             <th>Description</th>
                         </tr>
@@ -230,6 +231,7 @@
                             <tr>
                                 <td><xsl:value-of select="@name" /></td>
                                 <td><xsl:value-of select="@type" /></td>
+                                <td><xsl:choose><xsl:when test="@required = 'true'"><b>true</b></xsl:when><xsl:otherwise><span class="inactive">false</span></xsl:otherwise></xsl:choose></td>
                                 <td><xsl:choose><xsl:when test="@secure = 'true'"><b>true</b></xsl:when><xsl:otherwise><span class="inactive">false</span></xsl:otherwise></xsl:choose></td>
                                 <td width="100%"><xsl:if test="string-length(description) = 0"><span class="inactive">—</span></xsl:if></td>
                             </tr>
@@ -244,6 +246,7 @@
                         <tr>
                             <th>Name</th>
                             <th>Type</th>
+                            <th>Required</th>
                             <th>Secure</th>
                             <th>Description</th>
                         </tr>
@@ -251,6 +254,7 @@
                             <tr>
                                 <td><xsl:value-of select="@name" /></td>
                                 <td><xsl:value-of select="@type" /></td>
+                                <td><xsl:choose><xsl:when test="@required = 'true'"><b>true</b></xsl:when><xsl:otherwise><span class="inactive">false</span></xsl:otherwise></xsl:choose></td>
                                 <td><xsl:choose><xsl:when test="@secure = 'true'"><b>true</b></xsl:when><xsl:otherwise><span class="inactive">false</span></xsl:otherwise></xsl:choose></td>
                                 <td width="100%"><xsl:if test="string-length(description) = 0"><span class="inactive">—</span></xsl:if></td>
                             </tr>

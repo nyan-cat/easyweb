@@ -4,10 +4,11 @@ require_once('exception.php');
 
 class dispatcher
 {
-    function insert($mangled, $procedure)
+    function insert($procedure)
     {
-        !isset($this->procedures[$mangled]) or backend_error('bad_config', "Duplicate procedure: $mangled");
-        $this->procedures[$mangled] = $procedure;
+        $id = $procedure->id();
+        !isset($this->procedures[$id]) or backend_error('bad_config', "Duplicate procedure: $id");
+        $this->procedures[$id] = $procedure;
     }
 
     function query($name, $args)
@@ -17,9 +18,9 @@ class dispatcher
 
     function get($name, $args)
     {
-        $mangled = procedure::mangle($name, $args);
-        isset($this->procedures[$mangled]) or backend_error('bad_query', "Unknown procedure: $mangled");
-        return $this->procedures[$mangled];
+        $id = procedure::make_id($name, $args);
+        isset($this->procedures[$id]) or backend_error('bad_query', "Unknown procedure: $id");
+        return $this->procedures[$id];
     }
 
     private $procedures = [];

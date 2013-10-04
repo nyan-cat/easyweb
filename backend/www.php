@@ -4,6 +4,8 @@ require_once(www_root . 'xml.php');
 require_once(www_root . 'backend/method.php');
 require_once(www_root . 'backend/sql.php');
 require_once(www_root . 'backend/sql_procedure.php');
+require_once(www_root . 'backend/solr.php');
+require_once(www_root . 'backend/solr_procedure.php');
 require_once(www_root . 'backend/foursquare.php');
 require_once(www_root . 'backend/foursquare_procedure.php');
 require_once(www_root . 'backend/dispatcher.php');
@@ -77,6 +79,7 @@ class www
                     $g = $xml->element('get');
                     $g['@name'] = $name;
                     $g['@type'] = $param['type'];
+                    $g['@required'] = $param['required'] ? 'true' : 'false';
                     $g['@secure'] = $param['secure'] ? 'true' : 'false';
                     $method->append($g);
                 }
@@ -86,6 +89,7 @@ class www
                     $p = $xml->element('post');
                     $p['@name'] = $name;
                     $p['@type'] = $param['type'];
+                    $p['@required'] = $param['required'] ? 'true' : 'false';
                     $p['@secure'] = $param['secure'] ? 'true' : 'false';
                     $method->append($p);
                 }

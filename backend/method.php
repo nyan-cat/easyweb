@@ -17,7 +17,7 @@ class method
             $this->action = function($args) use($action, $www)
             {
                 include(fs::normalize($action));
-                return call_user_func_array(Closure::bind($action, $www), $args);
+                return call_user_func(Closure::bind($action, $www), $args);
             };
         }
         else
@@ -33,7 +33,7 @@ class method
     {
         foreach($this->params as $name => $param)
         {
-            isset($args[$name]) or backend_error('bad_input', "Missing parameter: $name");
+            (isset($args[$name]) or !$param['required']) or backend_error('bad_input', "Missing parameter: $name");
             datatype::assert($param['type'], $args[$name]);
 
             if($param['secure'])

@@ -4,9 +4,10 @@ require_once('datatype.php');
 
 class procedure
 {
-    function __construct($params, $required = true)
+    function __construct($params, $id, $required)
     {
         $this->params = $params;
+        $this->id = $id;
         $this->required = $required;
     }
 
@@ -16,7 +17,12 @@ class procedure
         return $this->query_direct($args);
     }
 
-    static function mangle($name, $params)
+    function id()
+    {
+        return $this->id;
+    }
+
+    static function make_id($name, $params)
     {
         return $name . '[' . implode(',', array_keys($params)) . ']';
     }
@@ -30,6 +36,7 @@ class procedure
     }
 
     private $params;
+    protected $id;
     protected $required;
 }
 

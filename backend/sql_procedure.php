@@ -4,9 +4,9 @@ require_once('procedure.php');
 
 class sql_procedure extends procedure
 {
-    function __construct($params, $required, $body, $sql)
+    function __construct($name, $params, $required, $body, $sql)
     {
-        parent::__construct($params, $required);
+        parent::__construct($params, self::make_id($name, $params), $required);
         $body = explode(';', trim(trim($body), ';'));
         $this->body = count($body) == 1 ? $body[0] : $body;
         $this->sql = $sql;
