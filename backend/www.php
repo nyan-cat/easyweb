@@ -8,6 +8,7 @@ require_once(www_root . 'backend/solr.php');
 require_once(www_root . 'backend/solr_procedure.php');
 require_once(www_root . 'backend/foursquare.php');
 require_once(www_root . 'backend/foursquare_procedure.php');
+require_once(www_root . 'backend/geoip_procedure.php');
 require_once(www_root . 'backend/dispatcher.php');
 
 class www
@@ -37,8 +38,7 @@ class www
 
             try
             {
-                $method->assert($type, $get, $post);
-                return $this->success->__invoke( $method->call(array_merge($get, $post)) );
+                return $this->success->__invoke( $method->call($get, $post) );
             }
             catch(Exception $e)
             {
@@ -51,7 +51,11 @@ class www
 
             foreach($this->methods as $url => $method)
             {
-                $schema[$url] = $method->schema();
+                list($type, $get, $post) = $method->schema();
+                $m = ['type' => $type];
+                empty($get) or $m['get'] = $get;
+                empty($post) or $m['post'] = $post;
+                $schema[$url] = $m;
             }
 
             return self::encode($schema);
@@ -79,7 +83,10 @@ class www
                     $g = $xml->element('get');
                     $g['@name'] = $name;
                     $g['@type'] = $param['type'];
+                    $g['@min'] = isset($param['min']) ? $param['min'] : 'default (' . datatype::min($param['type']) . ')';
+                    $g['@max'] = isset($param['max']) ? $param['max'] : 'default (' . datatype::max($param['type']) . ')';
                     $g['@required'] = $param['required'] ? 'true' : 'false';
+                    !isset($param['default']) or $g['@default'] = $param['default'];
                     $g['@secure'] = $param['secure'] ? 'true' : 'false';
                     $method->append($g);
                 }
@@ -89,7 +96,10 @@ class www
                     $p = $xml->element('post');
                     $p['@name'] = $name;
                     $p['@type'] = $param['type'];
+                    $p['@min'] = isset($param['min']) ? $param['min'] : 'default (' . datatype::min($param['type']) . ')';
+                    $p['@max'] = isset($param['max']) ? $param['max'] : 'default (' . datatype::max($param['type']) . ')';
                     $p['@required'] = $param['required'] ? 'true' : 'false';
+                    !isset($param['default']) or $p['@default'] = $param['default'];
                     $p['@secure'] = $param['secure'] ? 'true' : 'false';
                     $method->append($p);
                 }

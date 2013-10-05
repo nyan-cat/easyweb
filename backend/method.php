@@ -10,14 +10,31 @@ class method
         $this->type = $type;
         $this->get = $get;
         $this->post = $post;
-        $this->params = array_merge($get, $post);
 
         if(is_string($action))
         {
-            $this->action = function($args) use($action, $www)
+            $this->action = function($get, $post) use($action, $www)
             {
                 include(fs::normalize($action));
-                return call_user_func(Closure::bind($action, $www), $args);
+                $reflection = new ReflectionFunction($action);
+                $arguments = $reflection->getParameters();
+                if($arguments and $arguments[0]->isArray())
+                {
+                    return call_user_func(Closure::bind($action, $www), array_merge($get, $post));
+                }
+                else
+                {
+                    $args = [];
+                    foreach($this->get as $name => $param)
+                    {
+                        $args[] = isset($get[$name]) ? $get[$name] : (isset($param['default']) ? $param['default'] : null);
+                    }
+                    foreach($this->post as $name => $param)
+                    {
+                        $args[] = isset($post[$name]) ? $post[$name] : (isset($param['default']) ? $param['default'] : null);
+                    }
+                    return call_user_func_array(Closure::bind($action, $www), $args);
+                }
             };
         }
         else
@@ -27,32 +44,47 @@ class method
                 return $action->query($args);
             };
         }
+
+        $this->action = $this->action->bindTo($this, $this);
     }
 
-    function call($args)
+    function call($get, $post)
     {
-        foreach($this->params as $name => $param)
+        foreach($this->get as $name => $param)
         {
-            (isset($args[$name]) or !$param['required']) or backend_error('bad_input', "Missing parameter: $name");
-            datatype::assert($param['type'], $args[$name]);
+            if(isset($get[$name]))
+            {
+                datatype::assert($param['type'], $get[$name]);
+            }
+            else
+            {
+                !$param['required'] or isset($param['default']) or backend_error('bad_input', "Missing GET parameter: $name");
+            }
 
             if($param['secure'])
             {
-                $args[$name] = security::unwrap($args[$name]);
+                $get[$name] = security::unwrap($get[$name]);
             }
         }
 
-        return $this->action->__invoke($args);
-    }
+        foreach($this->post as $name => $param)
+        {
+            if(isset($post[$name]))
+            {
+                datatype::assert($param['type'], $post[$name]);
+            }
+            else
+            {
+                !$param['required'] or isset($param['default']) or backend_error('bad_input', "Missing POST parameter: $name");
+            }
 
-    function match($type, $get, $post)
-    {
-        return $this->type == $type and sort(array_keys($this->get)) == sort(array_keys($get)) and sort(array_keys($this->post)) == sort(array_keys($post));
-    }
+            if($param['secure'])
+            {
+                $post[$name] = security::unwrap($post[$name]);
+            }
+        }
 
-    function assert($type, $get, $post)
-    {
-        $this->match($type, $get, $post) or backend_error('bad_request', 'Request parameters doesn\'t match to schema');
+        return $this->action->__invoke($get, $post);
     }
 
     function schema()
@@ -63,7 +95,6 @@ class method
     private $type;
     private $get;
     private $post;
-    private $params;
     private $action;
 }
 

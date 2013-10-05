@@ -126,24 +126,78 @@ foreach($config->query('/config/methods//method') as $method)
 
     foreach($config->query('get', $method) as $param)
     {
-        $get[$param['@name']] =
+        $p =
         [
-            'type'     => $param['@type'],
-            'required' => $param->attribute('required') !== 'false',
-            'secure'   => $param->attribute('secure') === 'true'
+            'type'   => $param['@type'],
+            'secure' => $param->attribute('secure') === 'true'
         ];
+
+        if($min = $param->attribute('min'))
+        {
+            $p['min'] = $min;
+        }
+
+        if($max = $param->attribute('max'))
+        {
+            $p['max'] = $max;
+        }
+
+        if($default = $param->attribute('default'))
+        {
+            $p['default'] = $default;
+            is_null($param->attribute('required')) or backend_error('bad_config', 'Default and required attributes should not be specified both for the same parameter: ' . $url . ' -> ' . $param['@name']);
+            $p['required'] = false;
+        }
+        else
+        {
+            $p['required'] = $param->attribute('required') !== 'false';
+        }
+
+        if($p['secure'] and (!$p['required'] or isset($p['default'])))
+        {
+            backend_error('bad_config', 'Secure parameter cannot be required either have default value');
+        }
+
+        $get[$param['@name']] = $p;
     }
 
     foreach($config->query('post', $method) as $param)
     {
         !isset($get[$param['@name']]) or backend_error('bad_config', 'Duplicate parameter name for method ' . $url . ': ' . $param['@name']);
 
-        $post[$param['@name']] =
+        $p =
         [
-            'type'     => $param['@type'],
-            'required' => $param->attribute('required') !== 'false',
-            'secure'   => $param->attribute('secure') === 'true'
+            'type'   => $param['@type'],
+            'secure' => $param->attribute('secure') === 'true'
         ];
+
+        if($min = $param->attribute('min'))
+        {
+            $p['min'] = $min;
+        }
+
+        if($max = $param->attribute('max'))
+        {
+            $p['max'] = $max;
+        }
+
+        if($default = $param->attribute('default'))
+        {
+            $p['default'] = $default;
+            is_null($param->attribute('required')) or backend_error('bad_config', 'Default and required attributes should not be specified both for the same parameter: ' . $url . ' -> ' . $param['@name']);
+            $p['required'] = false;
+        }
+        else
+        {
+            $p['required'] = $param->attribute('required') !== 'false';
+        }
+
+        if($p['secure'] and (!$p['required'] or isset($p['default'])))
+        {
+            backend_error('bad_config', 'Secure parameter cannot be required either have default value');
+        }
+
+        $post[$param['@name']] = $p;
     }
 
     $this->methods[$url] = new method($method['@type'], $get, $post, $action, $this);

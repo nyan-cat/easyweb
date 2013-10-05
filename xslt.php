@@ -48,6 +48,12 @@ function wwwevaluate($name, $args)
     return xslt::top()->evaluate($name, args::decode($args));
 }
 
+function wwwformatmoney($money)
+{
+    $locale = localeconv();
+    return number_format((float)$money, 2, $locale['decimal_point'], ' ');
+}
+
 function wwwformatnumber($number)
 {
     return number_format($number, 0, '', ' ');
@@ -319,6 +325,7 @@ class xslt
             'wwwescapeuri',
             'wwwunescapeuri',
             'wwwevaluate',
+            'wwwformatmoney',
             'wwwformatnumber',
             'wwwjoin',
             'wwwlocal',

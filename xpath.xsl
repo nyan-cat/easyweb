@@ -35,6 +35,10 @@
         <xsl:param name="args" select="''" />
         <func:result select="php:function('wwwevaluate', $name, string($args))" />
     </func:function>
+    <func:function name="www:format-money">
+        <xsl:param name="money" />
+        <func:result select="php:function('wwwformatmoney', string($money))" />
+    </func:function>
     <func:function name="www:format-number">
         <xsl:param name="number" />
         <func:result select="php:function('wwwformatnumber', string($number))" />

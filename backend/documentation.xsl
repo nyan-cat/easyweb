@@ -163,6 +163,7 @@
                     td
                     {
                         padding: 0;
+                        white-space: nowrap;
                     }
 
                     .table
@@ -176,7 +177,7 @@
                     {
                         border-bottom: 1px solid #ddd;
                         border-right: 1px solid #ddd;
-                        padding: 0.75em;
+                        padding: 0.75em 2em 0.75em 0.75em;
                     }
 
                     .table th:last-child, .table td:last-child
@@ -223,17 +224,48 @@
                         <tr>
                             <th>Name</th>
                             <th>Type</th>
+                            <th>Min</th>
+                            <th>Max</th>
                             <th>Required</th>
+                            <th>Default</th>
                             <th>Secure</th>
-                            <th>Description</th>
                         </tr>
                         <xsl:for-each select="get">
                             <tr>
-                                <td><xsl:value-of select="@name" /></td>
+                                <td width="100%"><xsl:value-of select="@name" /></td>
                                 <td><xsl:value-of select="@type" /></td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when test="number(@min) = @min">
+                                            <b><xsl:value-of select="@min" /></b>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <span class="inactive"><xsl:value-of select="@min" /></span>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when test="number(@max) = @max">
+                                            <b><xsl:value-of select="@max" /></b>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <span class="inactive"><xsl:value-of select="@max" /></span>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
                                 <td><xsl:choose><xsl:when test="@required = 'true'"><b>true</b></xsl:when><xsl:otherwise><span class="inactive">false</span></xsl:otherwise></xsl:choose></td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when test="@default">
+                                            <b><xsl:value-of select="@default" /></b>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <span class="inactive">—</span>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
                                 <td><xsl:choose><xsl:when test="@secure = 'true'"><b>true</b></xsl:when><xsl:otherwise><span class="inactive">false</span></xsl:otherwise></xsl:choose></td>
-                                <td width="100%"><xsl:if test="string-length(description) = 0"><span class="inactive">—</span></xsl:if></td>
                             </tr>
                         </xsl:for-each>
                     </table>
@@ -246,17 +278,47 @@
                         <tr>
                             <th>Name</th>
                             <th>Type</th>
+                            <th>Min</th>
+                            <th>Max</th>
                             <th>Required</th>
+                            <th>Default</th>
                             <th>Secure</th>
-                            <th>Description</th>
                         </tr>
                         <xsl:for-each select="post">
                             <tr>
-                                <td><xsl:value-of select="@name" /></td>
+                                <td width="100%"><xsl:value-of select="@name" /></td>
                                 <td><xsl:value-of select="@type" /></td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when test="number(@min) = @min">
+                                            <b><xsl:value-of select="@min" /></b>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <span class="inactive"><xsl:value-of select="@min" /></span>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when test="number(@max) = @max">
+                                            <b><xsl:value-of select="@max" /></b>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <span class="inactive"><xsl:value-of select="@max" /></span>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
                                 <td><xsl:choose><xsl:when test="@required = 'true'"><b>true</b></xsl:when><xsl:otherwise><span class="inactive">false</span></xsl:otherwise></xsl:choose></td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when test="@default">
+                                            <b><xsl:value-of select="@default" /></b>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <span class="inactive">—</span>
+                                        </xsl:otherwise>
+                                    </xsl:choose></td>
                                 <td><xsl:choose><xsl:when test="@secure = 'true'"><b>true</b></xsl:when><xsl:otherwise><span class="inactive">false</span></xsl:otherwise></xsl:choose></td>
-                                <td width="100%"><xsl:if test="string-length(description) = 0"><span class="inactive">—</span></xsl:if></td>
                             </tr>
                         </xsl:for-each>
                     </table>
