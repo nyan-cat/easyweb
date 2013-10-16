@@ -115,6 +115,7 @@
                         border-radius: 0.25em;
                         font-family: "Courier new";
                         margin: 0;
+                        overflow: auto;
                         padding: 1em;
                         text-align: left;
                     }
@@ -129,7 +130,6 @@
                     {
                         background-color: #efd;
                         padding: 1em;
-                        margin-bottom: 1em;
                     }
 
                     input
@@ -270,9 +270,16 @@
 
                             if($(this).data("type").toLowerCase() == "get")
                             {
-                                $.get($(this).find(".url").val(), function(data)
+                                $.get($(this).find(".url").val(), function(data, textStatus, jqXHR)
                                 {
-                                    $(pre).html(data);
+                                    $(pre).html('<span style="color: #666;">HTTP/1.1 ' + jqXHR.status + ' ' + jqXHR.statusText + '\r\n' + jqXHR.getAllResponseHeaders() + '</span>' + data);
+                                    if(!$(pre).is(":visible"))
+                                    {
+                                        $(pre).show("fast");
+                                    }
+                                }).fail(function(jqXHR)
+                                {
+                                    $(pre).html('<span style="color: #900;">HTTP/1.1 ' + jqXHR.status + ' ' + jqXHR.statusText + '\r\n' + jqXHR.getAllResponseHeaders() + '</span>');
                                     if(!$(pre).is(":visible"))
                                     {
                                         $(pre).show("fast");
@@ -281,9 +288,16 @@
                             }
                             if($(this).data("type").toLowerCase() == "post")
                             {
-                                $.post($(this).find(".url").val(), $(this).serialize(), function(data)
+                                $.post($(this).find(".url").val(), $(this).serialize(), function(data, textStatus, jqXHR)
                                 {
-                                    $(pre).html(data);
+                                    $(pre).html('<span style="color: #666;">HTTP/1.1 ' + jqXHR.status + ' ' + jqXHR.statusText + '\r\n' + jqXHR.getAllResponseHeaders() + '</span>' + data);
+                                    if(!$(pre).is(":visible"))
+                                    {
+                                        $(pre).show("fast");
+                                    }
+                                }).fail(function(jqXHR)
+                                {
+                                    $(pre).html('<span style="color: #900;">HTTP/1.1 ' + jqXHR.status + ' ' + jqXHR.statusText + '\r\n' + jqXHR.getAllResponseHeaders() + '</span>');
                                     if(!$(pre).is(":visible"))
                                     {
                                         $(pre).show("fast");
@@ -459,7 +473,7 @@ Host: website.com<span class="special">\r\n</span>
                             </div>
                         </form>
                     </div>
-                    <pre id="result-{@id}" class="hide"></pre>
+                    <pre id="result-{@id}" class="hide" style="margin-top: 1em;"></pre>
                 </div>
             </div>
         </div>

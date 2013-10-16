@@ -4,15 +4,17 @@ require_once('exception.php');
 
 class datatype
 {
-    static function match($name, $value)
+    static function match($name, $value, $min, $max)
     {
         isset(self::$types[$name]) or backend_error('bad_type', "Unknown type: $name");
+        !is_null($min) or $min = self::min($name);
+        !is_null($max) or $max = self::max($name);
 
         $type = self::$types[$name];
 
         $length = mb_strlen($value);
 
-        if($length < $type['min'] or $length > $type['max'])
+        if($length < $min or $length > $max)
         {
             return false;
         }
@@ -37,9 +39,9 @@ class datatype
         }
     }
 
-    static function assert($name, $value)
+    static function assert($name, $value, $min, $max)
     {
-        self::match($name, $value) or backend_error('bad_value', $value . ' doesn\'t match to ' . $name);
+        self::match($name, $value, $min, $max) or backend_error('bad_value', $value . ' doesn\'t match to ' . $name);
     }
 
     static function register($name, $min, $max, $validator)

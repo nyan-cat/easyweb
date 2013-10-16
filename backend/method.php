@@ -54,7 +54,9 @@ class method
         {
             if(isset($get[$name]))
             {
-                datatype::assert($param['type'], $get[$name]);
+                $min = isset($param['min']) ? $param['min'] : null;
+                $max = isset($param['max']) ? $param['max'] : null;
+                datatype::assert($param['type'], $get[$name], $min, $max);
             }
             else
             {
@@ -71,7 +73,9 @@ class method
         {
             if(isset($post[$name]))
             {
-                datatype::assert($param['type'], $post[$name]);
+                $min = isset($param['min']) ? $param['min'] : null;
+                $max = isset($param['max']) ? $param['max'] : null;
+                datatype::assert($param['type'], $post[$name], $min, $max);
             }
             else
             {
