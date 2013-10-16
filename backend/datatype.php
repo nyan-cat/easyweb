@@ -12,7 +12,7 @@ class datatype
 
         $length = mb_strlen($value);
 
-        if($lenth < $type['min'] or $length > $type['max'])
+        if($length < $type['min'] or $length > $type['max'])
         {
             return false;
         }

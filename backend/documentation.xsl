@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
-<xsl:stylesheet
-    version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-    xmlns:php="http://php.net/xsl"
-    xmlns:www="https://github.com/nyan-cat/easyweb"
-    exclude-result-prefixes="php www">
-
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:template match="methods">
         <html>
             <head>
+                <script type="text/javascript" src="http://code.jquery.com/jquery-1.10.2.min.js"><![CDATA[]]></script>
                 <style>
+                    *:focus
+                    {
+                        outline: none;
+                    }
+
                     body
                     {
                         background-color: #f6f8f4;
@@ -119,6 +119,64 @@
                         text-align: left;
                     }
 
+                    form
+                    {
+                        margin: 0;
+                        padding: 0;
+                    }
+
+                    .form
+                    {
+                        background-color: #efd;
+                        padding: 1em;
+                        margin-bottom: 1em;
+                    }
+
+                    input
+                    {
+                        border: 1px solid #9c9;
+                        border-radius: 0.25em;
+                        padding: 0.5em;
+                        margin-bottom: 1em;
+                        width: 20em;
+                    }
+
+                    input:focus
+                    {
+                        border-color: #0c0;
+                        box-shadow: 0 0 0.5em rgba(0, 255, 0, 0.25);
+                    }
+
+                    label
+                    {
+                        color: #696;
+                        display: inline-block;
+                        margin-right: 0.5em;
+                        text-align: right;
+                        width: 10em;
+                    }
+
+                    button
+                    {
+                        background-color: #090;
+                        border: 1px solid #060;
+                        border-radius: 0.25em;
+                        color: #fff;
+                        cursor: pointer;
+                        font-weight: bold;
+                        padding: 0.5em 2em;
+                    }
+
+                    button:hover
+                    {
+                        background-color: #0c0;
+                    }
+
+                    .hide
+                    {
+                        display: none;
+                    }
+
                     .special
                     {
                         font-style: italic;
@@ -191,6 +249,52 @@
                     }
                 </style>
                 <title>Documentation</title>
+                <script type="text/javascript">
+                    $(document).ready(function()
+                    {
+                        $("a.request").click(function(e)
+                        {
+                            $("#" + $(this).data("form")).toggle("fast");
+                            e.preventDefault();
+                        });
+
+                        $("form").submit(function(e)
+                        {
+                            var data = {};
+                            $(this).find("input").each(function()
+                            {
+                                data[$(this).attr("name")] = $(this).val();
+                            });
+
+                            var pre = "#" + $(this).data("pre");
+
+                            if($(this).data("type").toLowerCase() == "get")
+                            {
+                                $.get($(this).find(".url").val(), function(data)
+                                {
+                                    $(pre).html(data);
+                                    if(!$(pre).is(":visible"))
+                                    {
+                                        $(pre).show("fast");
+                                    }
+                                });
+                            }
+                            if($(this).data("type").toLowerCase() == "post")
+                            {
+                                $.post($(this).find(".url").val(), $(this).serialize(), function(data)
+                                {
+                                    $(pre).html(data);
+                                    if(!$(pre).is(":visible"))
+                                    {
+                                        $(pre).show("fast");
+                                    }
+                                });
+                            }
+
+                            e.preventDefault();
+                        });
+                    });
+                </script>
             </head>
             <body>
                 <div class="body">
@@ -215,8 +319,8 @@
         <xsl:variable name="post"><xsl:if test="count(post)"><xsl:for-each select="post"><xsl:value-of select="@name" />=<span class="param">...</span><xsl:if test="position() != last()">&amp;</xsl:if></xsl:for-each></xsl:if></xsl:variable>
         <xsl:variable name="post-raw"><xsl:value-of select="$post" /></xsl:variable>
         <div class="method">
-            <a name="{@url}"><![CDATA[]]></a>
-            <h1><a href="#{@url}" class="sharp">#</a><xsl:value-of select="@url" /><sup class="small"><xsl:value-of select="@type" /></sup></h1>
+            <a name="{@id}"><![CDATA[]]></a>
+            <h1><a href="#{@id}" class="sharp">#</a><xsl:value-of select="@url" /><sup class="small"><xsl:value-of select="@type" /></sup></h1>
             <xsl:if test="count(get)">
                 <div class="row">
                     <h2>GET-parameters</h2>
@@ -335,6 +439,28 @@ Host: website.com<span class="special">\r\n</span>
 <br />
 <xsl:if test="string-length($post-raw)"><xsl:copy-of select="$post" /></xsl:if>
                 </pre>
+            </div>
+            <div class="row">
+                <xsl:variable name="url"><xsl:value-of select="@url" /><xsl:if test="count(get)">?<xsl:for-each select="get"><xsl:value-of select="@name" />=<xsl:if test="position() != last()">&amp;</xsl:if></xsl:for-each></xsl:if></xsl:variable>
+                <h2><a href="#" class="inner request" data-form="form-{@id}">Try it out ↓</a></h2>
+                <div id="form-{@id}" class="hide">
+                    <div class="form">
+                        <form method="{@type}" action="{@url}" data-type="{@type}" data-pre="result-{@id}">
+                            <div>
+                                <label>URL</label><input type="text" value="{$url}" placeholder="URL" class="url" />
+                            </div>
+                            <xsl:for-each select="post">
+                                <div>
+                                    <label><xsl:value-of select="@name" /></label><input type="text" name="{@name}" placeholder="{@name}" />
+                                </div>
+                            </xsl:for-each>
+                            <div>
+                                <label><![CDATA[]]></label><button>Invoke</button>
+                            </div>
+                        </form>
+                    </div>
+                    <pre id="result-{@id}" class="hide"></pre>
+                </div>
             </div>
         </div>
     </xsl:template>

@@ -50,8 +50,7 @@ function wwwevaluate($name, $args)
 
 function wwwformatmoney($money)
 {
-    $locale = localeconv();
-    return number_format((float)$money, 2, $locale['decimal_point'], ' ');
+    return number_format($money, 2, ',', ' ');
 }
 
 function wwwformatnumber($number)

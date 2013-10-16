@@ -87,6 +87,32 @@ class method
         return $this->action->__invoke($get, $post);
     }
 
+    function match($type, $get, $post)
+    {
+        if(strtolower($type) != strtolower($this->type))
+        {
+            return false;
+        }
+
+        foreach($this->get as $name => $param)
+        {
+            if($param['required'] and !isset($get[$name]))
+            {
+                return false;
+            }
+        }
+
+        foreach($this->post as $name => $param)
+        {
+            if($param['required'] and !isset($post[$name]))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     function schema()
     {
         return [$this->type, $this->get, $this->post];

@@ -200,7 +200,7 @@ foreach($config->query('/config/methods//method') as $method)
         $post[$param['@name']] = $p;
     }
 
-    $this->methods[$url] = new method($method['@type'], $get, $post, $action, $this);
+    $this->insert_method($url, new method($method['@type'], $get, $post, $action, $this));
 }
 
 ?>

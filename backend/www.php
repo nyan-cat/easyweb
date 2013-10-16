@@ -2,6 +2,7 @@
 
 require_once(www_root . 'xml.php');
 require_once(www_root . 'backend/method.php');
+require_once(www_root . 'backend/method_group.php');
 require_once(www_root . 'backend/sql.php');
 require_once(www_root . 'backend/sql_procedure.php');
 require_once(www_root . 'backend/solr.php');
@@ -21,6 +22,16 @@ class www
         include('www_load.php');
     }
 
+    function insert_method($url, $method)
+    {
+        if(!isset($this->methods[$url]))
+        {
+            $this->methods[$url] = new method_group();
+        }
+
+        $this->methods[$url]->insert($method);
+    }
+
     function request($type, $url, $post = [])
     {
         $query = parse_url($url);
@@ -28,7 +39,6 @@ class www
 
         if(isset($this->methods[$path]))
         {
-            $method = $this->methods[$path];
             $get = [];
 
             if(isset($query['query']))
@@ -36,26 +46,49 @@ class www
                 parse_str($query['query'], $get);
             }
 
-            try
+            if($method = $this->methods[$path]->find($type, $get, $post))
             {
-                return $this->success->__invoke( $method->call($get, $post) );
+                try
+                {
+                    return $this->success->__invoke( $method->call($get, $post) );
+                }
+                catch(Exception $e)
+                {
+                    return $this->error->__invoke('error', $e->getMessage());
+                }
             }
-            catch(Exception $e)
+            else
             {
-                return $this->error->__invoke('error', $e->getMessage());
+                return $this->error->__invoke('bad_request', 'No methods matched');
             }
         }
         else if($path == $this->schema)
         {
             $schema = [];
 
-            foreach($this->methods as $url => $method)
+            foreach($this->methods as $url => $group)
             {
-                list($type, $get, $post) = $method->schema();
-                $m = ['type' => $type];
-                empty($get) or $m['get'] = $get;
-                empty($post) or $m['post'] = $post;
-                $schema[$url] = $m;
+                foreach($group->schema() as $gs)
+                {
+                    list($type, $get, $post) = $gs;
+
+                    foreach($get as $name => &$param)
+                    {
+                        isset($param['min']) or $param['min'] = datatype::min($param['type']);
+                        isset($param['max']) or $param['max'] = datatype::max($param['type']);
+                    }
+
+                    foreach($post as $name => &$param)
+                    {
+                        isset($param['min']) or $param['min'] = datatype::min($param['type']);
+                        isset($param['max']) or $param['max'] = datatype::max($param['type']);
+                    }
+
+                    $m = ['url' => $url, 'type' => $type];
+                    empty($get) or $m['get'] = $get;
+                    empty($post) or $m['post'] = $post;
+                    $schema[] = $m;
+                }
             }
 
             return self::encode($schema);
@@ -68,40 +101,43 @@ class www
 
             $xml->append($methods);
 
-            foreach($this->methods as $url => $m)
+            foreach($this->methods as $url => $group)
             {
-                $method = $xml->element('method');
-                $method['@url'] = $url;
-                $methods->append($method);
-
-                list($type, $get, $post) = $m->schema();
-
-                $method['@type'] = strtoupper($type);
-
-                foreach($get as $name => $param)
+                foreach($group->schema() as $schema)
                 {
-                    $g = $xml->element('get');
-                    $g['@name'] = $name;
-                    $g['@type'] = $param['type'];
-                    $g['@min'] = isset($param['min']) ? $param['min'] : 'default (' . datatype::min($param['type']) . ')';
-                    $g['@max'] = isset($param['max']) ? $param['max'] : 'default (' . datatype::max($param['type']) . ')';
-                    $g['@required'] = $param['required'] ? 'true' : 'false';
-                    !isset($param['default']) or $g['@default'] = $param['default'];
-                    $g['@secure'] = $param['secure'] ? 'true' : 'false';
-                    $method->append($g);
-                }
+                    list($type, $get, $post) = $schema;
 
-                foreach($post as $name => $param)
-                {
-                    $p = $xml->element('post');
-                    $p['@name'] = $name;
-                    $p['@type'] = $param['type'];
-                    $p['@min'] = isset($param['min']) ? $param['min'] : 'default (' . datatype::min($param['type']) . ')';
-                    $p['@max'] = isset($param['max']) ? $param['max'] : 'default (' . datatype::max($param['type']) . ')';
-                    $p['@required'] = $param['required'] ? 'true' : 'false';
-                    !isset($param['default']) or $p['@default'] = $param['default'];
-                    $p['@secure'] = $param['secure'] ? 'true' : 'false';
-                    $method->append($p);
+                    $method = $xml->element('method');
+                    $methods->append($method);
+                    $method['@id'] = str_pad(dechex(crc32("$type:$url:" . implode(':', array_keys($get)) . implode(':', array_keys($post)))), 8, '0', STR_PAD_LEFT);;
+                    $method['@url'] = $url;
+                    $method['@type'] = strtoupper($type);
+
+                    foreach($get as $name => $param)
+                    {
+                        $g = $xml->element('get');
+                        $g['@name'] = $name;
+                        $g['@type'] = $param['type'];
+                        $g['@min'] = isset($param['min']) ? $param['min'] : 'default (' . datatype::min($param['type']) . ')';
+                        $g['@max'] = isset($param['max']) ? $param['max'] : 'default (' . datatype::max($param['type']) . ')';
+                        $g['@required'] = $param['required'] ? 'true' : 'false';
+                        !isset($param['default']) or $g['@default'] = $param['default'];
+                        $g['@secure'] = $param['secure'] ? 'true' : 'false';
+                        $method->append($g);
+                    }
+
+                    foreach($post as $name => $param)
+                    {
+                        $p = $xml->element('post');
+                        $p['@name'] = $name;
+                        $p['@type'] = $param['type'];
+                        $p['@min'] = isset($param['min']) ? $param['min'] : 'default (' . datatype::min($param['type']) . ')';
+                        $p['@max'] = isset($param['max']) ? $param['max'] : 'default (' . datatype::max($param['type']) . ')';
+                        $p['@required'] = $param['required'] ? 'true' : 'false';
+                        !isset($param['default']) or $p['@default'] = $param['default'];
+                        $p['@secure'] = $param['secure'] ? 'true' : 'false';
+                        $method->append($p);
+                    }
                 }
             }
 
