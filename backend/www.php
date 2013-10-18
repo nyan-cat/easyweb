@@ -11,6 +11,8 @@ require_once(www_root . 'backend/foursquare.php');
 require_once(www_root . 'backend/foursquare_procedure.php');
 require_once(www_root . 'backend/geoip_procedure.php');
 require_once(www_root . 'backend/dispatcher.php');
+require_once(www_root . 'backend/access.php');
+require_once(www_root . 'backend/group.php');
 
 class www
 {
@@ -18,6 +20,7 @@ class www
     {
         $this->success = is_null($success) ? self::$default_success : $success;
         $this->error = is_null($error) ? self::$default_error : $error;
+        $this->access = new access();
         $this->dispatcher = new dispatcher();
         include('www_load.php');
     }
@@ -50,6 +53,14 @@ class www
             {
                 try
                 {
+                    if($group = $method->access())
+                    {
+                        if(!$this->access->parse_evaluate($group, array_merge($get, $post)))
+                        {
+                            return $this->error->__invoke('bad_access', "Caller is not a member of $group");
+                        }
+                    }
+
                     return $this->success->__invoke( $method->call($get, $post) );
                 }
                 catch(Exception $e)
@@ -156,7 +167,7 @@ class www
 
     function query($name, $args)
     {
-        return $this->dispatcher($name, $args);
+        return $this->dispatcher->query($name, $args);
     }
 
     function invoke($name, $args)
@@ -198,6 +209,7 @@ class www
     private $success;
     private $error;
     private $methods = [];
+    private $access;
     private $dispatcher;
     private $schema = null;
     private $documentation = null;

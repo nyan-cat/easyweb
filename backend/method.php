@@ -5,7 +5,7 @@ require_once('security.php');
 
 class method
 {
-    function __construct($type, $get, $post, $action, $www)
+    function __construct($type, $get, $post, $action, $access, $www)
     {
         $this->type = $type;
         $this->get = $get;
@@ -46,6 +46,7 @@ class method
         }
 
         $this->action = $this->action->bindTo($this, $this);
+        $this->access = $access;
     }
 
     function call($get, $post)
@@ -117,6 +118,11 @@ class method
         return true;
     }
 
+    function access()
+    {
+        return $this->access;
+    }
+
     function schema()
     {
         return [$this->type, $this->get, $this->post];
@@ -126,6 +132,7 @@ class method
     private $get;
     private $post;
     private $action;
+    private $access = null;
 }
 
 ?>

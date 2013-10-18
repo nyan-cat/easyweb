@@ -114,6 +114,7 @@
                         border: 1px solid #ddd;
                         border-radius: 0.25em;
                         font-family: "Courier new";
+                        font-size: 0.9em;
                         margin: 0;
                         overflow: auto;
                         padding: 1em;
@@ -129,6 +130,8 @@
                     .form
                     {
                         background-color: #efd;
+                        border: 1px solid #dec;
+                        border-radius: 0.25em;
                         padding: 1em;
                     }
 
@@ -136,6 +139,7 @@
                     {
                         border: 1px solid #9c9;
                         border-radius: 0.25em;
+                        font-size: 0.9em;
                         padding: 0.5em;
                         margin-bottom: 1em;
                         width: 20em;
@@ -151,6 +155,7 @@
                     {
                         color: #696;
                         display: inline-block;
+                        font-size: 1em;
                         margin-right: 0.5em;
                         text-align: right;
                         width: 10em;
@@ -159,10 +164,11 @@
                     button
                     {
                         background-color: #090;
-                        border: 1px solid #060;
+                        border: 1px solid #080;
                         border-radius: 0.25em;
                         color: #fff;
                         cursor: pointer;
+                        font-size: 0.9em;
                         font-weight: bold;
                         padding: 0.5em 2em;
                     }
@@ -250,6 +256,11 @@
                 </style>
                 <title>Documentation</title>
                 <script type="text/javascript">
+                    String.prototype.endsWith = function(suffix)
+                    {
+                        return this.indexOf(suffix, this.length - suffix.length) !== -1;
+                    };
+
                     $(document).ready(function()
                     {
                         $("a.request").click(function(e)
@@ -260,6 +271,16 @@
 
                         $("form").submit(function(e)
                         {
+                            function makeResponse(jqXHR, color, elapsed, data)
+                            {
+                                var headers = jqXHR.getAllResponseHeaders();
+                                if(!headers.endsWith("\r\n\r\n"))
+                                {
+                                    headers += "\r\n";
+                                }
+                                return '<span style="color: ' + color + ';"><i>Request took ' + (elapsed / 1000) + ' sec</i>\r\n\r\nHTTP/1.1 ' + jqXHR.status + ' ' + jqXHR.statusText + '\r\n' + headers + '</span>' + (data ? data : '');
+                            }
+
                             var data = {};
                             $(this).find("input").each(function()
                             {
@@ -267,43 +288,40 @@
                             });
 
                             var pre = "#" + $(this).data("pre");
+                            var type = $(this).data("type").toUpperCase();
 
-                            if($(this).data("type").toLowerCase() == "get")
+                            var start = new Date();
+
+                            var options =
                             {
-                                $.get($(this).find(".url").val(), function(data, textStatus, jqXHR)
+                                url : $(this).find(".url").val(),
+                                type : type,
+                                success : function(data, textStatus, jqXHR)
                                 {
-                                    $(pre).html('<span style="color: #666;">HTTP/1.1 ' + jqXHR.status + ' ' + jqXHR.statusText + '\r\n' + jqXHR.getAllResponseHeaders() + '</span>' + data);
+                                    var end = new Date();
+                                    $(pre).html(makeResponse(jqXHR, "#666", end - start, data));
                                     if(!$(pre).is(":visible"))
                                     {
                                         $(pre).show("fast");
                                     }
-                                }).fail(function(jqXHR)
+                                },
+                                error : function(jqXHR, textStatus)
                                 {
-                                    $(pre).html('<span style="color: #900;">HTTP/1.1 ' + jqXHR.status + ' ' + jqXHR.statusText + '\r\n' + jqXHR.getAllResponseHeaders() + '</span>');
+                                    var end = new Date();
+                                    $(pre).html(makeResponse(jqXHR, "#900", end - start));
                                     if(!$(pre).is(":visible"))
                                     {
                                         $(pre).show("fast");
                                     }
-                                });
-                            }
-                            if($(this).data("type").toLowerCase() == "post")
+                                }
+                            };
+
+                            if(type != "GET")
                             {
-                                $.post($(this).find(".url").val(), $(this).serialize(), function(data, textStatus, jqXHR)
-                                {
-                                    $(pre).html('<span style="color: #666;">HTTP/1.1 ' + jqXHR.status + ' ' + jqXHR.statusText + '\r\n' + jqXHR.getAllResponseHeaders() + '</span>' + data);
-                                    if(!$(pre).is(":visible"))
-                                    {
-                                        $(pre).show("fast");
-                                    }
-                                }).fail(function(jqXHR)
-                                {
-                                    $(pre).html('<span style="color: #900;">HTTP/1.1 ' + jqXHR.status + ' ' + jqXHR.statusText + '\r\n' + jqXHR.getAllResponseHeaders() + '</span>');
-                                    if(!$(pre).is(":visible"))
-                                    {
-                                        $(pre).show("fast");
-                                    }
-                                });
+                                options.data = $(this).serialize();
                             }
+
+                            $.ajax(options);
 
                             e.preventDefault();
                         });

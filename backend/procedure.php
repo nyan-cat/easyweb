@@ -17,6 +17,11 @@ class procedure
         return $this->query_direct($args);
     }
 
+    function params()
+    {
+        return $this->params;
+    }
+
     function id()
     {
         return $this->id;

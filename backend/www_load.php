@@ -104,6 +104,25 @@ foreach($config->query('/config/procedures//procedure[@datasource = "geoip"]') a
     }
 }*/
 
+foreach($config->query('/config/groups//group') as $group)
+{
+    $name = $group["@name"];
+    $params = explode(',', $group["@params"]);
+    foreach($params as &$param)
+    {
+        $param = trim($param);
+    }
+
+    if($procedure = $group->attribute('procedure'))
+    {
+        $this->access->insert(new group_procedure($name, $params, $procedure, $this));
+    }
+    else
+    {
+        $this->access->insert(new group_expression($name, $params, $group->value(), $this->access));
+    }
+}
+
 foreach($config->query('/config/methods//method') as $method)
 {
     $get = [];
@@ -200,7 +219,7 @@ foreach($config->query('/config/methods//method') as $method)
         $post[$param['@name']] = $p;
     }
 
-    $this->insert_method($url, new method($method['@type'], $get, $post, $action, $this));
+    $this->insert_method($url, new method($method['@type'], $get, $post, $action, $method->attribute('access'), $this));
 }
 
 ?>

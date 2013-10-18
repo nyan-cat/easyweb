@@ -2,14 +2,18 @@
 
 class access
 {
-    function __construct()
+    function insert($group)
     {
+        $id = $group->id();
+        !isset($this->groups[$id]) or backend_error('bad_config', "Duplicate group: $id");
+        $this->groups[$id] = $group;
     }
 
-    function evaluate($name, $args)
+    function parse_evaluate($expression, $args)
     {
-        isset($this->groups[$name]) or backend_error('bad_group', "Unknown group: $name");
-        $group = $this->groups[$name];
+        $id = $expression;
+        isset($this->groups[$id]) or backend_error('bad_group', "Unknown group: $id");
+        return $this->groups[$id]->evaluate($args);
     }
 
     private $groups;
