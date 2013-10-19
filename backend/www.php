@@ -35,10 +35,12 @@ class www
         $this->methods[$url]->insert($method);
     }
 
-    function request($type, $url, $post = [])
+    function request($type, $url, $request_headers, $post = [])
     {
         $query = parse_url($url);
         $path = $query['path'];
+        $headers =  new headers();
+        $headers['Content-Type'] = 'application/json';
 
         if(isset($this->methods[$path]))
         {
@@ -51,26 +53,52 @@ class www
 
             if($method = $this->methods[$path]->find($type, $get, $post))
             {
+                $headers['Content-Type'] = $method->accept();
+
                 try
                 {
                     if($group = $method->access())
                     {
                         if(!$this->access->parse_evaluate($group, array_merge($get, $post)))
                         {
-                            return $this->error->__invoke('bad_access', "Caller is not a member of $group");
+                            return
+                            [
+                                'code'    => 403,
+                                'message' => 'Forbidden',
+                                'headers' => $headers,
+                                'body'    => $this->error->__invoke('bad_access', "Caller is not a member of $group")
+                            ];
                         }
                     }
 
-                    return $this->success->__invoke( $method->call($get, $post) );
+                    return
+                    [
+                        'code'    => 200,
+                        'message' => 'OK',
+                        'headers' => $headers,
+                        'body'    => $this->success->__invoke( $method->call($get, $post) )
+                    ];
                 }
                 catch(Exception $e)
                 {
-                    return $this->error->__invoke('error', $e->getMessage());
+                    return
+                    [
+                        'code'    => 400,
+                        'message' => 'Bad Request',
+                        'headers' => $headers,
+                        'body'    => $this->error->__invoke('error', $e->getMessage())
+                    ];
                 }
             }
             else
             {
-                return $this->error->__invoke('bad_request', 'No methods matched');
+                return
+                [
+                    'code'    => 404,
+                    'message' => 'Not Found',
+                    'headers' => $headers,
+                    'body'    => $this->error->__invoke('bad_request', 'No methods matched')
+                ];
             }
         }
         else if($path == $this->schema)
@@ -102,7 +130,13 @@ class www
                 }
             }
 
-            return self::encode($schema);
+            return
+            [
+                'code'    => 200,
+                'message' => 'OK',
+                'headers' => $headers,
+                'body'    => self::encode($schema)
+            ];
         }
         else if($path == $this->documentation)
         {
@@ -157,11 +191,25 @@ class www
             $xsl->load(www_root . 'backend/documentation.xsl');
             $xslt->importStylesheet($xsl);
             $documentation = $xslt->transformToDoc($xml->get());
-            return $documentation->saveXML();
+            $headers['Content-Type'] = 'text/html';
+
+            return
+            [
+                'code'    => 200,
+                'message' => 'OK',
+                'headers' => $headers,
+                'body'    => $documentation->saveXML()
+            ];
         }
         else
         {
-            backend_error('bad_request', "Method not found: $path");
+            return
+            [
+                'code'    => 404,
+                'message' => 'Not Found',
+                'headers' => $headers,
+                'body'    => "Method not found: $path"
+            ];
         }
     }
 

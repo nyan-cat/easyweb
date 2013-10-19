@@ -3,13 +3,75 @@
 require_once('datatype.php');
 require_once('security.php');
 
+class headers implements ArrayAccess, Iterator, Countable
+{
+    function __construct()
+    {
+        $this->iterator = new ArrayIterator($this->headers);
+    }
+
+    function offsetExists($offset)
+    {
+        return isset($this->headers[strtolower($offset)]);
+    }
+
+    function offsetGet($offset)
+    {
+        return $this->headers[strtolower($offset)]['value'];
+    }
+
+    function offsetSet($offset, $value)
+    {
+        return $this->headers[strtolower($offset)] = ['name' => $offset, 'value' => $value];
+    }
+
+    function offsetUnset($offset)
+    {
+        unset($this->headers[strtolower($offset)]);
+    }
+
+    function current()
+    {
+        return current($this->headers)['value'];
+    }
+
+    function key()
+    {
+        return current($this->headers)['name'];
+    }
+    
+    function next()
+    {
+        next($this->headers);
+    }
+    
+    function rewind()
+    {
+        reset($this->headers);
+    }
+    
+    function valid()
+    {
+        return current($this->headers) !== false;
+    }
+
+    function count()
+    {
+        return count($this->headers);
+    }
+    
+    private $headers = [];
+}
+
 class method
 {
-    function __construct($type, $get, $post, $action, $access, $www)
+    function __construct($type, $get, $post, $accept, $content_type, $action, $access, $www)
     {
         $this->type = $type;
         $this->get = $get;
         $this->post = $post;
+        $this->accept = $accept;
+        $this->content_type = $content_type;
 
         if(is_string($action))
         {
@@ -118,6 +180,16 @@ class method
         return true;
     }
 
+    function accept()
+    {
+        return $this->accept;
+    }
+
+    function content_type()
+    {
+        return $this->content_type;
+    }
+
     function access()
     {
         return $this->access;
@@ -131,6 +203,8 @@ class method
     private $type;
     private $get;
     private $post;
+    private $accept;
+    private $content_type;
     private $action;
     private $access = null;
 }

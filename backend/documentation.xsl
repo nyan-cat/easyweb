@@ -271,14 +271,14 @@
 
                         $("form").submit(function(e)
                         {
-                            function makeResponse(jqXHR, color, elapsed, data)
+                            function makeResponse(jqXHR, color, elapsed)
                             {
                                 var headers = jqXHR.getAllResponseHeaders();
                                 if(!headers.endsWith("\r\n\r\n"))
                                 {
                                     headers += "\r\n";
                                 }
-                                return '<span style="color: ' + color + ';"><i>Request took ' + (elapsed / 1000) + ' sec</i>\r\n\r\nHTTP/1.1 ' + jqXHR.status + ' ' + jqXHR.statusText + '\r\n' + headers + '</span>' + (data ? data : '');
+                                return '<span style="color: ' + color + ';"><i>Request took ' + (elapsed / 1000) + ' sec</i>\r\n\r\nHTTP/1.1 ' + jqXHR.status + ' ' + jqXHR.statusText + '\r\n' + headers + '</span>' + jqXHR.responseText;
                             }
 
                             var data = {};
@@ -296,10 +296,11 @@
                             {
                                 url : $(this).find(".url").val(),
                                 type : type,
+                                dataType : "text",
                                 success : function(data, textStatus, jqXHR)
                                 {
                                     var end = new Date();
-                                    $(pre).html(makeResponse(jqXHR, "#666", end - start, data));
+                                    $(pre).html(makeResponse(jqXHR, "#666", end - start));
                                     if(!$(pre).is(":visible"))
                                     {
                                         $(pre).show("fast");

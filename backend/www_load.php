@@ -123,14 +123,36 @@ foreach($config->query('/config/groups//group') as $group)
     }
 }
 
+$services = [];
+
+foreach($config->query('/config/services//service') as $service)
+{
+    $services[$service['@name']] =
+    [
+        'accept' => $service['@accept'],
+        'content-type' => $service['@content-type']
+    ];
+}
+
 foreach($config->query('/config/methods//method') as $method)
 {
     $get = [];
     $post = [];
 
+    $service = $method['@service'];
+    isset($services[$service]) or backend_error('bad_config', "Unknown service $service");
+    $service = $services[$service];
     $url = $method['@url'];
 
-    if($procedure = $method->attribute('procedure'))
+    if($accept = $method->attribute('accept'))
+    {
+        $service['accept'] = $accept;
+    }
+    else if($content_type = $method->attribute('content-type'))
+    {
+        $service['content-type'] = $content_type;
+    }
+    else if($procedure = $method->attribute('procedure'))
     {
         $action = $this->dispatcher->get($procedure, $params);
     }
@@ -219,7 +241,7 @@ foreach($config->query('/config/methods//method') as $method)
         $post[$param['@name']] = $p;
     }
 
-    $this->insert_method($url, new method($method['@type'], $get, $post, $action, $method->attribute('access'), $this));
+    $this->insert_method($url, new method($method['@type'], $get, $post, $service['accept'], $service['content-type'], $action, $method->attribute('access'), $this));
 }
 
 ?>
