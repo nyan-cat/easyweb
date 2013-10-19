@@ -117,8 +117,6 @@ class method
             }
         }
 
-        $args = array_merge($get, $post);
-
         if(is_string($this->action))
         {
             include_once(fs::normalize($this->action));
@@ -126,7 +124,7 @@ class method
             $arguments = $reflection->getParameters();
             if($arguments and $arguments[0]->isArray())
             {
-                return call_user_func(Closure::bind($action, $www), $args);
+                return call_user_func(Closure::bind($action, $www), array_merge($get, $post));
             }
             else
             {
@@ -144,7 +142,7 @@ class method
         }
         else
         {
-            return $action->query($args);
+            return $action->query(array_merge($get, $post));
         }
     }
 
