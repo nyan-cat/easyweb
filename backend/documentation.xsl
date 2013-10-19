@@ -176,6 +176,7 @@
                     button:hover
                     {
                         background-color: #0c0;
+                        border-color: #0b0;
                     }
 
                     .hide

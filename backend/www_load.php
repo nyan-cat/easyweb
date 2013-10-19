@@ -148,11 +148,12 @@ foreach($config->query('/config/methods//method') as $method)
     {
         $service['accept'] = $accept;
     }
-    else if($content_type = $method->attribute('content-type'))
+    if($content_type = $method->attribute('content-type'))
     {
         $service['content-type'] = $content_type;
     }
-    else if($procedure = $method->attribute('procedure'))
+    
+    if($procedure = $method->attribute('procedure'))
     {
         $action = $this->dispatcher->get($procedure, $params);
     }

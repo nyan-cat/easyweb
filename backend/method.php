@@ -72,43 +72,9 @@ class method
         $this->post = $post;
         $this->accept = $accept;
         $this->content_type = $content_type;
-
-        if(is_string($action))
-        {
-            $this->action = function($get, $post) use($action, $www)
-            {
-                include(fs::normalize($action));
-                $reflection = new ReflectionFunction($action);
-                $arguments = $reflection->getParameters();
-                if($arguments and $arguments[0]->isArray())
-                {
-                    return call_user_func(Closure::bind($action, $www), array_merge($get, $post));
-                }
-                else
-                {
-                    $args = [];
-                    foreach($this->get as $name => $param)
-                    {
-                        $args[] = isset($get[$name]) ? $get[$name] : (isset($param['default']) ? $param['default'] : null);
-                    }
-                    foreach($this->post as $name => $param)
-                    {
-                        $args[] = isset($post[$name]) ? $post[$name] : (isset($param['default']) ? $param['default'] : null);
-                    }
-                    return call_user_func_array(Closure::bind($action, $www), $args);
-                }
-            };
-        }
-        else
-        {
-            $this->action = function($args) use($action)
-            {
-                return $action->query($args);
-            };
-        }
-
-        $this->action = $this->action->bindTo($this, $this);
+        $this->action = $action;
         $this->access = $access;
+        $this->www = $www;
     }
 
     function call($get, $post)
@@ -151,7 +117,35 @@ class method
             }
         }
 
-        return $this->action->__invoke($get, $post);
+        $args = array_merge($get, $post);
+
+        if(is_string($this->action))
+        {
+            include_once(fs::normalize($this->action));
+            $reflection = new ReflectionFunction($action);
+            $arguments = $reflection->getParameters();
+            if($arguments and $arguments[0]->isArray())
+            {
+                return call_user_func(Closure::bind($action, $www), $args);
+            }
+            else
+            {
+                $args = [];
+                foreach($this->get as $name => $param)
+                {
+                    $args[] = isset($get[$name]) ? $get[$name] : (isset($param['default']) ? $param['default'] : null);
+                }
+                foreach($this->post as $name => $param)
+                {
+                    $args[] = isset($post[$name]) ? $post[$name] : (isset($param['default']) ? $param['default'] : null);
+                }
+                return call_user_func_array(Closure::bind($action, $www), $args);
+            }
+        }
+        else
+        {
+            return $action->query($args);
+        }
     }
 
     function match($type, $get, $post)
@@ -206,7 +200,8 @@ class method
     private $accept;
     private $content_type;
     private $action;
-    private $access = null;
+    private $access;
+    private $www;
 }
 
 ?>

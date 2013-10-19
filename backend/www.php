@@ -16,13 +16,41 @@ require_once(www_root . 'backend/group.php');
 
 class www
 {
-    function __construct($success = null, $error = null)
+    private function __construct()
     {
-        $this->success = is_null($success) ? self::$default_success : $success;
-        $this->error = is_null($error) ? self::$default_error : $error;
         $this->access = new access();
         $this->dispatcher = new dispatcher();
         include('www_load.php');
+    }
+
+    function __sleep()
+    {
+        return ['methods', 'access', 'dispatcher', 'schema', 'documentation'];
+    }
+
+    static function create()
+    {
+        $cache = cache_location . 'cache.tmp';
+
+        if($www = fs::read($cache))
+        {
+            $www = unserialize($www);
+            $www->bind();
+            return $www;
+        }
+        else
+        {
+            $www = new www();
+            fs::write($cache, serialize($www));
+            $www->bind();
+            return $www;
+        }
+    }
+
+    function bind($success = null, $error = null)
+    {
+        $this->success = is_null($success) ? self::$default_success : $success;
+        $this->error = is_null($error) ? self::$default_error : $error;
     }
 
     function insert_method($url, $method)

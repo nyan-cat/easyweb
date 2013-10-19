@@ -41,7 +41,7 @@ class datatype
 
     static function assert($name, $value, $min, $max)
     {
-        self::match($name, $value, $min, $max) or backend_error('bad_value', $value . ' doesn\'t match to ' . $name);
+        self::match($name, $value, $min, $max) or backend_error('bad_value', $value . ' doesn\'t match to ' . $name . '[' . (is_null($min) ? '?' : $min) . ',' . (is_null($max) ? '?' : $max) . ']');
     }
 
     static function register($name, $min, $max, $validator)
