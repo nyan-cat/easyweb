@@ -47,10 +47,13 @@ class www
         }
     }
 
-    function bind($success = null, $error = null)
+    function bind($success = null, $error = null, $content_type = 'application/json')
     {
-        $this->success = is_null($success) ? self::$default_success : $success;
-        $this->error = is_null($error) ? self::$default_error : $error;
+        $this->encoders[$content_type] =
+        [
+            'success' => is_null($success) ? self::$success : $success,
+            'error' => is_null($error) ? self::$error : $error
+        ];
     }
 
     function insert_method($url, $method)
@@ -81,7 +84,19 @@ class www
 
             if($method = $this->methods[$path]->find($type, $get, $post))
             {
-                $headers['Content-Type'] = $method->accept();
+                $content_type = $headers['Content-Type'];
+                if(!isset($this->encoders[$content_type]))
+                {
+                    return
+                    [
+                        'code'    => 400,
+                        'message' => 'Bad Request',
+                        'headers' => $headers,
+                        'body'    => "Don't know how to encode into $content_type"
+                    ];
+                }
+
+                $encoder = $this->encoders[$content_type];
 
                 try
                 {
@@ -94,7 +109,7 @@ class www
                                 'code'    => 403,
                                 'message' => 'Forbidden',
                                 'headers' => $headers,
-                                'body'    => $this->error->__invoke('bad_access', "Caller is not a member of $group")
+                                'body'    => $encoder['error']->__invoke('bad_access', "Caller is not a member of $group")
                             ];
                         }
                     }
@@ -104,7 +119,7 @@ class www
                         'code'    => 200,
                         'message' => 'OK',
                         'headers' => $headers,
-                        'body'    => $this->success->__invoke( $method->call($get, $post) )
+                        'body'    => $encoder['success']->__invoke( $method->call($get, $post) )
                     ];
                 }
                 catch(Exception $e)
@@ -114,7 +129,7 @@ class www
                         'code'    => 400,
                         'message' => 'Bad Request',
                         'headers' => $headers,
-                        'body'    => $this->error->__invoke('error', $e->getMessage())
+                        'body'    => $encoder['error']->__invoke('error', $e->getMessage())
                     ];
                 }
             }
@@ -125,7 +140,7 @@ class www
                     'code'    => 404,
                     'message' => 'Not Found',
                     'headers' => $headers,
-                    'body'    => $this->error->__invoke('bad_request', 'No methods matched')
+                    'body'    => $encoder['error']->__invoke('bad_request', 'No methods matched')
                 ];
             }
         }
@@ -279,11 +294,10 @@ class www
         return json_encode($object, JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
     }
 
-    static $default_success;
-    static $default_error;
+    static $success;
+    static $error;
 
-    private $success;
-    private $error;
+    private $encoders = [];
     private $methods = [];
     private $access;
     private $dispatcher;
@@ -291,12 +305,12 @@ class www
     private $documentation = null;
 }
 
-www::$default_success = function($content)
+www::$success = function($content)
 {
     return www::encode(['status' => 'success', 'content' => $content]);
 };
 
-www::$default_error = function($type, $message)
+www::$error = function($type, $message)
 {
     return www::encode(['status' => 'error', 'type' => $type, 'message' => $message]);
 };

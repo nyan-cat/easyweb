@@ -137,7 +137,7 @@ class method
                 {
                     $args[] = isset($post[$name]) ? $post[$name] : (isset($param['default']) ? $param['default'] : null);
                 }
-                return call_user_func_array(Closure::bind($action, $www), $args);
+                return call_user_func_array(Closure::bind($action, $this->www), $args);
             }
         }
         else
