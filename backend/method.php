@@ -65,84 +65,79 @@ class headers implements ArrayAccess, Iterator, Countable
 
 class method
 {
-    function __construct($type, $get, $post, $accept, $content_type, $action, $access, $www)
+    function __construct($type, $get, $post, $accept, $content_type, $access, $procedure, $body, $www)
     {
         $this->type = $type;
         $this->get = $get;
         $this->post = $post;
         $this->accept = $accept;
         $this->content_type = $content_type;
-        $this->action = $action;
         $this->access = $access;
+        $this->procedure = $procedure;
+        $this->body = $body;
         $this->www = $www;
+
+        (!$this->procedure or !$this->body) or backend_error('bad_config', 'Either method procedure or method body shall be defined');
     }
 
     function call($get, $post)
     {
+        $args = [];
+
         foreach($this->get as $name => $param)
         {
-            if(isset($get[$name]))
+            if($param['secure'])
             {
-                $min = isset($param['min']) ? $param['min'] : null;
-                $max = isset($param['max']) ? $param['max'] : null;
-                datatype::assert($param['type'], $get[$name], $min, $max);
+                isset($get[$name]) or backend_error('bad_input', "Missing secure GET parameter: $name");
+                $value = security::unwrap($value);
             }
             else
             {
-                !$param['required'] or isset($param['default']) or backend_error('bad_input', "Missing GET parameter: $name");
+                $value = isset($get[$name]) ? $get[$name] : (isset($param['default']) ? $param['default'] : ($param['required'] ? backend_error('bad_input', "Missing GET parameter: $name") : null));
             }
 
-            if($param['secure'])
+            if(!is_null($value))
             {
-                $get[$name] = security::unwrap($get[$name]);
+                $min = isset($param['min']) ? $param['min'] : null;
+                $max = isset($param['max']) ? $param['max'] : null;
+                datatype::assert($param['type'], $value, $min, $max);
             }
+
+            $args[$name] = $value;
         }
 
         foreach($this->post as $name => $param)
         {
-            if(isset($post[$name]))
+            if($param['secure'])
+            {
+                isset($post[$name]) or backend_error('bad_input', "Missing secure POST parameter: $name");
+                $value = security::unwrap($value);
+            }
+            else
+            {
+                $value = isset($post[$name]) ? $post[$name] : (isset($param['default']) ? $param['default'] : ($param['required'] ? backend_error('bad_input', "Missing POST parameter: $name") : null));
+            }
+
+            if(!is_null($value))
             {
                 $min = isset($param['min']) ? $param['min'] : null;
                 $max = isset($param['max']) ? $param['max'] : null;
-                datatype::assert($param['type'], $post[$name], $min, $max);
-            }
-            else
-            {
-                !$param['required'] or isset($param['default']) or backend_error('bad_input', "Missing POST parameter: $name");
+                datatype::assert($param['type'], $value, $min, $max);
             }
 
-            if($param['secure'])
-            {
-                $post[$name] = security::unwrap($post[$name]);
-            }
+            $args[$name] = $value;
         }
 
-        if(is_string($this->action))
+        if($this->body)
         {
-            include_once(fs::normalize($this->action));
-            $reflection = new ReflectionFunction($action);
-            $arguments = $reflection->getParameters();
-            if($arguments and $arguments[0]->isArray())
-            {
-                return call_user_func(Closure::bind($action, $www), array_merge($get, $post));
-            }
-            else
-            {
-                $args = [];
-                foreach($this->get as $name => $param)
-                {
-                    $args[] = isset($get[$name]) ? $get[$name] : (isset($param['default']) ? $param['default'] : null);
-                }
-                foreach($this->post as $name => $param)
-                {
-                    $args[] = isset($post[$name]) ? $post[$name] : (isset($param['default']) ? $param['default'] : null);
-                }
-                return call_user_func_array(Closure::bind($action, $this->www), $args);
-            }
+            $params = '$' . implode(',$', array_keys($args));
+            $script = "return function($params) { {$this->body} };";
+            $closure = eval($script);
+            return call_user_func_array($closure->bindTo($this->www), array_values($args));
         }
         else
         {
-            return $action->query(array_merge($get, $post));
+            return $this->www->query($this->procedure, $args);
         }
     }
 
@@ -197,8 +192,9 @@ class method
     private $post;
     private $accept;
     private $content_type;
-    private $action;
     private $access;
+    private $procedure;
+    private $body;
     private $www;
 }
 

@@ -153,19 +153,6 @@ foreach($config->query('/config/methods//method') as $method)
         $service['content-type'] = $content_type;
     }
     
-    if($procedure = $method->attribute('procedure'))
-    {
-        $action = $this->dispatcher->get($procedure, $params);
-    }
-    else if($script = $method->attribute('script'))
-    {
-        $action = $script;
-    }
-    else
-    {
-        backend_error('bad_config', "Unknown method type: $url");
-    }
-
     foreach($config->query('get', $method) as $param)
     {
         $p =
@@ -187,7 +174,7 @@ foreach($config->query('/config/methods//method') as $method)
         if($default = $param->attribute('default'))
         {
             $p['default'] = $default;
-            is_null($param->attribute('required')) or backend_error('bad_config', 'Default and required attributes should not be specified both for the same parameter: ' . $url . ' -> ' . $param['@name']);
+            is_null($param->attribute('required')) or backend_error('bad_config', 'Default and required attributes shall not be specified both for the same parameter: ' . $url . ' -> ' . $param['@name']);
             $p['required'] = false;
         }
         else
@@ -197,7 +184,7 @@ foreach($config->query('/config/methods//method') as $method)
 
         if($p['secure'] and (!$p['required'] or isset($p['default'])))
         {
-            backend_error('bad_config', 'Secure parameter cannot be required either have default value');
+            backend_error('bad_config', 'Secure GET parameter shall be either required or have default value');
         }
 
         $get[$param['@name']] = $p;
@@ -236,13 +223,19 @@ foreach($config->query('/config/methods//method') as $method)
 
         if($p['secure'] and (!$p['required'] or isset($p['default'])))
         {
-            backend_error('bad_config', 'Secure parameter cannot be required either have default value');
+            backend_error('bad_config', 'Secure POST parameter shall be either required or have default value');
         }
 
         $post[$param['@name']] = $p;
     }
 
-    $this->insert_method($url, new method($method['@type'], $get, $post, $service['accept'], $service['content-type'], $action, $method->attribute('access'), $this));
+    $body = trim($method->value());
+    if(empty($body))
+    {
+        $body = null;
+    }
+
+    $this->insert_method($url, new method($method['@type'], $get, $post, $service['accept'], $service['content-type'], $method->attribute('access'), $method->attribute('procedure'), $body, $this));
 }
 
 ?>
