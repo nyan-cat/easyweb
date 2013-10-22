@@ -65,7 +65,7 @@ class headers implements ArrayAccess, Iterator, Countable
 
 class method
 {
-    function __construct($type, $get, $post, $accept, $content_type, $access, $procedure, $body, $www)
+    function __construct($type, $get, $post, $accept, $content_type, $access, $procedure, $require, $body, $www)
     {
         $this->type = $type;
         $this->get = $get;
@@ -74,6 +74,7 @@ class method
         $this->content_type = $content_type;
         $this->access = $access;
         $this->procedure = $procedure;
+        $this->require = $require;
         $this->body = $body;
         $this->www = $www;
 
@@ -131,7 +132,12 @@ class method
         if($this->body)
         {
             $params = '$' . implode(',$', array_keys($args));
-            $script = "return function($params) { {$this->body} };";
+            $script = '';
+            foreach($this->require as $require)
+            {
+                $script .= 'require_once(\'' . fs::normalize($require) . '\');';
+            }
+            $script .= "return function($params) { {$this->body} };";
             $closure = eval($script);
             return call_user_func_array($closure->bindTo($this->www), array_values($args));
         }
@@ -194,6 +200,7 @@ class method
     private $content_type;
     private $access;
     private $procedure;
+    private $require;
     private $body;
     private $www;
 }

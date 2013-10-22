@@ -229,13 +229,20 @@ foreach($config->query('/config/methods//method') as $method)
         $post[$param['@name']] = $p;
     }
 
+    $require = [];
+
+    foreach($config->query('require/@src', $method) as $src)
+    {
+        $require[] = $src->value();
+    }
+
     $body = trim($method->value());
     if(empty($body))
     {
         $body = null;
     }
 
-    $this->insert_method($url, new method($method['@type'], $get, $post, $service['accept'], $service['content-type'], $method->attribute('access'), $method->attribute('procedure'), $body, $this));
+    $this->insert_method($url, new method($method['@type'], $get, $post, $service['accept'], $service['content-type'], $method->attribute('access'), $method->attribute('procedure'), $require, $body, $this));
 }
 
 ?>
