@@ -82,11 +82,11 @@ class www
                 parse_str($query['query'], $get);
             }
 
+            $content_type = $headers['Content-Type'];
             $encoder = $this->encoders[$content_type];
 
             if($method = $this->methods[$path]->find($type, $get, $post))
             {
-                $content_type = $headers['Content-Type'];
                 if(!isset($this->encoders[$content_type]))
                 {
                     return
