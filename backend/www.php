@@ -82,6 +82,8 @@ class www
                 parse_str($query['query'], $get);
             }
 
+            $encoder = $this->encoders[$content_type];
+
             if($method = $this->methods[$path]->find($type, $get, $post))
             {
                 $content_type = $headers['Content-Type'];
@@ -95,8 +97,6 @@ class www
                         'body'    => "Don't know how to encode into $content_type"
                     ];
                 }
-
-                $encoder = $this->encoders[$content_type];
 
                 try
                 {
