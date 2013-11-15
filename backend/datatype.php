@@ -4,7 +4,7 @@ require_once('exception.php');
 
 class datatype
 {
-    static function match($name, $value, $min, $max)
+    static function match($name, $value, $min = null, $max = null)
     {
         isset(self::$types[$name]) or backend_error('bad_type', "Unknown type: $name");
         !is_null($min) or $min = self::min($name);
@@ -39,7 +39,7 @@ class datatype
         }
     }
 
-    static function assert($name, $value, $min, $max)
+    static function assert($name, $value, $min = null, $max = null)
     {
         self::match($name, $value, $min, $max) or backend_error('bad_value', $value . ' doesn\'t match to ' . $name . '[' . (is_null($min) ? '?' : $min) . ',' . (is_null($max) ? '?' : $max) . ']');
     }

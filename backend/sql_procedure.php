@@ -18,16 +18,21 @@ class sql_procedure extends procedure
         {
             $result = $this->sql->query($this->apply($this->body, $args));
             !($this->required and empty($result)) or backend_error('bad_query', 'SQL procedure returned empty result');
+            return $result;
         }
         else
         {
-            $result = [];
+            $set = [];
 
             $this->sql->begin();
 
             foreach($this->body as $query)
             {
-                $result[] = $this->sql->query($this->apply($query, $args));
+                $result = $this->sql->query($this->apply($query, $args));
+                if(!empty($result))
+                {
+                    $set[] = $result;
+                }
             }
 
             if(empty($result) and $this->required)
@@ -39,9 +44,9 @@ class sql_procedure extends procedure
             {
                 $this->sql->commit();
             }
-        }
 
-        return $result;
+            return count($set) == 1 ? $set[0] : $set;
+        }
     }
 
     private function apply($query, $args)
