@@ -102,9 +102,8 @@ class method
                 $min = isset($param['min']) ? $param['min'] : null;
                 $max = isset($param['max']) ? $param['max'] : null;
                 datatype::assert($param['type'], $value, $min, $max);
+                $args[$name] = $value;
             }
-
-            $args[$name] = $value;
         }
 
         foreach($this->post as $name => $param)
@@ -124,9 +123,8 @@ class method
                 $min = isset($param['min']) ? $param['min'] : null;
                 $max = isset($param['max']) ? $param['max'] : null;
                 datatype::assert($param['type'], $value, $min, $max);
+                $args[$name] = $value;
             }
-
-            $args[$name] = $value;
         }
 
         if($this->body)
@@ -137,7 +135,7 @@ class method
             {
                 $script .= 'require_once(\'' . fs::normalize($require) . '\');';
             }
-            $script .= "return function($params) { {$this->body} };";
+            $script .= 'return function(' . (empty($args) ? '' : $params) . ") { {$this->body} };";
             $closure = eval($script);
             return call_user_func_array($closure->bindTo($this->www), array_values($args));
         }

@@ -161,17 +161,17 @@ foreach($config->query('/config/methods//method') as $method)
             'secure' => $param->attribute('secure') === 'true'
         ];
 
-        if($min = $param->attribute('min'))
+        if(($min = $param->attribute('min')) !== null)
         {
             $p['min'] = $min;
         }
 
-        if($max = $param->attribute('max'))
+        if(($max = $param->attribute('max')) !== null)
         {
             $p['max'] = $max;
         }
 
-        if($default = $param->attribute('default'))
+        if(($default = $param->attribute('default')) !== null)
         {
             $p['default'] = $default;
             is_null($param->attribute('required')) or backend_error('bad_config', 'Default and required attributes shall not be specified both for the same parameter: ' . $url . ' -> ' . $param['@name']);

@@ -119,7 +119,7 @@ class solr_procedure extends procedure
 
     private static function substitute($body, $args)
     {
-        preg_replace('/\$(\w+)/e', "self::replace('\\1', \$args)", $body);
+        return preg_replace('/\$(\w+)/e', "self::replace('\\1', \$args)", $body);
     }
 
     private static function replace($name, $args)
