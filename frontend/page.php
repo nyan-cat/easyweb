@@ -2,7 +2,7 @@
 
 class page
 {
-    function __construct($url, $params, $script, $template, $engine, $api)
+    function __construct($url, $params, $script, $folder, $template, $engine, $api)
     {
         $escaped = str_replace(['/', '.'], ['\/', '\.'], $url);
         $this->regex = '/\A' . preg_replace('/\{\$\w+\}/', '(.+)', $escaped) . '\Z/';
@@ -14,7 +14,8 @@ class page
         }
 
         $this->params = $params;
-        $this->script = $script;
+        $this->script = strlen($script) ? $script : null;
+        $this->folder = $folder;
         $this->template = $template;
         $this->engine = $engine;
         $this->api = $api;
@@ -56,13 +57,28 @@ class page
             );
         }
 
+        $batch = $this->api->batch($batch);
+
+        if($this->script)
+        {
+            $params = array_merge($params, $batch);
+            $prototype = '$' . implode(',$', array_keys($params));
+            $script = '';
+            $script .= 'return function(' . (empty($params) ? '' : $prototype) . ") { {$this->script} };";
+            $closure = eval($script);
+            if($result = call_user_func_array($closure->bindTo($this->api), array_values($params)))
+            {
+                $batch = array_merge($batch, $result);
+            }
+        }
+
         switch($this->engine)
         {
         case 'twig':
-            $loader = new Twig_Loader_Filesystem('/var/www/html/vzagule.com/tpl');
+            $loader = new Twig_Loader_Filesystem($this->folder);
             $twig = new Twig_Environment($loader/*, ['cache' => '/path/to/compilation_cache']*/);
             $template = $twig->loadTemplate($this->template);
-            return $template->render($this->api->batch($batch));
+            return $template->render($batch);
         }
     }
 
@@ -70,6 +86,7 @@ class page
     private $args = [];
     private $params;
     private $script;
+    private $folder;
     private $template;
     private $engine;
     private $api;

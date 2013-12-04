@@ -14,6 +14,7 @@ foreach($config->query('/config/pages//page') as $page)
         $page['@url'],
         $config->query_assoc('param', $page, '@name', '@get'),
         trim($page->value()),
+        $templates,
         $page['@template'],
         $engine,
         $api
