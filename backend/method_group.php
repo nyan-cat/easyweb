@@ -10,14 +10,16 @@ class method_group
 
     function find($type, $get, $post)
     {
+        $methods = [];
+
         foreach($this->methods as $method)
         {
             if($method->match($type, $get, $post))
             {
-                return $method;
+                $methods[] = $method;
             }
         }
-        return null;
+        return $methods;
     }
 
     function schema()
