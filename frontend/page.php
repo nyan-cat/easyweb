@@ -2,7 +2,7 @@
 
 class page
 {
-    function __construct($url, $params, $script, $folder, $template, $engine, $api)
+    function __construct($url, $params, $script, $folder, $template, $engine, $cache, $api)
     {
         $escaped = str_replace(['/', '.'], ['\/', '\.'], $url);
         $this->regex = '/\A' . preg_replace('/\{\$\w+\}/', '(.+)', $escaped) . '\Z/';
@@ -18,6 +18,7 @@ class page
         $this->folder = $folder;
         $this->template = $template;
         $this->engine = $engine;
+        $this->cache = $cache;
         $this->api = $api;
     }
 
@@ -76,9 +77,17 @@ class page
         {
         case 'twig':
             $loader = new Twig_Loader_Filesystem($this->folder);
-            $twig = new Twig_Environment($loader/*, ['cache' => '/path/to/compilation_cache']*/);
+            $twig = new Twig_Environment($loader, ['cache' => $this->cache]);
             $template = $twig->loadTemplate($this->template);
             return $template->render($batch);
+
+        case 'smarty':
+            $smarty = new Smarty();
+            $smarty->setTemplateDir($this->folder)
+                   ->setCompileDir($this->cache)
+                   ->setCacheDir($this->cache);
+            $smarty->assign($batch);
+            return @$smarty->fetch(ltrim($this->template, '/'));
         }
     }
 
@@ -89,6 +98,7 @@ class page
     private $folder;
     private $template;
     private $engine;
+    private $cache;
     private $api;
 }
 
