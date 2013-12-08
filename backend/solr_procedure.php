@@ -86,20 +86,23 @@ class solr_procedure extends procedure
 
                     foreach($doc as $name => $value)
                     {
-                        if(is_array($value))
+                        if($name != '_version_')
                         {
-                            $items = [];
-
-                            foreach($value as $item)
+                            if(is_array($value))
                             {
-                                $items[] = $item;
-                            }
+                                $items = [];
 
-                            $document[$name] = $items;
-                        }
-                        else
-                        {
-                            $document[$name] = $value;
+                                foreach($value as $item)
+                                {
+                                    $items[] = $item;
+                                }
+
+                                $document[$name] = $items;
+                            }
+                            else
+                            {
+                                $document[$name] = $value;
+                            }
                         }
                     }
 
@@ -113,7 +116,7 @@ class solr_procedure extends procedure
                 !$this->required or backend_error('bad_input', 'Empty response from Solr procedure');
             }
 
-            return $result;
+            return empty($result) ? ['matched' => 0, 'documents' => (object)null] : $result;
         }
     }
 

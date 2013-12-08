@@ -141,7 +141,7 @@ class method
         }
         else
         {
-            return $this->www->query($this->procedure, $args);
+            return $this->procedure[0] == '@' ? $this->www->evaluate(ltrim($this->procedure, '@'), $args) : $this->www->query($this->procedure, $args);
         }
     }
 
