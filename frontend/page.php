@@ -43,26 +43,33 @@ class page
 
     function request($params)
     {
+        $values = [];
         $batch = [];
 
-        foreach($this->params as $name => $url)
+        foreach($this->params as $name => $param)
         {
-            $batch[$name] = preg_replace_callback
+            $value = preg_replace_callback
             (
                 '/\{\$(\w+)\}/',
                 function($matches) use($params)
                 {
                     return $params[$matches[1]];
                 },
-                $url
+                $param['value']
             );
+
+            switch($param['type'])
+            {
+            case 'value': $values[$name] = $value; break;
+            case 'get': $batch[$name] = $value; break;
+            }
         }
 
         $batch = $this->api->batch($batch);
 
         if($this->script)
         {
-            $params = array_merge($params, $batch);
+            $params = array_merge($params, $values, $batch);
             $prototype = '$' . implode(',$', array_keys($params));
             $script = '';
             $script .= 'return function(' . (empty($params) ? '' : $prototype) . ") { {$this->script} };";
@@ -72,6 +79,8 @@ class page
                 $batch = array_merge($batch, $result);
             }
         }
+
+        $batch = array_merge($values, $batch);
 
         switch($this->engine)
         {

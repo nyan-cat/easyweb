@@ -10,10 +10,22 @@ $api = new api($schema);
 
 foreach($config->query('/config/pages//page') as $page)
 {
+    $params = [];
+
+    foreach($config->query_assoc('param[@name and @value]', $page, '@name', '@value') as $name => $value)
+    {
+        $params[$name] = ['type' => 'value', 'value' => $value];
+    }
+
+    foreach($config->query_assoc('param[@name and @get]', $page, '@name', '@get') as $name => $get)
+    {
+        $params[$name] = ['type' => 'get', 'value' => $get];
+    }
+
     $this->router->insert(new page
     (
         $page['@url'],
-        $config->query_assoc('param[@name and @get]', $page, '@name', '@get'),
+        $params,
         trim($page->value()),
         $templates,
         $page['@template'],
