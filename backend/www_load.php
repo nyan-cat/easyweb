@@ -2,6 +2,11 @@
 
 $config = xml::load(config_location);
 
+if($batch = $config->root()->attribute('batch'))
+{
+    $this->batch = $batch;
+}
+
 if($schema = $config->root()->attribute('schema'))
 {
     $this->schema = $schema;
