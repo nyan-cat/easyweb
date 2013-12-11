@@ -42,7 +42,7 @@ class security
 
     private static function digest($mixed)
     {
-        return hash_hmac('sha512', json::encode($mixed), self::$salt);
+        return hash_hmac(self::$algorithm, json::encode($mixed), self::$salt);
     }
 
     private static $algorithm = 'md5'; # http://www.php.net/manual/en/function.hash-algos.php

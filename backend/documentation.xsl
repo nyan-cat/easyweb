@@ -57,28 +57,44 @@
 
                     .contents
                     {
+                        background: #345;
+                        box-shadow: 0 0 0.5em rgba(0, 0, 0, 1);
                         display: inline-block;
                         position: fixed;
-                        left: 1em;
-                        top: 50%;
+                        left: 0;
+                        top: 0;
+                        height: 100%;
                     }
 
-                    ol
+                    ul
                     {
-                        border-radius: 0.25em;
-                        border: 1px solid #ddd;
+                        list-style-type: none;
                         padding: 1em;
+                        margin: 0;
                     }
 
-                    ol li
+                    ul li
                     {
-                        margin-left: 1.5em;
-                        padding-bottom: 1em;
+                        font-family: "Consolas", "Courier new";
+                        padding-bottom: 0.5em;
                     }
 
-                    ol li:last-child
+                    ul li:last-child
                     {
                         padding-bottom: 0;
+                    }
+
+                    .contents a, .contents a:visited
+                    {
+                        color: #def;
+                        text-decoration: none;
+                        border-bottom: 1px dotted #789;
+                    }
+
+                    .contents a:hover
+                    {
+                        color: #fff;
+                        border-bottom-color: #9ab;
                     }
 
                     h1
@@ -332,15 +348,15 @@
             </head>
             <body>
                 <div class="body">
-                    <!--<div class="contents">
-                        <ol>
+                    <div class="contents">
+                        <ul>
                             <xsl:for-each select="method">
                                 <li>
-                                    <a href="#{@url}" class="inner"><xsl:value-of select="@url" /></a>
+                                    <a href="#{@id}"><xsl:value-of select="@url" /></a>
                                 </li>
                             </xsl:for-each>
-                        </ol>
-                    </div>-->
+                        </ul>
+                    </div>
                     <xsl:apply-templates />
                 </div>
             </body>
