@@ -166,6 +166,16 @@ foreach($config->query('/config/methods//method') as $method)
             'secure' => $param->attribute('secure') === 'true'
         ];
 
+        if($p['secure'])
+        {
+            $domains = explode(',', $param['@domain']);
+            foreach($domains as &$domain)
+            {
+                $domain = trim($domain);
+            }
+            $p['domains'] = $domains;
+        }
+
         if(($min = $param->attribute('min')) !== null)
         {
             $p['min'] = $min;
@@ -192,7 +202,7 @@ foreach($config->query('/config/methods//method') as $method)
             backend_error('bad_config', 'Secure GET parameter shall be either required or have default value');
         }
 
-        $get[$param['@name']] = $p;
+        $get[$param['@name']] = (object) $p;
     }
 
     foreach($config->query('post', $method) as $param)
@@ -205,17 +215,27 @@ foreach($config->query('/config/methods//method') as $method)
             'secure' => $param->attribute('secure') === 'true'
         ];
 
-        if($min = $param->attribute('min'))
+        if($p['secure'])
+        {
+            $domains = explode(',', $param['@domain']);
+            foreach($domains as &$domain)
+            {
+                $domain = trim($domain);
+            }
+            $p['domains'] = $domains;
+        }
+
+        if(($min = $param->attribute('min')) !== null)
         {
             $p['min'] = $min;
         }
 
-        if($max = $param->attribute('max'))
+        if(($max = $param->attribute('max')) !== null)
         {
             $p['max'] = $max;
         }
 
-        if($default = $param->attribute('default'))
+        if(($default = $param->attribute('default')) !== null)
         {
             $p['default'] = $default;
             is_null($param->attribute('required')) or backend_error('bad_config', 'Default and required attributes should not be specified both for the same parameter: ' . $url . ' -> ' . $param['@name']);
@@ -231,7 +251,7 @@ foreach($config->query('/config/methods//method') as $method)
             backend_error('bad_config', 'Secure POST parameter shall be either required or have default value');
         }
 
-        $post[$param['@name']] = $p;
+        $post[$param['@name']] = (object) $p;
     }
 
     $require = [];

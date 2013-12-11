@@ -69,20 +69,20 @@ class solr_procedure extends procedure
             is_null($this->offset) or $query->setStart(self::substitute($this->offset, $args));
             is_null($this->count) or $query->setRows(self::substitute($this->count, $args));
 
-            $result = [];
+            $result = new stdClass();
 
             $response = $solr->query($query);
             $object = $response->getResponse();
 
             if(is_array($object['response']['docs']))
             {
-                $result['matched'] = $object['response']['numFound'];
+                $result->matched = $object['response']['numFound'];
 
                 $documents = [];
 
                 foreach($object['response']['docs'] as $doc)
                 {
-                    $document = [];
+                    $document = new stdClass();
 
                     foreach($doc as $name => $value)
                     {
@@ -97,11 +97,11 @@ class solr_procedure extends procedure
                                     $items[] = $item;
                                 }
 
-                                $document[$name] = $items;
+                                $document->$name = $items;
                             }
                             else
                             {
-                                $document[$name] = $value;
+                                $document->$name = $value;
                             }
                         }
                     }
@@ -109,7 +109,7 @@ class solr_procedure extends procedure
                     $documents[] = $document;
                 }
 
-                $result['documents'] = $documents;
+                $result->documents = $documents;
             }
             else
             {

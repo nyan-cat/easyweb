@@ -76,7 +76,7 @@ class foursquare_procedure extends procedure
 
             !(empty($photos) and $this->required) or backend_error('bad_input', 'Empty response from Froursquare procedure');
 
-            return $photos;
+            return (object) $photos;
 
         case 'venues':
 
@@ -121,7 +121,7 @@ class foursquare_procedure extends procedure
 
             !(empty($venues) and $this->required) or backend_error('bad_input', 'Empty response from Froursquare procedure');
             
-            return $venues;
+            return (object) $venues;
         }
     }
 

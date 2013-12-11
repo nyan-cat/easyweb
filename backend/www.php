@@ -1,5 +1,6 @@
 <?php
 
+require_once(www_root . 'json.php');
 require_once(www_root . 'xml.php');
 require_once(www_root . 'backend/method.php');
 require_once(www_root . 'backend/method_group.php');
@@ -90,7 +91,7 @@ class www
                 $body[$name] = $this->call('GET', $url, $get, []);
             }
 
-            return
+            return (object)
             [
                 'code'    => 200,
                 'message' => 'OK',
@@ -108,7 +109,7 @@ class www
         }
         else
         {
-            return
+            return (object)
             [
                 'code'    => 200,
                 'message' => 'OK',
@@ -146,6 +147,13 @@ class www
         return $fetch($this->query($name, $args));
     }
 
+    function wrap($mixed, $domain, $lifetime = 0)
+    {
+        $expire_at = $lifetime ? @time() + $lifetime : 0;
+
+        return security::wrap($mixed, $domain, $expire_at);
+    }
+
     function schema()
     {
         $schema = [];
@@ -158,14 +166,14 @@ class www
 
                 foreach($get as $name => &$param)
                 {
-                    isset($param['min']) or $param['min'] = datatype::min($param['type']);
-                    isset($param['max']) or $param['max'] = datatype::max($param['type']);
+                    isset($param->min) or $param->min = datatype::min($param->type);
+                    isset($param->max) or $param->max = datatype::max($param->type);
                 }
 
                 foreach($post as $name => &$param)
                 {
-                    isset($param['min']) or $param['min'] = datatype::min($param['type']);
-                    isset($param['max']) or $param['max'] = datatype::max($param['type']);
+                    isset($param->min) or $param->min = datatype::min($param->type);
+                    isset($param->max) or $param->max = datatype::max($param->type);
                 }
 
                 $m = ['url' => $url, 'type' => $type];
@@ -175,7 +183,7 @@ class www
             }
         }
 
-        return
+        return (object)
         [
             'code'    => 200,
             'message' => 'OK',
@@ -208,12 +216,12 @@ class www
                 {
                     $g = $xml->element('get');
                     $g['@name'] = $name;
-                    $g['@type'] = $param['type'];
-                    $g['@min'] = isset($param['min']) ? $param['min'] : 'default (' . datatype::min($param['type']) . ')';
-                    $g['@max'] = isset($param['max']) ? $param['max'] : 'default (' . datatype::max($param['type']) . ')';
-                    $g['@required'] = $param['required'] ? 'true' : 'false';
-                    !isset($param['default']) or $g['@default'] = $param['default'];
-                    $g['@secure'] = $param['secure'] ? 'true' : 'false';
+                    $g['@type'] = $param->type;
+                    $g['@min'] = isset($param->min) ? $param->min : 'default (' . datatype::min($param->type) . ')';
+                    $g['@max'] = isset($param->max) ? $param->max : 'default (' . datatype::max($param->type) . ')';
+                    $g['@required'] = $param->required ? 'true' : 'false';
+                    !isset($param->default) or $g['@default'] = $param->default;
+                    $g['@secure'] = $param->secure ? 'true' : 'false';
                     $method->append($g);
                 }
 
@@ -221,12 +229,12 @@ class www
                 {
                     $p = $xml->element('post');
                     $p['@name'] = $name;
-                    $p['@type'] = $param['type'];
-                    $p['@min'] = isset($param['min']) ? $param['min'] : 'default (' . datatype::min($param['type']) . ')';
-                    $p['@max'] = isset($param['max']) ? $param['max'] : 'default (' . datatype::max($param['type']) . ')';
-                    $p['@required'] = $param['required'] ? 'true' : 'false';
-                    !isset($param['default']) or $p['@default'] = $param['default'];
-                    $p['@secure'] = $param['secure'] ? 'true' : 'false';
+                    $p['@type'] = $param->type;
+                    $p['@min'] = isset($param->min) ? $param->min : 'default (' . datatype::min($param->type) . ')';
+                    $p['@max'] = isset($param->max) ? $param->max : 'default (' . datatype::max($param->type) . ')';
+                    $p['@required'] = $param->required ? 'true' : 'false';
+                    !isset($param->default) or $p['@default'] = $param->default;
+                    $p['@secure'] = $param->secure ? 'true' : 'false';
                     $method->append($p);
                 }
             }
@@ -238,7 +246,7 @@ class www
         $xslt->importStylesheet($xsl);
         $documentation = $xslt->transformToDoc($xml->get());
 
-        return
+        return (object)
         [
             'code'    => 200,
             'message' => 'OK',
