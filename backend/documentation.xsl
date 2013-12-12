@@ -15,14 +15,9 @@
                     {
                         background-color: #f6f8f4;
                         font-family: "Arial";
+                        margin: 0;
+                        padding: 0;
                         text-align: center;
-                    }
-
-                    .body
-                    {
-                        display: inline-block;
-                        text-align: left;
-                        width: 1000px;
                     }
 
                     a.inner, a.inner:visited
@@ -57,13 +52,8 @@
 
                     .contents
                     {
-                        background: #345;
-                        box-shadow: 0 0 0.5em rgba(0, 0, 0, 1);
-                        display: inline-block;
-                        position: fixed;
-                        left: 0;
-                        top: 0;
-                        height: 100%;
+                        background: #234;
+                        box-shadow: 0 0 0.5em rgba(0, 0, 0, 0.5);
                     }
 
                     ul
@@ -91,7 +81,55 @@
                         border-bottom: 1px dotted #789;
                     }
 
-                    .contents a:hover
+                    .contents a.GET, .contents a.GET:visited
+                    {
+                        color: #6fb;
+                        text-decoration: none;
+                        border-bottom: 1px dotted #285;
+                    }
+
+                    .contents span.GET
+                    {
+                        color: #285;
+                    }
+
+                    .contents a.POST, .contents a.POST:visited
+                    {
+                        color: #6bf;
+                        text-decoration: none;
+                        border-bottom: 1px dotted #258;
+                    }
+
+                    .contents span.POST
+                    {
+                        color: #258;
+                    }
+
+                    .contents a.PUT, .contents a.PUT:visited
+                    {
+                        color: #fb6;
+                        text-decoration: none;
+                        border-bottom: 1px dotted #852;
+                    }
+
+                    .contents span.PUT
+                    {
+                        color: #852;
+                    }
+
+                    .contents a.DELETE, .contents a.DELETE:visited
+                    {
+                        color: #f6b;
+                        text-decoration: none;
+                        border-bottom: 1px dotted #825;
+                    }
+
+                    .contents span.DELETE
+                    {
+                        color: #825;
+                    }
+
+                    .contents a:hover, .contents a.GET:hover, .contents a.POST:hover, .contents a.PUT:hover, .contents a.DELETE:hover
                     {
                         color: #fff;
                         border-bottom-color: #9ab;
@@ -347,18 +385,28 @@
                 </script>
             </head>
             <body>
-                <div class="body">
-                    <div class="contents">
-                        <ul>
-                            <xsl:for-each select="method">
-                                <li>
-                                    <a href="#{@id}"><xsl:value-of select="@url" /></a>
-                                </li>
-                            </xsl:for-each>
-                        </ul>
-                    </div>
-                    <xsl:apply-templates />
-                </div>
+                <table width="100%" height="100%" cellpadding="0" cellspacing="0" style="font-size: 1em;">
+                    <tr>
+                        <td valign="top" class="contents">
+                            <div style="overflow-y: scroll; height: 100%;">
+                                <ul>
+                                    <xsl:for-each select="method">
+                                        <li>
+                                            <a href="#{@id}" title="{@type}" class="{@type}"><xsl:value-of select="@url" /></a><span class="{@type}" style="font-size: 0.8em;">&#160;<xsl:for-each select="(get | post)[position() &lt;= 3]"><xsl:value-of select="@name" /><xsl:if test="position() != last()">&#160;</xsl:if></xsl:for-each><xsl:if test="count(get | post) > 3"><span style="color: #567;"> ...</span></xsl:if></span>
+                                        </li>
+                                    </xsl:for-each>
+                                </ul>
+                            </div>
+                        </td>
+                        <td align="center" valign="top" width="100%">
+                            <div style="overflow-y: scroll; height: 100%;">
+                                <span style="display: inline-block; width: 1000px; text-align: left;">
+                                    <xsl:apply-templates />
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
             </body>
         </html>
     </xsl:template>
