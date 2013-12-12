@@ -369,6 +369,14 @@ class xml implements ArrayAccess
         return new xml($xml);
     }
 
+    static function load_absolute($filename) # Temporary workaround >_<
+    {
+        $xml = new DOMDocument();
+        $xml->load($filename) or runtime_error('XML document not found: ' . $filename);
+        $xml->xinclude();
+        return new xml($xml);
+    }
+
     static function download($url)
     {
         $xml = new DOMDocument();

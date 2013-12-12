@@ -1,10 +1,11 @@
 <?php
 
-$config = xml::load($options['config']);
+$config = xml::load_absolute($options->config);
 
 $templates = $config->root()->attribute('templates');
+$data = $config->root()->attribute('data');
+$cache = $options->cache;
 $engine = $config->root()->attribute('engine');
-$cache = $config->root()->attribute('cache');
 $schema = $config->root()->attribute('schema');
 $api = new api($schema);
 
@@ -14,12 +15,12 @@ foreach($config->query('/config/pages//page') as $page)
 
     foreach($config->query_assoc('param[@name and @value]', $page, '@name', '@value') as $name => $value)
     {
-        $params[$name] = ['type' => 'value', 'value' => $value];
+        $params[$name] = (object) ['type' => 'value', 'value' => $value];
     }
 
     foreach($config->query_assoc('param[@name and @get]', $page, '@name', '@get') as $name => $get)
     {
-        $params[$name] = ['type' => 'get', 'value' => $get];
+        $params[$name] = (object) ['type' => 'get', 'value' => $get];
     }
 
     $this->router->insert(new page
@@ -28,9 +29,10 @@ foreach($config->query('/config/pages//page') as $page)
         $params,
         trim($page->value()),
         $templates,
+        $data,
+        $cache,
         $page['@template'],
         $page->attribute('engine') ? $page['@engine'] : $engine,
-        $cache,
         $api
     ));
 }

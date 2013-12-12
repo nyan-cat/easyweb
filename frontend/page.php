@@ -2,7 +2,7 @@
 
 class page
 {
-    function __construct($url, $params, $script, $folder, $template, $engine, $cache, $api)
+    function __construct($url, $params, $script, $templates, $data, $cache, $template, $engine, $api)
     {
         $escaped = str_replace(['/', '.'], ['\/', '\.'], $url);
         $this->regex = '/\A' . preg_replace('/\{\$\w+\}/', '(.+)', $escaped) . '\Z/';
@@ -15,10 +15,11 @@ class page
 
         $this->params = $params;
         $this->script = strlen($script) ? $script : null;
-        $this->folder = $folder;
+        $this->templates = $templates;
+        $this->data = $data;
+        $this->cache = $cache;
         $this->template = $template;
         $this->engine = $engine;
-        $this->cache = $cache;
         $this->api = $api;
     }
 
@@ -48,66 +49,88 @@ class page
 
         foreach($this->params as $name => $param)
         {
-            $value = preg_replace_callback
-            (
-                '/\{\$(\w+)\}/',
-                function($matches) use($params)
-                {
-                    return $params[$matches[1]];
-                },
-                $param['value']
-            );
+            $value = self::substitute($param->value, $params);
 
-            switch($param['type'])
+            switch($param->type)
             {
-            case 'value': $values[$name] = $value; break;
-            case 'get': $batch[$name] = $value; break;
+            case 'value':
+                $values[$name] = $value;
+                break;
+
+            case 'json':
+                $values[$name] = json_decode(file_get_contents($value));
+                break;
+
+            case 'xml':
+                $values[$name] = 'TODO: Add XML support here';
+                break;
+
+            case 'get':
+                $batch[$name] = $value;
+                break;
             }
         }
 
-        $batch = $this->api->batch($batch);
+        $params = array_merge($values, empty($batch) ? [] : $this->api->batch($batch));
 
         if($this->script)
         {
-            $params = array_merge($params, $values, $batch);
             $prototype = '$' . implode(',$', array_keys($params));
             $script = '';
             $script .= 'return function(' . (empty($params) ? '' : $prototype) . ") { {$this->script} };";
             $closure = eval($script);
             if($result = call_user_func_array($closure->bindTo($this->api), array_values($params)))
             {
-                $batch = array_merge($batch, $result);
+                $params = array_merge($params, $result);
             }
         }
-
-        $batch = array_merge($values, $batch);
 
         switch($this->engine)
         {
         case 'twig':
-            $loader = new Twig_Loader_Filesystem($this->folder);
+            $loader = new Twig_Loader_Filesystem($this->templates);
+            $closure = function ($filename)
+            {
+                return json_decode(file_get_contents($this->data . $filename));
+            };
+            $json = new Twig_SimpleFunction('json', $closure->bindTo($this, $this));
             $twig = new Twig_Environment($loader, ['cache' => $this->cache]);
+            $twig->addFunction($json);
             $template = $twig->loadTemplate($this->template);
-            return $template->render($batch);
+            return $template->render($params);
 
         case 'smarty':
             $smarty = new Smarty();
-            $smarty->setTemplateDir($this->folder)
+            $smarty->setTemplateDir($this->templates)
                    ->setCompileDir($this->cache)
                    ->setCacheDir($this->cache);
-            $smarty->assign($batch);
-            return @$smarty->fetch(ltrim($this->template, '/'));
+            $smarty->assign($params);
+            return @$smarty->fetch($this->template);
         }
+    }
+
+    static function substitute($value, $params)
+    {
+        return preg_replace_callback
+        (
+            '/\{\$(\w+)\}/',
+            function($matches) use($params)
+            {
+                return $params[$matches[1]];
+            },
+            $value
+        );
     }
 
     private $regex;
     private $args = [];
     private $params;
     private $script;
-    private $folder;
+    private $templates;
+    private $data;
+    private $cache;
     private $template;
     private $engine;
-    private $cache;
     private $api;
 }
 
