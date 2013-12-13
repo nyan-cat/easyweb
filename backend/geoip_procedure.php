@@ -26,7 +26,7 @@ class geoip_procedure extends procedure
         case 'record':
             if($record = geoip_record_by_name($args['host']))
             {
-                return
+                return (object)
                 [
                     'country' =>
                     [
@@ -47,6 +47,11 @@ class geoip_procedure extends procedure
             break;
         }
         return null;
+    }
+
+    function evaluate_direct($args)
+    {
+        return $this->query_direct($args);
     }
 
     private $method;

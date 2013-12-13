@@ -16,6 +16,11 @@ class dispatcher
         return $this->get($name, $args)->query($args);
     }
 
+    function evaluate($name, $args)
+    {
+        return $this->get($name, $args)->evaluate($args);
+    }
+
     function get($name, $args)
     {
         $id = procedure::make_id($name, $args);

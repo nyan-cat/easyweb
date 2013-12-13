@@ -17,6 +17,13 @@ class procedure
         return $this->query_direct($args);
     }
 
+    function evaluate($args)
+    {
+        $this->validate($args);
+        method_exists($this, 'evaluate_direct') or backend_error('bad_query', 'Method is not evaluateable');
+        return $this->evaluate_direct($args);
+    }
+
     function params()
     {
         return $this->params;

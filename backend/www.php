@@ -131,20 +131,7 @@ class www
 
     function evaluate($name, $args)
     {
-        $fetch = function($entity) use(&$fetch)
-        {
-            if(is_array($entity))
-            {
-                (count($entity) == 1 and isset($entity[0])) or backend_error('bad_query', 'Query result is not evaluateable');
-                return $fetch($entity[0]);
-            }
-            else
-            {
-                return $entity;
-            }
-        };
-
-        return $fetch($this->query($name, $args));
+        return $this->dispatcher->evaluate($name, $args);
     }
 
     function wrap($mixed, $domain, $lifetime = 0)

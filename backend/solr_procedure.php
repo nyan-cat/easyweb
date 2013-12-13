@@ -116,8 +116,15 @@ class solr_procedure extends procedure
                 !$this->required or backend_error('bad_input', 'Empty response from Solr procedure');
             }
 
-            return empty($result) ? ['matched' => 0, 'documents' => (object)null] : $result;
+            return empty($result) ? (object) ['matched' => 0, 'documents' => (object) null] : $result;
         }
+    }
+
+    function evaluate_direct($args)
+    {
+        $result = $this->query_direct($args);
+        ($result->matched == 1 and count($result->documents) == 1) or backend_error('bad_query', 'Solr query is not evaluateable');
+        return $result->documents[0];
     }
 
     private static function substitute($body, $args)

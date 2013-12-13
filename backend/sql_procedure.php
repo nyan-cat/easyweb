@@ -49,6 +49,13 @@ class sql_procedure extends procedure
         }
     }
 
+    function evaluate_direct($args)
+    {
+        $result = $this->query_direct($args);
+        count($result) == 1 or backend_error('bad_query', 'SQL query is not evaluateable');
+        return $result[0];
+    }
+
     private function apply($query, $args)
     {
         return preg_replace(array('/\[(\w+)\]/e', '/\$(\w+)/e'), array("\$this->replace('\\1', \$args)", "\$this->replace_escape('\\1', \$args)"), $query);
