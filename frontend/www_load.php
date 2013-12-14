@@ -4,7 +4,6 @@ $config = xml::load_absolute($options->config);
 
 $templates = $config->root()->attribute('templates');
 $data = $config->root()->attribute('data');
-$cache = $options->cache;
 $engine = $config->root()->attribute('engine');
 $schema = $config->root()->attribute('schema');
 $api = new api($schema);
@@ -30,7 +29,7 @@ foreach($config->query('/config/pages//page') as $page)
         trim($page->value()),
         $templates,
         $data,
-        $cache,
+        isset($options->cache) ? $options->cache : null,
         $page['@template'],
         $page->attribute('engine') ? $page['@engine'] : $engine,
         $api

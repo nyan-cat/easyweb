@@ -94,16 +94,24 @@ class page
                 return json_decode(file_get_contents($this->data . $filename));
             };
             $json = new Twig_SimpleFunction('json', $closure->bindTo($this, $this));
-            $twig = new Twig_Environment($loader, ['cache' => $this->cache]);
+            $options = [];
+            if($this->cache)
+            {
+                $options['cache'] = $this->cache;
+            }
+            $twig = new Twig_Environment($loader, $options);
             $twig->addFunction($json);
             $template = $twig->loadTemplate($this->template);
             return $template->render($params);
 
         case 'smarty':
             $smarty = new Smarty();
-            $smarty->setTemplateDir($this->templates)
-                   ->setCompileDir($this->cache)
-                   ->setCacheDir($this->cache);
+            $smarty->setTemplateDir($this->templates);
+            if($this->cache)
+            {
+                $smarty->setCompileDir($this->cache)
+                       ->setCacheDir($this->cache);
+            }
             $smarty->assign($params);
             return @$smarty->fetch($this->template);
         }
