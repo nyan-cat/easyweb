@@ -13,7 +13,14 @@ class dispatcher
 
     function query($name, $args)
     {
-        return $this->get($name, $args)->query($args);
+        if($name[0] != '@')
+        {
+            return $this->get($name, $args)->query($args);
+        }
+        else
+        {
+            return $this->evaluate(substr($name, 1), $args);
+        }
     }
 
     function evaluate($name, $args)
