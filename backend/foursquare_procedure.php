@@ -2,8 +2,10 @@
 
 class foursquare_procedure extends procedure
 {
-    function __construct($name, $method, $required, $foursquare)
+    function __construct($name, $method, $required, $result, $foursquare)
     {
+        $result == 'array' or backend_error('bad_config', 'Foursquare procedure result must be array');
+
         switch($method)
         {
         case 'photos':
@@ -18,7 +20,7 @@ class foursquare_procedure extends procedure
             backend_error('bad_config', "Unknown Foursquare method: $method");
         }
 
-        parent::__construct($params, self::make_id($name, $params), $required);
+        parent::__construct($params, self::make_id($name, $params), $required, $result);
 
         $this->method = $method;
         $this->foursquare = $foursquare;

@@ -2,8 +2,10 @@
 
 class geoip_procedure extends procedure
 {
-    function __construct($name, $method, $required)
+    function __construct($name, $method, $required, $result)
     {
+        $result == 'object' or backend_error('bad_config', 'GeoIP procedure result must be object');
+
         switch($method)
         {
         case 'record':
@@ -14,7 +16,7 @@ class geoip_procedure extends procedure
             backend_error('bad_config', "Unknown GeoIP method: $method");
         }
 
-        parent::__construct($params, self::make_id($name, $params), $required);
+        parent::__construct($params, self::make_id($name, $params), $required, $result);
 
         $this->method = $method;
     }

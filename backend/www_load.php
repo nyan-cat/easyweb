@@ -32,6 +32,7 @@ foreach(sql::drivers() as $type => $internal)
                 $procedure['@name'],
                 $params,
                 $procedure->attribute('required') !== 'false',
+                $procedure->attribute('result', 'array'),
                 $procedure->value(),
                 $sql
             ));
@@ -52,6 +53,7 @@ foreach($config->query('/config/datasources//datasource[@type = "solr"]') as $ds
             $procedure['@name'],
             $params,
             $procedure->attribute('required') !== 'false',
+            $procedure->attribute('result', 'array'),
             $solr,
             $procedure['@core'],
             $procedure['@method'],
@@ -74,6 +76,7 @@ foreach($config->query('/config/datasources//datasource[@type = "foursquare"]') 
             $procedure['@name'],
             $procedure['@method'],
             $procedure->attribute('required') !== 'false',
+            $procedure->attribute('result', 'array'),
             $foursquare
         ));
     }
@@ -85,29 +88,10 @@ foreach($config->query('/config/procedures//procedure[@datasource = "geoip"]') a
     (
         $procedure['@name'],
         $procedure['@method'],
-        $procedure->attribute('required') !== 'false'
+        $procedure->attribute('required') !== 'false',
+        $procedure->attribute('result', 'array')
     ));
 }
-
-/*foreach($config->query('/config/datasources//datasource[@type = "http"]') as $ds)
-{
-    $datasource = new http_datasource($ds['@url'], $ds['@content-type'], $ds->attribute('username'), $ds->attribute('password'));
-
-    foreach($config->query('/config/procedures//procedure[@datasource = "' . $ds['@name'] . '"]') as $procedure)
-    {
-        $this->dispatcher->insert(new http_procedure
-        (
-            $datasource,
-            $procedure['@method'],
-            $procedure['@url'],
-            $config->query_assoc('param', $procedure, '@name', '@type'),
-            $config->query_assoc('get', $procedure, '@name', '@value'),
-            $config->query_assoc('post', $procedure, '@name', '@value'),
-            $procedure->attribute('content-type'),
-            $procedure->attribute('required') !== 'false'
-        ));
-    }
-}*/
 
 foreach($config->query('/config/groups//group') as $group)
 {
@@ -267,7 +251,19 @@ foreach($config->query('/config/methods//method') as $method)
         $body = null;
     }
 
-    $this->insert_method($url, new method($method['@type'], $get, $post, $service['accept'], $service['content-type'], $method->attribute('access'), $method->attribute('procedure'), $require, $body, $this));
+    $this->insert_method($url, new method
+    (
+        $method['@type'],
+        $get,
+        $post,
+        $service['accept'],
+        $service['content-type'],
+        $method->attribute('access'),
+        $method->attribute('procedure'),
+        $require,
+        $body,
+        $this
+    ));
 }
 
 ?>

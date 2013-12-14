@@ -4,24 +4,18 @@ require_once('datatype.php');
 
 class procedure
 {
-    function __construct($params, $id, $required)
+    function __construct($params, $id, $required, $result)
     {
         $this->params = $params;
         $this->id = $id;
         $this->required = $required;
+        $this->result = $result;
     }
 
     function query($args)
     {
         $this->validate($args);
         return $this->query_direct($args);
-    }
-
-    function evaluate($args)
-    {
-        $this->validate($args);
-        method_exists($this, 'evaluate_direct') or backend_error('bad_query', 'Method is not evaluateable');
-        return $this->evaluate_direct($args);
     }
 
     function params()
@@ -50,6 +44,7 @@ class procedure
     private $params;
     protected $id;
     protected $required;
+    protected $result;
 }
 
 ?>

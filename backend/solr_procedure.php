@@ -2,11 +2,11 @@
 
 class solr_procedure extends procedure
 {
-    function __construct($name, $params, $required, $solr, $core, $method, $body, $order_by, $offset = null, $count = null)
+    function __construct($name, $params, $required, $result, $solr, $core, $method, $body, $order_by, $offset = null, $count = null)
     {
         in_array($method, ['add', 'delete', 'query']) or backend_error('bad_config', "Unknown Solr method: $method");
 
-        parent::__construct($params, self::make_id($name, $params), $required);
+        parent::__construct($params, self::make_id($name, $params), $required, $result);
 
         $this->solr = $solr;
         $this->core = $core;
@@ -70,6 +70,8 @@ class solr_procedure extends procedure
             is_null($this->count) or $query->setRows(self::substitute($this->count, $args));
 
             $result = new stdClass();
+            $result->matched = 0;
+            $result->documents = [];
 
             $response = $solr->query($query);
             $object = $response->getResponse();
@@ -77,8 +79,6 @@ class solr_procedure extends procedure
             if(is_array($object['response']['docs']))
             {
                 $result->matched = $object['response']['numFound'];
-
-                $documents = [];
 
                 foreach($object['response']['docs'] as $doc)
                 {
@@ -106,25 +106,37 @@ class solr_procedure extends procedure
                         }
                     }
 
-                    $documents[] = $document;
+                    $result->documents[] = $document;
                 }
-
-                $result->documents = $documents;
             }
             else
             {
                 !$this->required or backend_error('bad_input', 'Empty response from Solr procedure');
             }
 
-            return empty($result) ? (object) ['matched' => 0, 'documents' => (object) null] : $result;
-        }
-    }
+            switch($this->result)
+            {
+            case 'array':
+                return empty($result) ? (object) ['matched' => 0, 'documents' => []] : $result;
 
-    function evaluate_direct($args)
-    {
-        $result = $this->query_direct($args);
-        ($result->matched == 1 and count($result->documents) == 1) or backend_error('bad_query', 'Solr query is not evaluateable');
-        return $result->documents[0];
+            case 'object':
+                if($result->matched == 1 and count($result->documents) == 1)
+                {
+                    return $result->documents[0];
+                }
+                elseif($result->matched == 0 and count($result->documents) == 0)
+                {
+                    return null;
+                }
+                else
+                {
+                    backend_error('bad_query', 'Solr query result is not an object');
+                }
+
+            default:
+                backend_error('bad_query', 'Unsupported Solr query result type: ' . $this->result);
+            }
+        }
     }
 
     private static function substitute($body, $args)

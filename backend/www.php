@@ -129,11 +129,6 @@ class www
         $this->query($name, $args);
     }
 
-    function evaluate($name, $args)
-    {
-        return $this->dispatcher->evaluate($name, $args);
-    }
-
     function wrap($mixed, $domain, $lifetime = 0)
     {
         $expire_at = $lifetime ? @time() + $lifetime : 0;

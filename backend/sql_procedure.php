@@ -4,9 +4,9 @@ require_once('procedure.php');
 
 class sql_procedure extends procedure
 {
-    function __construct($name, $params, $required, $body, $sql)
+    function __construct($name, $params, $required, $result, $body, $sql)
     {
-        parent::__construct($params, self::make_id($name, $params), $required);
+        parent::__construct($params, self::make_id($name, $params), $required, $result);
         $body = explode(';', trim(trim($body), ';'));
         $this->body = count($body) == 1 ? $body[0] : $body;
         $this->sql = $sql;
@@ -18,7 +18,7 @@ class sql_procedure extends procedure
         {
             $result = $this->sql->query($this->apply($this->body, $args));
             !($this->required and empty($result)) or backend_error('bad_query', 'SQL procedure returned empty result');
-            return $result;
+            return self::postprocess($result);
         }
         else
         {
@@ -45,7 +45,7 @@ class sql_procedure extends procedure
                 $this->sql->commit();
             }
 
-            return count($set) == 1 ? $set[0] : $set;
+            return $this->postprocess($result);
         }
     }
 
@@ -71,6 +71,35 @@ class sql_procedure extends procedure
     {
         isset($args[$name]) or backend_error('bad_input', 'Unknown procedure parameter: ' . $name);
         return $this->sql->quote($args[$name]);
+    }
+
+    private function postprocess($result)
+    {
+        switch($this->result)
+        {
+        case 'array':
+            empty($result) or !is_array($result[0]) or backend_error('bad_query', 'SQL result is not an array');
+            return $result;
+
+        case 'object':
+            if(!empty($result))
+            {
+                !is_array($result[0]) or backend_error('bad_query', 'SQL result is not an object');
+                return $result;
+            }
+            else
+            {
+                return null;
+            }
+
+        case 'multiarray':
+            !empty($result) or backend_error('bad_query', 'SQL result is not a multiarray');
+            is_array($result[0]) or backend_error('bad_query', 'SQL result is not a multiarray');
+            return $result;
+
+        default:
+            backend_error('bad_query', 'Unsupported SQL query result type: ' . $this->result);
+        }
     }
 
     private $sql;
