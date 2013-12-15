@@ -42,7 +42,10 @@ class www
 
     function request($url)
     {
-        return $this->router->request($url);
+        return preg_replace_callback('/<a [^>]*href="([^"]+)"[^>]*>([\s\S]+?)<\/a>/i', function($matches) use($url)
+        {
+            return $matches[1] == $url ? $matches[2] : $matches[0];
+        }, $this->router->request($url));
     }
 
     private $router;

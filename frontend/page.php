@@ -32,7 +32,7 @@ class page
 
             foreach($this->args as $n => $arg)
             {
-                $params[$arg] = $matches[1][$n];
+                $params[$arg] = $matches[$n + 1];
             }
 
             return true;
@@ -59,7 +59,7 @@ class page
                 break;
 
             case 'json':
-                $values[$name] = json_decode(file_get_contents($value));
+                $values[$name] = json::decode(fs::checked_read($value));
                 break;
 
             case 'xml':
