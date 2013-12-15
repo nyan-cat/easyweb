@@ -2,7 +2,7 @@
 
 class page
 {
-    function __construct($url, $params, $script, $templates, $data, $cache, $template, $engine, $api)
+    function __construct($url, $params, $script, $templates, $data, $cache, $template, $engine, $api, $locale)
     {
         $escaped = str_replace(['/', '.'], ['\/', '\.'], $url);
         $this->regex = '/\A' . preg_replace('/\{\$\w+\}/', '(.+)', $escaped) . '\Z/';
@@ -21,6 +21,7 @@ class page
         $this->template = $template;
         $this->engine = $engine;
         $this->api = $api;
+        $this->locale = $locale;
     }
 
     function match($url, &$params)
@@ -89,18 +90,27 @@ class page
         {
         case 'twig':
             $loader = new Twig_Loader_Filesystem($this->templates);
-            $closure = function ($filename)
-            {
-                return json_decode(file_get_contents($this->data . $filename));
-            };
-            $json = new Twig_SimpleFunction('json', $closure->bindTo($this, $this));
             $options = [];
             if($this->cache)
             {
                 $options['cache'] = $this->cache;
             }
             $twig = new Twig_Environment($loader, $options);
-            $twig->addFunction($json);
+
+            $closure = function ($filename)
+            {
+                return json_decode(file_get_contents($this->data . $filename));
+            };            
+            $function = new Twig_SimpleFunction('json', $closure->bindTo($this, $this));
+            $twig->addFunction($function);
+
+            $closure = function ($alias)
+            {
+                return $this->locale->get($alias);
+            };
+            $function = new Twig_SimpleFunction('local', $closure->bindTo($this, $this));
+            $twig->addFunction($function);
+
             $template = $twig->loadTemplate($this->template);
             return $template->render($params);
 
@@ -140,6 +150,7 @@ class page
     private $template;
     private $engine;
     private $api;
+    private $locale;
 }
 
 ?>

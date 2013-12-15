@@ -1,8 +1,9 @@
 <?php
 
-require_once(www_root . 'json.php');
-require_once(www_root . 'xml.php');
+require_once(www_root . 'facilities/json.php');
+require_once(www_root . 'facilities/xml.php');
 require_once(www_root . 'frontend/api.php');
+require_once(www_root . 'frontend/locale.php');
 require_once(www_root . 'frontend/router.php');
 
 class www

@@ -1,12 +1,15 @@
 <?php
 
-$config = xml::load_absolute($options->config);
+$config = xml::load($options->config);
+$root = $config->root();
 
-$templates = $config->root()->attribute('templates');
-$data = $config->root()->attribute('data');
-$engine = $config->root()->attribute('engine');
-$schema = $config->root()->attribute('schema');
+$templates = $root->attribute('templates');
+$data = $root->attribute('data');
+$engine = $root->attribute('engine');
+$schema = $root->attribute('schema');
 $api = new api($schema);
+$locale = new locale($options->language, $options->country);
+$locale->load($root['@locale']);
 
 foreach($config->query('/config/pages//page') as $page)
 {
@@ -32,7 +35,8 @@ foreach($config->query('/config/pages//page') as $page)
         isset($options->cache) ? $options->cache : null,
         $page['@template'],
         $page->attribute('engine') ? $page['@engine'] : $engine,
-        $api
+        $api,
+        $locale
     ));
 }
 
