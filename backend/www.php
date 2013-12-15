@@ -82,13 +82,51 @@ class www
         {
             $body = [];
 
-            foreach($post as $name => $url)
+            foreach($post as $param => $url)
             {
                 $query = parse_url($url);
                 $url = $query['path'];
                 $get = [];
                 !isset($query['query']) or parse_str($query['query'], $get);
-                $body[$name] = $this->call('GET', $url, $get, []);
+
+                foreach($get as $name => &$value)
+                {
+                    $value = preg_replace_callback
+                    (
+                        '/\{@([\w\.]+)\}/',
+                        function($matches) use(&$body)
+                        {
+                            $params = explode('.', $matches[1]);
+
+                            $current = null;
+
+                            foreach($params as $member)
+                            {
+                                if(!$current)
+                                {
+                                    $current = $body[$member];
+                                }
+                                else
+                                {
+                                    if(preg_match('/\A(\w+)\[(\d+)\]\Z/', $member, $array))
+                                    {
+                                        $current = $current->$array[1];
+                                        $current = $current[(int) $array[2]];
+                                    }
+                                    else
+                                    {
+                                        $current = $current->$member;
+                                    }
+                                }
+                            }
+
+                            return $current;
+                        },
+                        $value
+                    );
+                }
+
+                $body[$param] = $this->call('GET', $url, $get, []);
             }
 
             return (object)

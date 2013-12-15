@@ -85,7 +85,7 @@ class sql_procedure extends procedure
             if(!empty($result))
             {
                 !is_array($result[0]) or backend_error('bad_query', 'SQL result is not an object');
-                return $result;
+                return $result[0];
             }
             else
             {
