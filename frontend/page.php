@@ -43,12 +43,12 @@ class page
         }
     }
 
-    function request($params)
+    function request($params, $global)
     {
         $values = [];
         $batch = [];
 
-        foreach($this->params as $name => $param)
+        foreach(array_merge($global, $this->params) as $name => $param)
         {
             $value = self::substitute($param->value, $params);
 
@@ -96,6 +96,7 @@ class page
                 $options['cache'] = $this->cache;
             }
             $twig = new Twig_Environment($loader, $options);
+            $twig->getExtension('core')->setNumberFormat(0, '.', ' ');
 
             $closure = function ($filename)
             {

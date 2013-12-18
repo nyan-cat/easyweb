@@ -14,11 +14,6 @@ class www
         include('www_load.php');
     }
 
-    /*function __sleep()
-    {
-        return ['methods', 'access', 'dispatcher', 'schema', 'documentation'];
-    }*/
-
     static function create($options)
     {
         return new www($options);
@@ -40,12 +35,12 @@ class www
         }*/
     }
 
-    function request($url)
+    function request($url, $global)
     {
         return preg_replace_callback('/<a [^>]*href="([^"]+)"[^>]*>([\s\S]+?)<\/a>/i', function($matches) use($url)
         {
             return $matches[1] == $url ? $matches[2] : $matches[0];
-        }, $this->router->request($url));
+        }, $this->router->request($url, $global));
     }
 
     private $router;

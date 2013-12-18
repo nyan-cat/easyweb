@@ -215,7 +215,6 @@ class solr_procedure extends procedure
     private $core;
     private $method;
     private $body;
-    private $facets;
     private $order_by;
     private $offset;
     private $count;
