@@ -126,7 +126,7 @@ class www
                     );
                 }
 
-                $body[$param] = $this->call('GET', $url, $get, []);
+                $body[$param] = $this->call('GET', $url, $get);
             }
 
             return (object)
@@ -285,7 +285,7 @@ class www
         return json_encode($object, JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
     }
 
-    private function call($type, $url, $get, $post)
+    function call($type, $url, $get = [], $post = [])
     {
         isset($this->methods[$url]) or backend_error('bad_query', 'Method not found');
 

@@ -30,14 +30,27 @@ class procedure
 
     static function make_id($name, $params)
     {
-        return $name . '[' . implode(',', array_keys($params)) . ']';
+        $id = $name;
+
+        foreach($params as $name => $value)
+        {
+            if($name[0] != '_')
+            {
+                $id .= "[$name]";
+            }
+        }
+
+        return $id;
     }
 
     private function validate($args)
     {
         foreach($args as $name => $value)
         {
-            datatype::assert($this->params[$name], $value);
+            if($name[0] != '_')
+            {
+                datatype::assert($this->params[$name], $value);
+            }
         }
     }
 
