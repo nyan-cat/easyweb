@@ -28,9 +28,15 @@ class api
 
         $response = file_get_contents($this->endpoint . (empty($get) ? $url : ($url . http_build_query($get))), false, $ctx);
 
-        $response = json::decode($response, true);
+        $object = json::decode($response, true);
 
-        return $response['content'];
+        if(is_null($object))
+        {
+            var_dump($response);
+            die();
+        }
+
+        return $object['content'];
     }
 
     private $endpoint;

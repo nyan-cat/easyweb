@@ -112,6 +112,13 @@ class page
             $function = new Twig_SimpleFunction('local', $closure->bindTo($this, $this));
             $twig->addFunction($function);
 
+            $closure = function ($number)
+            {
+                return ceil($number);
+            };
+            $filter = new Twig_SimpleFilter('ceil', $closure);
+            $twig->addFilter($filter);
+
             $template = $twig->loadTemplate($this->template);
             return $template->render($params);
 

@@ -282,7 +282,7 @@ class www
 
     static function encode($object)
     {
-        return json_encode($object, JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
+        return json_encode($object, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     }
 
     function call($type, $url, $get = [], $post = [])
