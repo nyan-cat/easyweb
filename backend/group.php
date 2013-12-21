@@ -31,7 +31,7 @@ class group_procedure extends group
         $this->www = $www;
     }
 
-    function evaluate($args)
+    function query($args)
     {
         $matched = [];
 
@@ -41,7 +41,7 @@ class group_procedure extends group
             $matched[$name] = $args[$name];
         }
 
-        return $this->www->evaluate($this->procedure, $matched);
+        return $this->www->query($this->procedure, $matched);
     }
 
     private $procedure;
@@ -57,7 +57,7 @@ class group_expression extends group
         $this->access = $access;
     }
 
-    function evaluate($args)
+    function query($args)
     {
         if(!self::$xml)
         {
@@ -72,16 +72,25 @@ class group_expression extends group
 
     private function substitute($args)
     {
-        $replace = function($matches) use($args)
+        $procedures = function($matches) use($args)
         {
-            $result = $this->access->parse_evaluate($matches[1], $args);
+            $result = $this->access->parse_query($matches[1], $args);
             if($result === false)
             {
                 $result = '0';
             }
             return $result;
         };
-        return preg_replace_callback('/(\w+\[[\w,]*\])/', $replace->bindTo($this, $this), $this->body);
+
+        $values = function($matches) use($args)
+        {
+            isset($args[$matches[1]]) or backend_error('bad_group', 'Unknown group variable: ' . $matches[1]);
+            return $args[$matches[1]];
+        };
+
+        $result = preg_replace_callback('/(\w+\[[\w,]*\])/', $procedures->bindTo($this, $this), $this->body);
+
+        return preg_replace_callback('/\$(\w+)/i', $values, $result);
     }
 
     private $body;

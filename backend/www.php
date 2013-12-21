@@ -26,7 +26,7 @@ class www
 
     function __sleep()
     {
-        return ['methods', 'access', 'batch', 'dispatcher', 'schema', 'documentation'];
+        return ['methods', 'access', 'domains', 'batch', 'dispatcher', 'schema', 'documentation'];
     }
 
     static function create()
@@ -176,6 +176,21 @@ class www
         return security::wrap($mixed, $this->domains[$domain], $expire_at);
     }
 
+    function access($groups)
+    {
+        $result = [];
+
+        foreach($groups as $name => $args)
+        {
+            if(preg_match('/\A\w+\Z/', $name) ? $this->access->query($name, $args) : $this->access->parse_query($name, $args))
+            {
+                $result[] = $name;
+            }
+        }
+
+        return $result;
+    }
+
     function schema()
     {
         $schema = [];
@@ -243,7 +258,7 @@ class www
                     $g['@max'] = isset($param->max) ? $param->max : 'default (' . datatype::max($param->type) . ')';
                     $g['@required'] = $param->required ? 'true' : 'false';
                     !isset($param->default) or $g['@default'] = $param->default;
-                    $g['@secure'] = $param->secure ? 'true' : 'false';
+                    !isset($param->domains) or $g['@domain'] = implode(', ', $param->domains);
                     $method->append($g);
                 }
 
@@ -256,7 +271,7 @@ class www
                     $p['@max'] = isset($param->max) ? $param->max : 'default (' . datatype::max($param->type) . ')';
                     $p['@required'] = $param->required ? 'true' : 'false';
                     !isset($param->default) or $p['@default'] = $param->default;
-                    $p['@secure'] = $param->secure ? 'true' : 'false';
+                    !isset($param->domains) or $p['@domain'] = implode(', ', $param->domains);
                     $method->append($p);
                 }
             }
@@ -295,7 +310,7 @@ class www
         {
             if($group = $method->access())
             {
-                if(!$this->access->parse_evaluate($group, array_merge($get, $post)))
+                if(!$this->access->parse_query($group, array_merge($get, $post)))
                 {
                     continue;
                 }

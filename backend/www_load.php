@@ -104,7 +104,7 @@ foreach($config->query('/config/domains//domain') as $domain)
     }
     else
     {
-        $this->domains[$name] = $domain['@name'];
+        $this->domains[$name] = $name;
     }
 }
 
@@ -159,13 +159,9 @@ foreach($config->query('/config/methods//method') as $method)
     
     foreach($config->query('get', $method) as $param)
     {
-        $p =
-        [
-            'type'   => $param['@type'],
-            'secure' => $param->attribute('secure') === 'true'
-        ];
+        $p = ['type' => $param['@type']];
 
-        if($p['secure'])
+        if(($domains = $param->attribute('domain')) !== null)
         {
             $domains = explode(',', $param['@domain']);
             foreach($domains as &$domain)
@@ -196,11 +192,6 @@ foreach($config->query('/config/methods//method') as $method)
             $p['required'] = $param->attribute('required') !== 'false';
         }
 
-        if($p['secure'] and (!$p['required'] or isset($p['default'])))
-        {
-            backend_error('bad_config', 'Secure GET parameter shall be either required or have default value');
-        }
-
         $get[$param['@name']] = (object) $p;
     }
 
@@ -208,20 +199,14 @@ foreach($config->query('/config/methods//method') as $method)
     {
         !isset($get[$param['@name']]) or backend_error('bad_config', 'Duplicate parameter name for method ' . $url . ': ' . $param['@name']);
 
-        $p =
-        [
-            'type'   => $param['@type'],
-            'secure' => $param->attribute('secure') === 'true'
-        ];
+        $p = ['type' => $param['@type']];
 
-        if($p['secure'])
+        if(($domains = $param->attribute('domain')) !== null)
         {
             $domains = explode(',', $param['@domain']);
             foreach($domains as &$domain)
             {
                 $domain = trim($domain);
-                isset($this->domains[$domain]) or backend_error('bad_config', 'Unknown domain: ' . $domain);
-                $domain = $this->domains[$domain];
             }
             $p['domains'] = $domains;
         }
@@ -245,11 +230,6 @@ foreach($config->query('/config/methods//method') as $method)
         else
         {
             $p['required'] = $param->attribute('required') !== 'false';
-        }
-
-        if($p['secure'] and (!$p['required'] or isset($p['default'])))
-        {
-            backend_error('bad_config', 'Secure POST parameter shall be either required or have default value');
         }
 
         $post[$param['@name']] = (object) $p;

@@ -430,7 +430,7 @@
                             <th>Max</th>
                             <th>Required</th>
                             <th>Default</th>
-                            <th>Secure</th>
+                            <th>Domain</th>
                         </tr>
                         <xsl:for-each select="get">
                             <tr>
@@ -467,7 +467,7 @@
                                         </xsl:otherwise>
                                     </xsl:choose>
                                 </td>
-                                <td><xsl:choose><xsl:when test="@secure = 'true'"><b>true</b></xsl:when><xsl:otherwise><span class="inactive">false</span></xsl:otherwise></xsl:choose></td>
+                                <td><xsl:choose><xsl:when test="@domain"><b><xsl:value-of select="@domain" /></b></xsl:when><xsl:otherwise><span class="inactive">—</span></xsl:otherwise></xsl:choose></td>
                             </tr>
                         </xsl:for-each>
                     </table>
@@ -484,7 +484,7 @@
                             <th>Max</th>
                             <th>Required</th>
                             <th>Default</th>
-                            <th>Secure</th>
+                            <th>Domain</th>
                         </tr>
                         <xsl:for-each select="post">
                             <tr>
@@ -520,7 +520,7 @@
                                             <span class="inactive">—</span>
                                         </xsl:otherwise>
                                     </xsl:choose></td>
-                                <td><xsl:choose><xsl:when test="@secure = 'true'"><b>true</b></xsl:when><xsl:otherwise><span class="inactive">false</span></xsl:otherwise></xsl:choose></td>
+                                <td><xsl:choose><xsl:when test="@domain"><b><xsl:value-of select="@domain" /></b></xsl:when><xsl:otherwise><span class="inactive">—</span></xsl:otherwise></xsl:choose></td>
                             </tr>
                         </xsl:for-each>
                     </table>

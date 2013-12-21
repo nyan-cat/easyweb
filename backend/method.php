@@ -87,42 +87,50 @@ class method
 
         foreach($this->get as $name => $param)
         {
-            if($param->secure)
+            if(isset($param->domains) and isset($get[$name]))
             {
-                isset($get[$name]) or backend_error('bad_input', "Missing secure GET parameter: $name");
-                $value = security::unwrap($get[$name], $param->domains);
+                if(($value = security::unwrap($get[$name], $param->domains)) !== null)
+                {
+                    $get[$name] = $value;
+                }
+                else
+                {
+                    unset($get[$name]);
+                }
             }
-            else
-            {
-                $value = isset($get[$name]) ? $get[$name] : (isset($param->default) ? $param->default : ($param->required ? backend_error('bad_input', "Missing GET parameter: $name") : null));
-            }
+
+            $value = isset($get[$name]) ? $get[$name] : (isset($param->default) ? $param->default : ($param->required ? backend_error('bad_input', "Missing GET parameter: $name") : null));
 
             if(!is_null($value))
             {
                 $min = isset($param->min) ? $param->min : null;
                 $max = isset($param->max) ? $param->max : null;
-                $param->secure or datatype::assert($param->type, $value, $min, $max);
+                !isset($param->type) or datatype::assert($param->type, $value, $min, $max);
                 $args[$name] = $value;
             }
         }
 
         foreach($this->post as $name => $param)
         {
-            if($param->secure)
+            if(isset($param->domains) and isset($post[$name]))
             {
-                isset($post[$name]) or backend_error('bad_input', "Missing secure POST parameter: $name");
-                $value = security::unwrap($post[$name], $param->domains);
+                if(($value = security::unwrap($post[$name], $param->domains)) !== null)
+                {
+                    $post[$name] = $value;
+                }
+                else
+                {
+                    unset($post[$name]);
+                }
             }
-            else
-            {
-                $value = isset($post[$name]) ? $post[$name] : (isset($param->default) ? $param->default : ($param->required ? backend_error('bad_input', "Missing POST parameter: $name") : null));
-            }
+
+            $value = isset($post[$name]) ? $post[$name] : (isset($param->default) ? $param->default : ($param->required ? backend_error('bad_input', "Missing POST parameter: $name") : null));
 
             if(!is_null($value))
             {
                 $min = isset($param->min) ? $param->min : null;
                 $max = isset($param->max) ? $param->max : null;
-                $param->secure or datatype::assert($param->type, $value, $min, $max);
+                !isset($param->type) or datatype::assert($param->type, $value, $min, $max);
                 $args[$name] = $value;
             }
         }

@@ -21,41 +21,46 @@ class security
 
         $package['digest'] = self::digest($package);
 
-        return (object) ['value' => $mixed, 'token' => base64_encode(json::encode($package))];
+        return base64_encode(json::encode($package));
     }
 
     static function unwrap($token, $domains, $address = null)
     {
-        $package = base64_decode($token, true);
-        $package !== false or backend_error('bad_secure_parameter', 'Security token is not valid base64 string');
-        $package = json::decode($package);
-        !is_null($package) or backend_error('bad_secure_parameter', 'Secure parameter is not a JSON-encoded object');
-        isset($package->value) or backend_error('bad_secure_parameter', 'Secure parameter has no value member');
-        isset($package->domain) or backend_error('bad_secure_parameter', 'Secure parameter has no domain member');
-        isset($package->expire_at) or backend_error('bad_secure_parameter', 'Secure parameter has no expire_at member');
-        isset($package->digest) or backend_error('bad_secure_parameter', 'Secure parameter has no digest member');
-
-        $digest = $package->digest;
-        unset($package->digest);
-        $digest === self::digest($package) or backend_error('bad_secure_parameter', 'Secure parameter digest is invalid');
-
-        if(isset($package->address))
+        if($package = base64_decode($token, true))
         {
-            !is_null($address) or backend_error('bad_secure_parameter', 'IP address for secure parameter validation is not specified');
-            $package->address === $address or backend_error('bad_secure_parameter', 'Secure parameter IP address doesn\'t match');
-        }
-        
-        $package->expire_at === 0 or $package->expire_at > @time() or backend_error('bad_secure_parameter', 'Secure parameter expired');
-
-        foreach($domains as $domain)
-        {
-            if(strpos($domain, $package->domain) === 0)
+            if($package = json::decode($package))
             {
-                return $package->value;
+                if(isset($package->value) and isset($package->domain) and isset($package->expire_at) and isset($package->digest))
+                {
+                    $digest = $package->digest;
+                    unset($package->digest);
+
+                    if($digest === self::digest($package))
+                    {
+                        if(isset($package->address))
+                        {
+                            if(is_null($address) or $package->address !== $address)
+                            {
+                                return null;
+                            }
+                        }
+
+                        if($package->expire_at === 0 or $package->expire_at > @time())
+                        {
+                            foreach($domains as $domain)
+                            {
+                                if(strpos($domain, $package->domain) === 0)
+                                {
+                                    return $package->value;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
         
-        backend_error('bad_secure_parameter', 'No domains are matched for secure parameter');
+        return null;
     }
 
     private static function digest($mixed)
