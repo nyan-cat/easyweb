@@ -196,7 +196,7 @@
                         font-size: 0.9em;
                         padding: 0.5em;
                         margin-bottom: 1em;
-                        width: 20em;
+                        width: 35em;
                     }
 
                     input:focus

@@ -169,9 +169,11 @@ class www
 
     function wrap($mixed, $domain, $lifetime = 0)
     {
+        isset($this->domains[$domain]) or backend_error('bad_method', 'Unknown domain: ' . $domain);
+
         $expire_at = $lifetime ? @time() + $lifetime : 0;
 
-        return security::wrap($mixed, $domain, $expire_at);
+        return security::wrap($mixed, $this->domains[$domain], $expire_at);
     }
 
     function schema()
@@ -311,6 +313,7 @@ class www
     private $encoders = [];
     private $methods = [];
     private $access;
+    private $domains = [];
     private $dispatcher;
     private $batch = null;
     private $schema = null;

@@ -93,6 +93,21 @@ foreach($config->query('/config/procedures//procedure[@datasource = "geoip"]') a
     ));
 }
 
+foreach($config->query('/config/domains//domain') as $domain)
+{
+    $name = $domain['@name'];
+
+    if($extends = $domain->attribute('extends'))
+    {
+        isset($this->domains[$extends]) or backend_error('bad_config', 'Unknown base domain: ' . $extends);
+        $this->domains[$name] = $name . '.' . $this->domains[$extends];
+    }
+    else
+    {
+        $this->domains[$name] = $domain['@name'];
+    }
+}
+
 foreach($config->query('/config/groups//group') as $group)
 {
     $name = $group["@name"];
@@ -205,6 +220,8 @@ foreach($config->query('/config/methods//method') as $method)
             foreach($domains as &$domain)
             {
                 $domain = trim($domain);
+                isset($this->domains[$domain]) or backend_error('bad_config', 'Unknown domain: ' . $domain);
+                $domain = $this->domains[$domain];
             }
             $p['domains'] = $domains;
         }
