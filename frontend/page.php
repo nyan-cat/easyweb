@@ -161,8 +161,8 @@ class page
                 {
                     return $this->locale->get($alias);
                 };
-                $function = new Twig_SimpleFunction('local', $closure->bindTo($this, $this));
-                $twig->addFunction($function);
+                $function = new Twig_SimpleFilter('local', $closure->bindTo($this, $this));
+                $twig->addFilter($function);
 
                 $closure = function ($number)
                 {
