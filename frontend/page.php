@@ -45,7 +45,7 @@ class page
         }
     }
 
-    function request($params, $global)
+    function request($params, $global, $get, $post, $cookies)
     {
         $values = [];
         $batch = [];
@@ -68,11 +68,41 @@ class page
                 $values[$name] = 'TODO: Add XML support here';
                 break;
 
-            case 'get':
+            case 'query':
                 $batch[$name] = $value;
+                break;
+
+            case 'get':
+                isset($get[$value]) or isset($param->default) or runtime_error('GET parameter not found: ' . $name);
+                $values[$name] = isset($get[$value]) ? $get[$value] : $param->default;
+                break;
+
+            case 'post':
+                isset($post[$value]) or isset($param->default) or runtime_error('POST parameter not found: ' . $name);
+                $values[$name] = isset($post[$value]) ? $post[$value] : $param->default;
+                break;
+
+            case 'cookie':
+                isset($cookies[$value]) or isset($param->default) or runtime_error('Cookie parameter not found: ' . $name);
+                $values[$name] = isset($cookies[$value]) ? $cookies[$value] : $param->default;
                 break;
             }
         }
+
+        foreach($batch as $name => &$value)
+        {
+            $value = preg_replace_callback
+            (
+                '/\{@(\w+)\}/',
+                function($matches) use($values)
+                {
+                    return isset($values[$matches[1]]) ? $values[$matches[1]] : $matches[0];
+                },
+                $value
+            );
+        }
+
+        $response = [];
 
         $params = array_merge($values, empty($batch) ? [] : $this->api->batch($batch));
 
@@ -89,64 +119,77 @@ class page
 
             $args = array_values($params);
 
-            foreach($args as &$arg)
-            {
-                $arg = (object) $arg;
-            }
-
             if($result = call_user_func_array($closure->bindTo($this->api), $args))
             {
                 $params = array_merge($params, $result);
             }
+
+            foreach(['cookies', 'redirect', 'headers'] as $builtin)
+            {
+                $mangled = '_' . $builtin;
+
+                if(isset($params[$mangled]))
+                {
+                    $response[$builtin] = $params[$mangled];
+                    unset($params[$mangled]);
+                }
+            }
         }
 
-        switch($this->engine)
+        if($this->template)
         {
-        case 'twig':
-            $loader = new Twig_Loader_Filesystem($this->templates);
-            $options = [];
-            if($this->cache)
+            switch($this->engine)
             {
-                $options['cache'] = $this->cache;
+            case 'twig':
+                $loader = new Twig_Loader_Filesystem($this->templates);
+                $options = [];
+                if($this->cache)
+                {
+                    $options['cache'] = $this->cache;
+                }
+                $twig = new Twig_Environment($loader, $options);
+                $twig->getExtension('core')->setNumberFormat(0, '.', ' ');
+
+                $closure = function ($filename)
+                {
+                    return json_decode(file_get_contents($this->data . $filename));
+                };            
+                $function = new Twig_SimpleFunction('json', $closure->bindTo($this, $this));
+                $twig->addFunction($function);
+
+                $closure = function ($alias)
+                {
+                    return $this->locale->get($alias);
+                };
+                $function = new Twig_SimpleFunction('local', $closure->bindTo($this, $this));
+                $twig->addFunction($function);
+
+                $closure = function ($number)
+                {
+                    return ceil($number);
+                };
+                $filter = new Twig_SimpleFilter('ceil', $closure);
+                $twig->addFilter($filter);
+
+                $template = $twig->loadTemplate($this->template);
+                $response['content'] = $template->render($params);
+                break;
+
+            case 'smarty':
+                $smarty = new Smarty();
+                $smarty->setTemplateDir($this->templates);
+                if($this->cache)
+                {
+                    $smarty->setCompileDir($this->cache)
+                           ->setCacheDir($this->cache);
+                }
+                $smarty->assign($params);
+                $response['content'] = @$smarty->fetch($this->template);
+                break;
             }
-            $twig = new Twig_Environment($loader, $options);
-            $twig->getExtension('core')->setNumberFormat(0, '.', ' ');
-
-            $closure = function ($filename)
-            {
-                return json_decode(file_get_contents($this->data . $filename));
-            };            
-            $function = new Twig_SimpleFunction('json', $closure->bindTo($this, $this));
-            $twig->addFunction($function);
-
-            $closure = function ($alias)
-            {
-                return $this->locale->get($alias);
-            };
-            $function = new Twig_SimpleFunction('local', $closure->bindTo($this, $this));
-            $twig->addFunction($function);
-
-            $closure = function ($number)
-            {
-                return ceil($number);
-            };
-            $filter = new Twig_SimpleFilter('ceil', $closure);
-            $twig->addFilter($filter);
-
-            $template = $twig->loadTemplate($this->template);
-            return $template->render($params);
-
-        case 'smarty':
-            $smarty = new Smarty();
-            $smarty->setTemplateDir($this->templates);
-            if($this->cache)
-            {
-                $smarty->setCompileDir($this->cache)
-                       ->setCacheDir($this->cache);
-            }
-            $smarty->assign($params);
-            return @$smarty->fetch($this->template);
         }
+
+        return (object) $response;
     }
 
     static function substitute($value, $params)

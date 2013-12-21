@@ -11,7 +11,16 @@ class api
 
     function batch($params)
     {
-        return $this->request('POST', '/batch', [], $params);
+        $result = $this->request('POST', '/batch', [], $params);
+
+        $array = [];
+
+        foreach($result as $name => $value)
+        {
+            $array[$name] = json::decode(json::encode($value)); # TODO: Replace with fast solution
+        }
+
+        return $array;
     }
 
     function request($type, $url, $get = [], $post = [])
@@ -26,7 +35,7 @@ class api
 
         $ctx = stream_context_create(['http' => $request]);
 
-        $response = file_get_contents($this->endpoint . (empty($get) ? $url : ($url . http_build_query($get))), false, $ctx);
+        $response = file_get_contents($this->endpoint . (empty($get) ? $url : ($url . '?' . http_build_query($get))), false, $ctx);
 
         $object = json::decode($response, true);
 
@@ -36,7 +45,9 @@ class api
             die();
         }
 
-        return $object['content'];
+        $content = $object['content'];
+
+        return (is_object($content) or (is_array($content) and array_values($content) !== $content)) ? (object) $content : $content;
     }
 
     private $endpoint;

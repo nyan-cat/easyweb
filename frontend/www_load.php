@@ -21,9 +21,45 @@ foreach($config->query('/config/pages//page') as $page)
         $params[$name] = (object) ['type' => 'value', 'value' => $value];
     }
 
-    foreach($config->query_assoc('param[@name and @get]', $page, '@name', '@get') as $name => $get)
+    foreach($config->query_assoc('param[@name and @query]', $page, '@name', '@query') as $name => $value)
     {
-        $params[$name] = (object) ['type' => 'get', 'value' => $get];
+        $params[$name] = (object) ['type' => 'query', 'value' => $value];
+    }
+
+    foreach($config->query('param[@name and @get]', $page) as $param)
+    {
+        $array = ['type' => 'get', 'value' => $param['@get']];
+
+        if($default = $param->attribute('default'))
+        {
+            $array['default'] = $default;
+        }
+
+        $params[$param['@name']] = (object) $array;
+    }
+
+    foreach($config->query('param[@name and @post]', $page) as $param)
+    {
+        $array = ['type' => 'post', 'value' => $param['@post']];
+
+        if($default = $param->attribute('default'))
+        {
+            $array['default'] = $default;
+        }
+
+        $params[$param['@name']] = (object) $array;
+    }
+
+    foreach($config->query('param[@name and @cookie]', $page) as $param)
+    {
+        $array = ['type' => 'cookie', 'value' => $param['@cookie']];
+
+        if($default = $param->attribute('default'))
+        {
+            $array['default'] = $default;
+        }
+
+        $params[$param['@name']] = (object) $array;
     }
 
     $require = [];
@@ -43,7 +79,7 @@ foreach($config->query('/config/pages//page') as $page)
         $data,
         $scripts,
         isset($options->cache) ? $options->cache : null,
-        $page['@template'],
+        $page->attribute('template'),
         $page->attribute('engine') ? $page['@engine'] : $engine,
         $api,
         $locale
