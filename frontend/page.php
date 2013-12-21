@@ -2,7 +2,7 @@
 
 class page
 {
-    function __construct($url, $params, $script, $templates, $data, $cache, $template, $engine, $api, $locale)
+    function __construct($url, $params, $require, $script, $templates, $data, $scripts, $cache, $template, $engine, $api, $locale)
     {
         $escaped = str_replace(['/', '.'], ['\/', '\.'], $url);
         $this->regex = '/\A' . preg_replace('/\{\$\w+\}/', '(.+)', $escaped) . '\Z/';
@@ -14,9 +14,11 @@ class page
         }
 
         $this->params = $params;
+        $this->require = $require;
         $this->script = strlen($script) ? $script : null;
         $this->templates = $templates;
         $this->data = $data;
+        $this->scripts = $scripts;
         $this->cache = $cache;
         $this->template = $template;
         $this->engine = $engine;
@@ -78,9 +80,21 @@ class page
         {
             $prototype = '$' . implode(',$', array_keys($params));
             $script = '';
+            foreach($this->require as $require)
+            {
+                $script .= 'require_once(\'' . $this->scripts . $require . '\');';
+            }
             $script .= 'return function(' . (empty($params) ? '' : $prototype) . ") { {$this->script} };";
             $closure = eval($script);
-            if($result = call_user_func_array($closure->bindTo($this->api), array_values($params)))
+
+            $args = array_values($params);
+
+            foreach($args as &$arg)
+            {
+                $arg = (object) $arg;
+            }
+
+            if($result = call_user_func_array($closure->bindTo($this->api), $args))
             {
                 $params = array_merge($params, $result);
             }
@@ -151,9 +165,11 @@ class page
     private $regex;
     private $args = [];
     private $params;
+    private $require;
     private $script;
     private $templates;
     private $data;
+    private $scripts;
     private $cache;
     private $template;
     private $engine;
