@@ -26,7 +26,7 @@ class www
 
     function __sleep()
     {
-        return ['methods', 'access', 'domains', 'batch', 'dispatcher', 'schema', 'documentation'];
+        return ['methods', 'access', 'domains', 'scripts', 'batch', 'dispatcher', 'schema', 'documentation'];
     }
 
     static function create()
@@ -191,6 +191,11 @@ class www
         return $result;
     }
 
+    function script($path)
+    {
+        return $this->scripts . $path;
+    }
+
     function schema()
     {
         $schema = [];
@@ -330,6 +335,7 @@ class www
     private $access;
     private $domains = [];
     private $dispatcher;
+    private $scripts;
     private $batch = null;
     private $schema = null;
     private $documentation = null;

@@ -2,17 +2,22 @@
 
 $config = xml::load(config_location);
 
-if($batch = $config->root()->attribute('batch'))
+if(($scripts = $config->root()->attribute('scripts')) !== null)
+{
+    $this->scripts = $scripts;
+}
+
+if(($batch = $config->root()->attribute('batch')) !== null)
 {
     $this->batch = $batch;
 }
 
-if($schema = $config->root()->attribute('schema'))
+if(($schema = $config->root()->attribute('schema')) !== null)
 {
     $this->schema = $schema;
 }
 
-if($documentation = $config->root()->attribute('documentation'))
+if(($documentation = $config->root()->attribute('documentation')) !== null)
 {
     $this->documentation = $documentation;
 }

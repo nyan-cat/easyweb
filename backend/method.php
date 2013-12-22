@@ -141,7 +141,7 @@ class method
             $script = '';
             foreach($this->require as $require)
             {
-                $script .= 'require_once(\'' . fs::normalize($require) . '\');';
+                $script .= 'require_once(\'' . $this->www->script($require) . '\');';
             }
             $script .= 'return function(' . (empty($args) ? '' : $params) . ") { {$this->body} };";
             $closure = eval($script);
