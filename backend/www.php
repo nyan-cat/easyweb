@@ -31,18 +31,18 @@ class www
 
     static function create()
     {
-        $cache = cache_location . 'cache.tmp';
+        //$cache = cache_location . 'cache.tmp';
 
-        if($www = fs::read($cache))
+        /*if($www = fs::read($cache))
         {
             $www = unserialize($www);
             $www->bind();
             return $www;
         }
-        else
+        else*/
         {
             $www = new www();
-            fs::write($cache, serialize($www));
+            //fs::write($cache, serialize($www));
             $www->bind();
             return $www;
         }

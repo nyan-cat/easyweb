@@ -6,6 +6,11 @@ class datatype
 {
     static function match($name, $value, $min = null, $max = null)
     {
+        if($name == 'object')
+        {
+            return true;
+        }
+
         isset(self::$types[$name]) or backend_error('bad_type', "Unknown type: $name");
         !is_null($min) or $min = self::min($name);
         !is_null($max) or $max = self::max($name);
