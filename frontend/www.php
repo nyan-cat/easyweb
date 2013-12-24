@@ -35,9 +35,9 @@ class www
         }*/
     }
 
-    function request($url, $global, $get, $post, $cookies)
+    function request($url, $global, $get, $post, $cookies, $files)
     {
-        $response = $this->router->request($url, $global, $get, $post, $cookies);
+        $response = $this->router->request($url, $global, $get, $post, $cookies, $files);
 
         if(isset($response->content))
         {

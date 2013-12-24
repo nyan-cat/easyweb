@@ -73,6 +73,7 @@ foreach($config->query('/config/pages//page') as $page)
     (
         $page['@url'],
         $params,
+        $page->attribute('files'),
         $require,
         trim($page->value()),
         $templates,

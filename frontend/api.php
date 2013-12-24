@@ -27,6 +27,14 @@ class api
     {
         $request = ['method' => $type];
 
+        foreach($post as $name => &$param)
+        {
+            if(is_array($param) and empty($param))
+            {
+                $param = [''];
+            }
+        }
+
         if(!empty($post))
         {
             $request['header'] = 'Content-type: application/x-www-form-urlencoded';

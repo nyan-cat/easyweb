@@ -2,7 +2,7 @@
 
 class page
 {
-    function __construct($url, $params, $require, $script, $templates, $data, $scripts, $cache, $template, $engine, $api, $locale)
+    function __construct($url, $params, $files, $require, $script, $templates, $data, $scripts, $cache, $template, $engine, $api, $locale)
     {
         $escaped = str_replace(['/', '.'], ['\/', '\.'], $url);
         $this->regex = '/\A' . preg_replace('/\{\$\w+\}/', '(.+)', $escaped) . '\Z/';
@@ -14,6 +14,7 @@ class page
         }
 
         $this->params = $params;
+        $this->files = $files;
         $this->require = $require;
         $this->script = strlen($script) ? $script : null;
         $this->templates = $templates;
@@ -45,7 +46,7 @@ class page
         }
     }
 
-    function request($params, $global, $get, $post, $cookies)
+    function request($params, $global, $get, $post, $cookies, $files)
     {
         $values = [];
         $batch = [];
@@ -108,18 +109,23 @@ class page
 
         if($this->script)
         {
-            $prototype = '$' . implode(',$', array_keys($params));
+            $script_args = $params;
+
+            if($this->files)
+            {
+                $script_args = array_merge($script_args, [$this->files => $files]);
+            }
+
+            $prototype = '$' . implode(',$', array_keys($script_args));
             $script = '';
             foreach($this->require as $require)
             {
                 $script .= 'require_once(\'' . $this->scripts . $require . '\');';
             }
-            $script .= 'return function(' . (empty($params) ? '' : $prototype) . ") { {$this->script} };";
+            $script .= 'return function(' . (empty($script_args) ? '' : $prototype) . ") { {$this->script} };";
             $closure = eval($script);
 
-            $args = array_values($params);
-
-            if($result = call_user_func_array($closure->bindTo($this->api), $args))
+            if($result = call_user_func_array($closure->bindTo($this->api), array_values($script_args)))
             {
                 $params = array_merge($params, $result);
             }
@@ -142,12 +148,13 @@ class page
             {
             case 'twig':
                 $loader = new Twig_Loader_Filesystem($this->templates);
-                $options = [];
+                $options = [/*'debug' => true*/];
                 if($this->cache)
                 {
                     $options['cache'] = $this->cache;
                 }
                 $twig = new Twig_Environment($loader, $options);
+                //$twig->addExtension(new Twig_Extension_Debug());
                 $twig->getExtension('core')->setNumberFormat(0, '.', ' ');
 
                 $closure = function ($filename)
@@ -208,6 +215,7 @@ class page
     private $regex;
     private $args = [];
     private $params;
+    private $files;
     private $require;
     private $script;
     private $templates;

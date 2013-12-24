@@ -9,13 +9,13 @@ class router
         $this->pages[] = $page;
     }
 
-    function request($url, $global, $get, $post, $cookies)
+    function request($url, $global, $get, $post, $cookies, $files)
     {
         foreach($this->pages as $page)
         {
             if($page->match($url, $params))
             {
-                return $page->request($params, $global, $get, $post, $cookies);
+                return $page->request($params, $global, $get, $post, $cookies, $files);
             }
         }
 
