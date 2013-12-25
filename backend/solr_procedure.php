@@ -26,6 +26,8 @@ class solr_procedure extends procedure
         case 'add':
             isset($args['_documents']) or backend_error('bad_query', 'Solr _documents argument missing');
 
+            $docs = [];
+
             foreach($args['_documents'] as $name => $value)
             {
                 if(is_array($value))
@@ -34,23 +36,24 @@ class solr_procedure extends procedure
                     {
                         foreach($value as $document)
                         {
-                            self::add($solr, $document);
+                            $docs[] = self::add($document);
                         }
                     }
                     else
                     {
-                        self::add($solr, $value);
+                        $docs[] = self::add($value);
                     }
                 }
                 else if(is_object($value))
                 {
-                    self::add($solr, get_object_vars($value));
+                    $docs[] = self::add(get_object_vars($value));
                 }
                 else
                 {
                     backend_error('bad_args', 'Bad Solr document: ' . $name);
                 }
             }
+            $solr->addDocuments($docs);
             $solr->request("<commit/>");
             break;
 
@@ -201,14 +204,24 @@ class solr_procedure extends procedure
         return $args[$name];
     }
 
-    private static function add($solr, $document)
+    private static function add($document)
     {
         $doc = new SolrInputDocument();
         foreach($document as $name => $value)
         {
-            $doc->addField($name, $value);
+            if(is_array($value))
+            {
+                foreach($value as $element)
+                {
+                    $doc->addField($name, $element);
+                }
+            }
+            else
+            {
+                $doc->addField($name, $value);
+            }
         }
-        $solr->addDocument($doc);
+        return $doc;
     }
 
     private $solr;
