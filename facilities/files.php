@@ -21,7 +21,7 @@ class files
                             'name' => $input['name'][$n],
                             'type' => $input['type'][$n],
                             'size' => $input['size'][$n],
-                            'tmp'  => $input['tmp'][$n]
+                            'tmp'  => $input['tmp_name'][$n]
                         ];
                     }
                 }
@@ -37,7 +37,7 @@ class files
                         'name' => $input['name'],
                         'type' => $input['type'],
                         'size' => $input['size'],
-                        'tmp'  => $input['tmp']
+                        'tmp'  => $input['tmp_name']
                     ];
                 }
             }

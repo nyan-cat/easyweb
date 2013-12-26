@@ -1,5 +1,7 @@
 <?php
 
+require_once(www_root . 'exception.php');
+
 class page
 {
     function __construct($url, $params, $files, $require, $script, $templates, $data, $scripts, $cache, $template, $engine, $api, $locale)
@@ -206,6 +208,7 @@ class page
             '/\{\$(\w+)\}/',
             function($matches) use($params)
             {
+                isset($params[$matches[1]]) or runtime_error('Unknown parameter: ' . $matches[1]);
                 return $params[$matches[1]];
             },
             $value

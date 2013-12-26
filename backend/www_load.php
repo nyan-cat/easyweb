@@ -1,11 +1,6 @@
 <?php
 
-$config = xml::load(config_location);
-
-if(($scripts = $config->root()->attribute('scripts')) !== null)
-{
-    $this->scripts = $scripts;
-}
+$config = xml::load($options->config);
 
 if(($batch = $config->root()->attribute('batch')) !== null)
 {
@@ -20,6 +15,11 @@ if(($schema = $config->root()->attribute('schema')) !== null)
 if(($documentation = $config->root()->attribute('documentation')) !== null)
 {
     $this->documentation = $documentation;
+}
+
+foreach($config->query('/config/folders//folder') as $folder)
+{
+    $this->folders[$folder['@name']] = $folder['@path'];
 }
 
 foreach(sql::drivers() as $type => $internal)

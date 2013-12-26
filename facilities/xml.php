@@ -1,7 +1,5 @@
 <?php
 
-require_once('filesystem.php');
-
 class node implements ArrayAccess
 {
     function __construct($node)
@@ -287,9 +285,8 @@ class xml implements ArrayAccess
 
     static function load($filename)
     {
-        fs::exists($filename) or runtime_error('XML document not found: ' . $filename);
         $xml = new DOMDocument();
-        $xml->load($filename);
+        $xml->load($filename) or runtime_error('XML document not found: ' . $filename);;
         $xml->xinclude();
         return new xml($xml);
     }

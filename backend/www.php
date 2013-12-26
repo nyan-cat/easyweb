@@ -1,7 +1,5 @@
 <?php
 
-require_once(www_root . 'json.php');
-require_once(www_root . 'xml.php');
 require_once(www_root . 'backend/method.php');
 require_once(www_root . 'backend/method_group.php');
 require_once(www_root . 'backend/sql.php');
@@ -14,10 +12,14 @@ require_once(www_root . 'backend/geoip_procedure.php');
 require_once(www_root . 'backend/dispatcher.php');
 require_once(www_root . 'backend/access.php');
 require_once(www_root . 'backend/group.php');
+require_once(www_root . 'facilities/filesystem.php');
+require_once(www_root . 'facilities/image.php');
+require_once(www_root . 'facilities/json.php');
+require_once(www_root . 'facilities/xml.php');
 
 class www
 {
-    private function __construct()
+    private function __construct($options)
     {
         $this->access = new access();
         $this->dispatcher = new dispatcher();
@@ -26,12 +28,12 @@ class www
 
     function __sleep()
     {
-        return ['methods', 'access', 'domains', 'scripts', 'batch', 'dispatcher', 'schema', 'documentation'];
+        return ['methods', 'access', 'domains', 'folders', 'batch', 'dispatcher', 'schema', 'documentation'];
     }
 
-    static function create()
+    static function create($options)
     {
-        //$cache = cache_location . 'cache.tmp';
+        //$cache = $options['cache'] . 'cache.tmp';
 
         /*if($www = fs::read($cache))
         {
@@ -41,7 +43,7 @@ class www
         }
         else*/
         {
-            $www = new www();
+            $www = new www($options);
             //fs::write($cache, serialize($www));
             $www->bind();
             return $www;
@@ -191,9 +193,10 @@ class www
         return $result;
     }
 
-    function script($path)
+    function folder($name)
     {
-        return $this->scripts . $path;
+        isset($this->folders[$name]) or backend_error('bad_config', "Unknown folder $name");
+        return $this->folders[$name];
     }
 
     function schema()
@@ -335,7 +338,7 @@ class www
     private $access;
     private $domains = [];
     private $dispatcher;
-    private $scripts;
+    private $folders = [];
     private $batch = null;
     private $schema = null;
     private $documentation = null;
