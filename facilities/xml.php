@@ -28,9 +28,16 @@ class node implements ArrayAccess
 
     function offsetSet($offset, $value)
     {
-        $result = $this->xpath()->query($offset, $this->node);
-        $result->length == 1 or runtime_error('XPath expression is not evaluateable');
-        $result->item(0)->nodeValue = $value;
+        if($offset[0] == '@')
+        {
+            $this->node->setAttribute(substr($offset, 1), $value);
+        }
+        else
+        {
+            $result = $this->xpath()->query($offset, $this->node);
+            $result->length == 1 or runtime_error('XPath expression is not evaluateable');
+            $result->item(0)->nodeValue = $value;
+        }
     }
 
     function offsetUnset($offset)

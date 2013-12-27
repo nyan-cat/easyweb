@@ -89,6 +89,20 @@ class image
         }
     }
 
+    function cover_copy($width, $height)
+    {
+        if($this->width / $this->height < $width / $height)
+        {
+            $image = $this->fit_to_width_copy($width);
+            return $image->crop_copy(0, (int)(($image->height() - $height) / 2), $width, $height);
+        }
+        else
+        {
+            $image = $this->fit_to_height_copy($height);
+            return $image->crop_copy((int)(($image->width() - $width) / 2), 0, $width, $height);
+        }
+    }
+
     function width()
     {
         return $this->width;
