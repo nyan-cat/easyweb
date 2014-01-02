@@ -293,6 +293,11 @@ class www
         return $this->dispatcher->__call($name, $args);
     }
 
+    function parse_query($name, $args)
+    {
+        return $this->dispatcher->parse_query($name, $args);
+    }
+
     static function encode($object)
     {
         return json_encode($object, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
@@ -304,15 +309,12 @@ class www
 
         foreach($this->methods[$url]->find($type, $get, $post) as $method)
         {
-            if($group = $method->access())
-            {
-                if(!$this->dispatcher->parse_query($group, array_merge($get, $post)))
-                {
-                    continue;
-                }
-            }
+            list($matched, $result) = $method->call($get, $post);
 
-            return $method->call($get, $post);
+            if($matched)
+            {
+                return $result;
+            }
         }
 
         backend_error('bad_query', 'Method not found');

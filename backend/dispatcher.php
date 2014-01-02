@@ -37,8 +37,6 @@ class dispatcher
             $params[] = $binding['param'];
         }
 
-        $procedure = $this->get($name, $params);
-
         $matched = [];
 
         foreach($bindings as $bound)
@@ -47,7 +45,7 @@ class dispatcher
             $matched[$bound['param']] = $args[$bound['arg']];
         }
 
-        return $procedure->query($matched);
+        return $this->query($name, $matched);
     }
 
     function get($name, $args)

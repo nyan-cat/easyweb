@@ -151,14 +151,19 @@ class method
             }
         }
 
+        if($this->access and !$this->www->parse_query($this->access, $args))
+        {
+            return [false, null];
+        }
+
         if($this->body)
         {
-            return $this->body->query_direct($args);
+            return [true, $this->body->query_direct($args)];
         }
         else
         {
             $procedure = $this->procedure;
-            return $this->www->$procedure($args);
+            return [true, $this->www->$procedure($args)];
         }
     }
 
@@ -196,11 +201,6 @@ class method
     function content_type()
     {
         return $this->content_type;
-    }
-
-    function access()
-    {
-        return $this->access;
     }
 
     function schema()
