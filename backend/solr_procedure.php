@@ -1,5 +1,7 @@
 <?php
 
+require_once('procedure.php');
+
 class solr_procedure extends procedure
 {
     function __construct($name, $params, $required, $result, $solr, $core, $method, $body, $order_by, $offset, $count)

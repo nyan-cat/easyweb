@@ -9,9 +9,8 @@ require_once(www_root . 'backend/solr_procedure.php');
 require_once(www_root . 'backend/foursquare.php');
 require_once(www_root . 'backend/foursquare_procedure.php');
 require_once(www_root . 'backend/geoip_procedure.php');
+require_once(www_root . 'backend/php_procedure.php');
 require_once(www_root . 'backend/dispatcher.php');
-require_once(www_root . 'backend/access.php');
-require_once(www_root . 'backend/group.php');
 require_once(www_root . 'facilities/filesystem.php');
 require_once(www_root . 'facilities/image.php');
 require_once(www_root . 'facilities/json.php');
@@ -21,14 +20,13 @@ class www
 {
     private function __construct($options)
     {
-        $this->access = new access();
         $this->dispatcher = new dispatcher();
         include('www_load.php');
     }
 
     function __sleep()
     {
-        return ['methods', 'access', 'domains', 'folders', 'batch', 'dispatcher', 'schema', 'documentation'];
+        return ['methods', 'domains', 'folders', 'batch', 'dispatcher', 'schema', 'documentation'];
     }
 
     static function create($options)
@@ -159,16 +157,6 @@ class www
         }
     }
 
-    function query($name, $args)
-    {
-        return $this->dispatcher->query($name, $args);
-    }
-
-    function invoke($name, $args)
-    {
-        $this->query($name, $args);
-    }
-
     function wrap($mixed, $domain, $lifetime = 0)
     {
         isset($this->domains[$domain]) or backend_error('bad_method', 'Unknown domain: ' . $domain);
@@ -184,7 +172,7 @@ class www
 
         foreach($groups as $name => $args)
         {
-            if(preg_match('/\A\w+\Z/', $name) ? $this->access->query($name, $args) : $this->access->parse_query($name, $args))
+            if(preg_match('/\A\w+\Z/', $name) ? $this->$name($args) : $this->dispatcher->parse_query($name, $args))
             {
                 $result[] = $name;
             }
@@ -302,7 +290,7 @@ class www
 
     function __call($name, $args)
     {
-        return $this->query($name, $args[0]);
+        return $this->dispatcher->__call($name, $args);
     }
 
     static function encode($object)
@@ -318,7 +306,7 @@ class www
         {
             if($group = $method->access())
             {
-                if(!$this->access->parse_query($group, array_merge($get, $post)))
+                if(!$this->dispatcher->parse_query($group, array_merge($get, $post)))
                 {
                     continue;
                 }
@@ -330,12 +318,21 @@ class www
         backend_error('bad_query', 'Method not found');
     }
 
+    function get($url, $params = [])
+    {
+        return $this->call('GET', $url, $params);
+    }
+
+    function post($url, $post = [], $get = [])
+    {
+        return $this->call('POST', $get, $post);
+    }
+
     static $success;
     static $error;
 
     private $encoders = [];
     private $methods = [];
-    private $access;
     private $domains = [];
     private $dispatcher;
     private $folders = [];

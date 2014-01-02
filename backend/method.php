@@ -2,6 +2,7 @@
 
 require_once('datatype.php');
 require_once('security.php');
+require_once('php_procedure.php');
 
 class headers implements ArrayAccess, Iterator, Countable
 {
@@ -74,8 +75,23 @@ class method
         $this->content_type = $content_type;
         $this->access = $access;
         $this->procedure = $procedure;
-        $this->require = $require;
-        $this->body = $body;
+
+        if(strlen(trim($body)))
+        {
+            $params = [];
+
+            foreach($get as $name => $param)
+            {
+                $params[$name] = $param->type;
+            }
+
+            foreach($post as $name => $param)
+            {
+                $params[$name] = $param->type;
+            }
+
+            $this->body = new php_procedure('', $params, false, 'mixed', $require, $body, $www, $www);
+        }
         $this->www = $www;
 
         (!$this->procedure or !$this->body) or backend_error('bad_config', 'Either method procedure or method body shall be defined');
@@ -137,19 +153,12 @@ class method
 
         if($this->body)
         {
-            $params = '$' . implode(',$', array_keys($args));
-            $script = '';
-            foreach($this->require as $require)
-            {
-                $script .= 'require_once(\'' . $this->www->folder('_require') . $require . '\');';
-            }
-            $script .= 'return function(' . (empty($args) ? '' : $params) . ") { {$this->body} };";
-            $closure = eval($script);
-            return call_user_func_array($closure->bindTo($this->www), array_values($args));
+            return $this->body->query_direct($args);
         }
         else
         {
-            return $this->www->query($this->procedure, $args);
+            $procedure = $this->procedure;
+            return $this->www->$procedure($args);
         }
     }
 
@@ -206,7 +215,6 @@ class method
     private $content_type;
     private $access;
     private $procedure;
-    private $require;
     private $body;
     private $www;
 }

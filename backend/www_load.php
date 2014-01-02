@@ -98,6 +98,30 @@ foreach($config->query('/config/procedures//procedure[@datasource = "geoip"]') a
     ));
 }
 
+foreach($config->query('/config/procedures//procedure[@datasource = "php"]') as $procedure)
+{
+    $params = $config->query_assoc('param', $procedure, '@name', '@type');
+
+    $require = [];
+
+    foreach($config->query('require/@src', $procedure) as $src)
+    {
+        $require[] = $src->value();
+    }
+
+    $this->dispatcher->insert(new php_procedure
+    (
+        $procedure['@name'],
+        $params,
+        $procedure->attribute('required') !== 'false',
+        $procedure->attribute('result', 'array'),
+        $require,
+        $procedure->value(),
+        $this,
+        $this->dispatcher
+    ));
+}
+
 foreach($config->query('/config/domains//domain') as $domain)
 {
     $name = $domain['@name'];
@@ -110,25 +134,6 @@ foreach($config->query('/config/domains//domain') as $domain)
     else
     {
         $this->domains[$name] = $name;
-    }
-}
-
-foreach($config->query('/config/groups//group') as $group)
-{
-    $name = $group["@name"];
-    $params = explode(',', $group["@params"]);
-    foreach($params as &$param)
-    {
-        $param = trim($param);
-    }
-
-    if($procedure = $group->attribute('procedure'))
-    {
-        $this->access->insert(new group_procedure($name, $params, $procedure, $this));
-    }
-    else
-    {
-        $this->access->insert(new group_expression($name, $params, $group->value(), $this->access));
     }
 }
 

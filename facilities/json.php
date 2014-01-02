@@ -2,9 +2,10 @@
 
 class json
 {
-    static function encode($value)
+    static function encode($value, $format = false)
     {
-        return json_encode($value, JSON_NUMERIC_CHECK | JSON_UNESCAPED_UNICODE);
+        $flags = $format ? (JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : JSON_UNESCAPED_UNICODE;
+        return json_encode($value, $flags);
     }
 
     static function decode($json, $assoc = false)

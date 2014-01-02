@@ -77,9 +77,17 @@ class sql_procedure extends procedure
     {
         switch($this->result)
         {
-        case 'array':
-            empty($result) or !is_array($result[0]) or backend_error('bad_query', 'SQL result is not an array');
-            return $result;
+        case 'value':
+            if(!empty($result))
+            {
+                !is_array($result[0]) or backend_error('bad_query', 'SQL result is not a value');
+                count(get_object_vars($result[0])) == 1 or backend_error('bad_query', 'SQL result is not a value');
+                return reset($result[0]);
+            }
+            else
+            {
+                return null;
+            }
 
         case 'object':
             if(!empty($result))
@@ -91,6 +99,10 @@ class sql_procedure extends procedure
             {
                 return null;
             }
+
+        case 'array':
+            empty($result) or !is_array($result[0]) or backend_error('bad_query', 'SQL result is not an array');
+            return $result;
 
         case 'multiarray':
             !empty($result) or backend_error('bad_query', 'SQL result is not a multiarray');

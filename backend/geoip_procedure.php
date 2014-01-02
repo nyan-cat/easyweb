@@ -1,5 +1,7 @@
 <?php
 
+require_once('procedure.php');
+
 class geoip_procedure extends procedure
 {
     function __construct($name, $method, $required, $result)

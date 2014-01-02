@@ -129,7 +129,7 @@ class page
 
             if($result = call_user_func_array($closure->bindTo($this->api), array_values($script_args)))
             {
-                $params = array_merge($params, $result);
+                $params = array_replace($params, $result);
             }
 
             foreach(['cookies', 'redirect', 'headers'] as $builtin)

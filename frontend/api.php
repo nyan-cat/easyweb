@@ -25,7 +25,7 @@ class api
 
     function request($type, $url, $get = [], $post = [])
     {
-        $request = ['method' => $type];
+        $request = ['method' => $type, 'protocol_version' => '1.1', 'header' => 'Connection: Close'];
 
         foreach($post as $name => &$param)
         {
@@ -37,7 +37,7 @@ class api
 
         if(!empty($post))
         {
-            $request['header'] = 'Content-type: application/x-www-form-urlencoded';
+            $request['header'] .= "\r\nContent-type: application/x-www-form-urlencoded";
             $request['content'] = http_build_query($post);
         }
 
@@ -56,6 +56,16 @@ class api
         $content = $object['content'];
 
         return (is_object($content) or (is_array($content) and array_values($content) !== $content)) ? (object) $content : $content;
+    }
+
+    function get($url, $params = [])
+    {
+        return $this->request('GET', $url, $params);
+    }
+
+    function post($url, $post = [], $get = [])
+    {
+        return $this->request('POST', $url, $get, $post);
     }
 
     private $endpoint;
