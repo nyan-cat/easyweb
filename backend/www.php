@@ -69,6 +69,14 @@ class www
 
     function request($type, $url, $request_headers, $post = [])
     {
+        foreach($post as $name => $param)
+        {
+            if(is_string($param) and $param == '_empty_array')
+            {
+                $post[$name] = [];
+            }
+        }
+
         $query = parse_url($url);
         $url = $query['path'];
         $get = [];
@@ -305,7 +313,7 @@ class www
 
     function call($type, $url, $get = [], $post = [])
     {
-        isset($this->methods[$url]) or backend_error('bad_query', 'Method not found');
+        isset($this->methods[$url]) or backend_error('bad_query', 'Method not found: ' . $url . ' | ' . implode(', ', array_keys($get)) . ' | ' . implode(', ', array_keys($post)));
 
         foreach($this->methods[$url]->find($type, $get, $post) as $method)
         {
@@ -317,7 +325,7 @@ class www
             }
         }
 
-        backend_error('bad_query', 'Method not found');
+        backend_error('bad_query', 'Method not found: ' . $url . ' | ' . implode(', ', array_keys($get)) . ' | ' . implode(', ', array_keys($post)));
     }
 
     function get($url, $params = [])

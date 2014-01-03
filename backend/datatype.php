@@ -8,7 +8,12 @@ class datatype
     {
         if($name == 'object')
         {
-            return true;
+            return is_object($value);
+        }
+
+        if($name == 'array')
+        {
+            return is_array($value);
         }
 
         isset(self::$types[$name]) or backend_error('bad_type', "Unknown type: $name");

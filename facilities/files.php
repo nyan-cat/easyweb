@@ -26,7 +26,10 @@ class files
                     }
                 }
 
-                $result[$name] = $files;
+                if($count($files))
+                {
+                    $result[$name] = $files;
+                }
             }
             else
             {

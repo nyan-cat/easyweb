@@ -31,7 +31,7 @@ class api
         {
             if(is_array($param) and empty($param))
             {
-                $param = [''];
+                $param = '_empty_array';
             }
         }
 
