@@ -26,7 +26,7 @@ class www
 
     function __sleep()
     {
-        return ['methods', 'domains', 'folders', 'batch', 'dispatcher', 'schema', 'documentation'];
+        return ['vars', 'methods', 'domains', 'folders', 'batch', 'dispatcher', 'schema', 'documentation'];
     }
 
     static function create($options)
@@ -338,10 +338,16 @@ class www
         return $this->call('POST', $get, $post);
     }
 
+    function variable($name)
+    {
+        return isset($this->vars[$name]) ? $this->vars[$name] : "[Variable not found: $name]";
+    }
+
     static $success;
     static $error;
 
     private $encoders = [];
+    private $vars = [];
     private $methods = [];
     private $domains = [];
     private $dispatcher;

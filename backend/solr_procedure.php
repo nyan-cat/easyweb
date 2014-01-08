@@ -68,9 +68,19 @@ class solr_procedure extends procedure
 
             $query = new SolrQuery(self::substitute($this->body, $args));
 
-            foreach($this->order_by as $name => $order)
+            foreach($this->order_by as $name => $mode)
             {
-                $query->addSortField($name, $order == 'desc' ? SolrQuery::ORDER_DESC : SolrQuery::ORDER_ASC);
+                if($mode->type == 'normal')
+                {
+                    $query->addSortField($name, $mode->order == 'desc' ? SolrQuery::ORDER_DESC : SolrQuery::ORDER_ASC);
+                }
+                elseif($mode->type == 'spatial')
+                {
+                    $query->setParam('spatial', true);
+                    $query->setParam('sfield', $name);
+                    $query->setParam('pt', $args[$mode->point]);
+                    $query->setParam('sort', $mode->order);
+                }
             }
 
             $offset = isset($args['_offset']) ? $args['_offset'] : $this->offset;

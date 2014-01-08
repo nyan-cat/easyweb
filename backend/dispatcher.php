@@ -57,7 +57,7 @@ class dispatcher
 
     function __call($name, $args)
     {
-        return $this->query($name, $args[0]);
+        return $this->query($name, isset($args[0]) ? $args[0] : []);
     }
 
     private $procedures = [];

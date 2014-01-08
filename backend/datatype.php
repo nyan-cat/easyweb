@@ -88,7 +88,8 @@ class datatype
         'text'            => ['min' => 1,  'max' => 50000, 'validator' => '[\s\S]+'],
         'text:optional'   => ['min' => 0,  'max' => 50000, 'validator' => '[\s\S]*'],
         'email'           => ['min' => 6,  'max' => 100,   'validator' => '[\w\-\.]+@[\w\-\.]+'],
-        'object'          => ['min' => 2,  'max' => 10000]
+        'object'          => ['min' => 2,  'max' => 10000],
+        'array'           => ['min' => 2,  'max' => 10000]
     ];
 }
 

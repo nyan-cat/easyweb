@@ -166,19 +166,26 @@ class page
                 $function = new Twig_SimpleFunction('json', $closure->bindTo($this, $this));
                 $twig->addFunction($function);
 
-                $closure = function ($alias)
-                {
-                    return $this->locale->get($alias);
-                };
-                $function = new Twig_SimpleFilter('local', $closure->bindTo($this, $this));
-                $twig->addFilter($function);
-
                 $closure = function ($number)
                 {
                     return ceil($number);
                 };
                 $filter = new Twig_SimpleFilter('ceil', $closure);
                 $twig->addFilter($filter);
+
+                $closure = function ($string)
+                {
+                    return md5($string);
+                };
+                $filter = new Twig_SimpleFilter('md5', $closure);
+                $twig->addFilter($filter);
+
+                $closure = function ($alias)
+                {
+                    return $this->locale->get($alias);
+                };
+                $function = new Twig_SimpleFilter('local', $closure->bindTo($this, $this));
+                $twig->addFilter($function);
 
                 $template = $twig->loadTemplate($this->template);
                 $response['content'] = $template->render($params);

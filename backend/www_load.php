@@ -17,6 +17,11 @@ if(($documentation = $config->root()->attribute('documentation')) !== null)
     $this->documentation = $documentation;
 }
 
+foreach($config->query('/config/vars//var') as $var)
+{
+    $this->vars[$var['@name']] = $var->value();
+}
+
 foreach($config->query('/config/folders//folder') as $folder)
 {
     $this->folders[$folder['@name']] = $folder['@path'];
@@ -53,6 +58,24 @@ foreach($config->query('/config/datasources//datasource[@type = "solr"]') as $ds
     {
         $params = $config->query_assoc('param', $procedure, '@name', '@type');
 
+        $order_by = [];
+
+        foreach($config->query('order-by', $procedure) as $order)
+        {
+            $mode =
+            [
+                'type'  => isset($order['@type']) ? $order['@type'] : 'normal',
+                'order' => $order['@order']
+            ];
+
+            if(isset($order['@point']))
+            {
+                $mode['point'] = $order['@point'];
+            }
+
+            $order_by[$order['@name']] = (object) $mode;
+        }
+
         $this->dispatcher->insert(new solr_procedure
         (
             $procedure['@name'],
@@ -63,7 +86,7 @@ foreach($config->query('/config/datasources//datasource[@type = "solr"]') as $ds
             $procedure['@core'],
             $procedure['@method'],
             $procedure->value(),
-            $config->query_assoc('order-by', $procedure, '@name', '@order'),
+            $order_by,
             $procedure->attribute('offset'),
             $procedure->attribute('count')
         ));
