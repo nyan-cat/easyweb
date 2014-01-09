@@ -48,7 +48,7 @@ class page
         }
     }
 
-    function request($params, $global, $get, $post, $cookies, $files)
+    function request($params, $global, $get, $post, $cookies, $files, $extensions)
     {
         $values = [];
         $batch = [];
@@ -186,6 +186,17 @@ class page
                 };
                 $function = new Twig_SimpleFilter('local', $closure->bindTo($this, $this));
                 $twig->addFilter($function);
+
+                if(!is_null($extensions) and isset($extensions['twig']))
+                {
+                    if(isset($extensions['twig']['filters']))
+                    {
+                        foreach($extensions['twig']['filters'] as $name => $closure)
+                        {
+                            $twig->addFilter(new Twig_SimpleFilter($name, $closure->bindTo($this, $this)));
+                        }
+                    }
+                }
 
                 $template = $twig->loadTemplate($this->template);
                 $response['content'] = $template->render($params);

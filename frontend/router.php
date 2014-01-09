@@ -9,13 +9,18 @@ class router
         $this->pages[] = $page;
     }
 
+    function extend($extensions)
+    {
+        $this->extensions = $extensions;
+    }
+
     function request($url, $global, $get, $post, $cookies, $files)
     {
         foreach($this->pages as $page)
         {
             if($page->match($url, $params))
             {
-                return $page->request($params, $global, $get, $post, $cookies, $files);
+                return $page->request($params, $global, $get, $post, $cookies, $files, $this->extensions);
             }
         }
 
@@ -23,6 +28,7 @@ class router
     }
 
     private $pages = [];
+    private $extensions = null;
 }
 
 ?>

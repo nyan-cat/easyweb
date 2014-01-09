@@ -35,6 +35,11 @@ class www
         }*/
     }
 
+    function extend($extensions)
+    {
+        $this->router->extend($extensions);
+    }
+
     function request($url, $global, $get, $post, $cookies, $files)
     {
         $response = $this->router->request($url, $global, $get, $post, $cookies, $files);
