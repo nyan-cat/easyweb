@@ -67,7 +67,7 @@ class www
         $this->methods[$url]->insert($method);
     }
 
-    function request($type, $url, $request_headers, $post = [])
+    function request($type, $url, $host, $request_headers, $post = [])
     {
         foreach($post as $name => $param)
         {
@@ -134,7 +134,7 @@ class www
                     );
                 }
 
-                $body[$param] = $this->call('GET', $url, $get);
+                $body[$param] = $this->call('GET', $url, $host, $get);
             }
 
             return (object)
@@ -160,7 +160,7 @@ class www
                 'code'    => 200,
                 'message' => 'OK',
                 'headers' => $headers,
-                'body'    => $encoder['success']->__invoke( $this->call($type, $url, $get, $post) )
+                'body'    => $encoder['success']->__invoke( $this->call($type, $url, $host, $get, $post) )
             ];
         }
     }
@@ -311,17 +311,20 @@ class www
         return json_encode($object, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     }
 
-    function call($type, $url, $get = [], $post = [])
+    function call($type, $url, $host, $get = [], $post = [])
     {
         isset($this->methods[$url]) or backend_error('bad_query', 'Method not found: ' . $url . ' | ' . implode(', ', array_keys($get)) . ' | ' . implode(', ', array_keys($post)));
 
         foreach($this->methods[$url]->find($type, $get, $post) as $method)
         {
-            list($matched, $result) = $method->call($get, $post);
-
-            if($matched)
+            if($method->host() == '*' or $method->host() == $host)
             {
-                return $result;
+                list($matched, $result) = $method->call($get, $post);
+
+                if($matched)
+                {
+                    return $result;
+                }
             }
         }
 
@@ -330,12 +333,12 @@ class www
 
     function get($url, $params = [])
     {
-        return $this->call('GET', $url, $params);
+        return $this->call('GET', $url, '*', $params);
     }
 
     function post($url, $post = [], $get = [])
     {
-        return $this->call('POST', $get, $post);
+        return $this->call('POST', $url, '*', $get, $post);
     }
 
     function variable($name)

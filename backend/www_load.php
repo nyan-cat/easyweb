@@ -166,8 +166,9 @@ foreach($config->query('/config/services//service') as $service)
 {
     $services[$service['@name']] =
     [
-        'accept' => $service['@accept'],
-        'content-type' => $service['@content-type']
+        'accept'       => $service['@accept'],
+        'content-type' => $service['@content-type'],
+        'host'         => $service['@host']
     ];
 }
 
@@ -188,6 +189,10 @@ foreach($config->query('/config/methods//method') as $method)
     if($content_type = $method->attribute('content-type'))
     {
         $service['content-type'] = $content_type;
+    }
+    if($host = $method->attribute('host'))
+    {
+        $service['host'] = $host;
     }
     
     foreach($config->query('get', $method) as $param)
@@ -288,6 +293,7 @@ foreach($config->query('/config/methods//method') as $method)
         $post,
         $service['accept'],
         $service['content-type'],
+        $service['host'],
         $method->attribute('access'),
         $method->attribute('procedure'),
         $require,

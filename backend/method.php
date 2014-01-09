@@ -66,13 +66,14 @@ class headers implements ArrayAccess, Iterator, Countable
 
 class method
 {
-    function __construct($type, $get, $post, $accept, $content_type, $access, $procedure, $require, $body, $www)
+    function __construct($type, $get, $post, $accept, $content_type, $host, $access, $procedure, $require, $body, $www)
     {
         $this->type = $type;
         $this->get = $get;
         $this->post = $post;
         $this->accept = $accept;
         $this->content_type = $content_type;
+        $this->host = $host;
         $this->access = $access;
         $this->procedure = $procedure;
 
@@ -203,6 +204,11 @@ class method
         return $this->content_type;
     }
 
+    function host()
+    {
+        return $this->host;
+    }
+
     function schema()
     {
         return [$this->type, $this->get, $this->post];
@@ -213,6 +219,7 @@ class method
     private $post;
     private $accept;
     private $content_type;
+    private $host;
     private $access;
     private $procedure;
     private $body;
