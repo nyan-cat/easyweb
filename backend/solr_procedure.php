@@ -78,8 +78,11 @@ class solr_procedure extends procedure
                 {
                     $query->setParam('spatial', true);
                     $query->setParam('sfield', $name);
-                    $query->setParam('pt', $args[$mode->point]);
-                    $query->setParam('sort', $mode->order);
+                    if(isset($mode->point))
+                    {
+                        $query->setParam('pt', $args[$mode->point]);
+                    }
+                    $query->setParam('sort', self::substitute($mode->order, $args));
                 }
             }
 
