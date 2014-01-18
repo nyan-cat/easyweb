@@ -101,7 +101,7 @@ class sql_procedure extends procedure
                 return null;
 
             case 'object':
-                return (object) null;
+                return null;
 
             case 'array':
                 return [];
