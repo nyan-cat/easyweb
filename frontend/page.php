@@ -159,28 +159,35 @@ class page
                 //$twig->addExtension(new Twig_Extension_Debug());
                 $twig->getExtension('core')->setNumberFormat(0, '.', ' ');
 
-                $closure = function ($filename)
+                $closure = function($haystack, $needle)
+                {
+                    return $needle === "" or strpos($haystack, $needle) === 0;
+                };            
+                $function = new Twig_SimpleFunction('starts_with', $closure);
+                $twig->addFunction($function);
+
+                $closure = function($filename)
                 {
                     return json_decode(file_get_contents($this->data . $filename));
                 };            
                 $function = new Twig_SimpleFunction('json', $closure->bindTo($this, $this));
                 $twig->addFunction($function);
 
-                $closure = function ($number)
+                $closure = function($number)
                 {
                     return ceil($number);
                 };
                 $filter = new Twig_SimpleFilter('ceil', $closure);
                 $twig->addFilter($filter);
 
-                $closure = function ($string)
+                $closure = function($string)
                 {
                     return md5($string);
                 };
                 $filter = new Twig_SimpleFilter('md5', $closure);
                 $twig->addFilter($filter);
 
-                $closure = function ($alias)
+                $closure = function($alias)
                 {
                     return $this->locale->get($alias);
                 };

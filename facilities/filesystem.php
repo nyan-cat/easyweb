@@ -2,6 +2,55 @@
 
 require_once(www_root . 'exception.php');
 
+class fs_iterator implements Iterator
+{
+    function __construct($handle)
+    {
+        $this->handle = $handle;
+    }
+
+    function __destruct()
+    {
+        closedir($this->handle);
+    }
+
+    function current()
+    {
+        return $this->value;
+    }
+
+    function key()
+    {
+        return $this->key;
+    }
+
+    function next()
+    {
+        ++$this->key;
+        $this->value = readdir($this->handle);
+        if($this->value === "." or $this->value === "..")
+        {
+            self::next();
+        }
+    }
+
+    function rewind()
+    {
+        $this->key = 0;
+        rewinddir($this->handle);
+        self::next();
+    }
+
+    function valid()
+    {
+        return $this->value !== false;
+    }
+
+    private $key = 0;
+    private $value = false;
+    private $handle = null;
+}
+
 class fs
 {
     static function exists($filename)
@@ -58,6 +107,11 @@ class fs
     {
         fs::exists($filename) or runtime_error('File not found: ' . $filename);
         return hash_file('crc32', $filename);
+    }
+
+    static function each($path)
+    {
+        return new fs_iterator(opendir($path));
     }
 }
 
