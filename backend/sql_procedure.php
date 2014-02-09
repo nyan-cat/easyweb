@@ -18,7 +18,7 @@ class sql_procedure extends procedure
         {
             $array = $this->sql->query($this->apply($this->body, $args));
             !($this->required and empty($array)) or backend_error('bad_query', 'SQL procedure returned empty result');
-            return self::result([$array]);
+            return self::result(empty($array) ? [] : [$array]);
         }
         else
         {

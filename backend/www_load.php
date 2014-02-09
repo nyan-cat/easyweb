@@ -205,6 +205,8 @@ foreach($config->query('/config/methods//method') as $method)
             foreach($domains as &$domain)
             {
                 $domain = trim($domain);
+                isset($this->domains[$domain]) or backend_error('bad_config', 'Unknown security domain: ' . $domain);
+                $domain = $this->domains[$domain];
             }
             $p['domains'] = $domains;
         }
@@ -245,6 +247,8 @@ foreach($config->query('/config/methods//method') as $method)
             foreach($domains as &$domain)
             {
                 $domain = trim($domain);
+                isset($this->domains[$domain]) or backend_error('bad_config', 'Unknown security domain: ' . $domain);
+                $domain = $this->domains[$domain];
             }
             $p['domains'] = $domains;
         }

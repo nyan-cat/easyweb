@@ -49,7 +49,7 @@ class security
                         {
                             foreach($domains as $domain)
                             {
-                                if(strpos($domain, $package->domain) === 0)
+                                if(ends_with('.' . $package->domain, '.' . $domain))
                                 {
                                     return $package->value;
                                 }

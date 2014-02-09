@@ -14,6 +14,7 @@ require_once(www_root . 'backend/dispatcher.php');
 require_once(www_root . 'facilities/filesystem.php');
 require_once(www_root . 'facilities/image.php');
 require_once(www_root . 'facilities/json.php');
+require_once(www_root . 'facilities/string.php');
 require_once(www_root . 'facilities/xml.php');
 
 class www
@@ -31,18 +32,26 @@ class www
 
     static function create($options)
     {
-        //$cache = $options['cache'] . 'cache.tmp';
-
-        /*if($www = fs::read($cache))
+        if(isset($options->cache))
         {
-            $www = unserialize($www);
-            $www->bind();
-            return $www;
+            $cache = $options->cache . 'cache.tmp';
+            if($www = fs::read($cache))
+            {
+                $www = unserialize($www);
+                $www->bind();
+                return $www;
+            }
+            else
+            {
+                $www = new www($options);
+                fs::write($cache, serialize($www));
+                $www->bind();
+                return $www;
+            }
         }
-        else*/
+        else
         {
             $www = new www($options);
-            //fs::write($cache, serialize($www));
             $www->bind();
             return $www;
         }
