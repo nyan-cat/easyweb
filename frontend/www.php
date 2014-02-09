@@ -1,6 +1,8 @@
 <?php
 
+require_once(www_root . 'facilities/filesystem.php');
 require_once(www_root . 'facilities/json.php');
+require_once(www_root . 'facilities/string.php');
 require_once(www_root . 'facilities/xml.php');
 require_once(www_root . 'frontend/api.php');
 require_once(www_root . 'frontend/locale.php');
@@ -16,23 +18,24 @@ class www
 
     static function create($options)
     {
-        return new www($options);
-
-        /*$cache = cache_location . 'cache.tmp';
-
-        if($www = fs::read($cache))
+        if(isset($options->cache))
         {
-            $www = unserialize($www);
-            $www->bind();
-            return $www;
+            $cache = $options->cache . 'cache.tmp';
+            if($www = fs::read($cache))
+            {
+                return unserialize($www);
+            }
+            else
+            {
+                $www = new www($options);
+                fs::write($cache, serialize($www));
+                return $www;
+            }
         }
         else
         {
-            $www = new www();
-            fs::write($cache, serialize($www));
-            $www->bind();
-            return $www;
-        }*/
+            return new www($options);
+        }
     }
 
     function extend($extensions)

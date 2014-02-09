@@ -49,8 +49,9 @@ class api
 
         if(is_null($object))
         {
-            var_dump($response);
-            die();
+            throw new Exception("Error Processing Request", 1);
+            /*var_dump($response);
+            die();*/
         }
 
         $content = $object['content'];
