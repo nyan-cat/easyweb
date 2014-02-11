@@ -63,6 +63,11 @@ class cookie
         self::set($name . '_digest', '', 1, $domain, $path);
     }
 
+    static function developer()
+    {
+        return self::get('_easyweb_developer') === md5(self::$salt);
+    }
+
     private static $salt = 'Use cookie::start to initialize salt with unique string';
     private static $expire;
     private static $domain;

@@ -9,8 +9,8 @@ $scripts = $root->attribute('scripts');
 $engine = $root->attribute('engine');
 $schema = $root->attribute('schema');
 $api = new api($schema);
-$locale = new locale($options->language, $options->country);
-$locale->load($root['@locale']);
+$this->locale = new locale($options->language, $options->country);
+$this->locale->load($root['@locale']);
 
 foreach($config->query('/config/pages//page') as $page)
 {
@@ -83,7 +83,7 @@ foreach($config->query('/config/pages//page') as $page)
         $page->attribute('template'),
         $page->attribute('engine') ? $page['@engine'] : $engine,
         $api,
-        $locale
+        $this->locale
     ));
 }
 

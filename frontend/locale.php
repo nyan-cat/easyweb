@@ -44,6 +44,12 @@ class locale
         return $this->country;
     }
 
+    function setup($language, $country)
+    {
+        $this->language = $language;
+        $this->country = $country;
+    }
+
     function get($alias)
     {
         $alias .= '.' . $this->language;

@@ -25,6 +25,13 @@ class api
 
     function request($type, $url, $get = [], $post = [])
     {
+        $developer = cookie::developer();
+
+        if($developer)
+        {
+            $get['_mode'] = 'developer';
+        }
+
         $request = ['method' => $type, 'protocol_version' => '1.1', 'header' => 'Connection: Close'];
 
         foreach($post as $name => &$param)
@@ -49,9 +56,15 @@ class api
 
         if(is_null($object))
         {
-            throw new Exception("Error Processing Request", 1);
-            /*var_dump($response);
-            die();*/
+            if($developer)
+            {
+                var_dump($response);
+                die();
+            }
+            else
+            {
+                throw new Exception("Error Processing Request", 1);
+            }
         }
 
         $content = $object['content'];

@@ -23,7 +23,9 @@ class www
             $cache = $options->cache . 'cache.tmp';
             if($www = fs::read($cache))
             {
-                return unserialize($www);
+                $www = unserialize($www);
+                $www->locale->setup($options->language, $options->country);
+                return $www;
             }
             else
             {
@@ -58,6 +60,7 @@ class www
         return $response;
     }
 
+    private $locale;
     private $router;
 }
 

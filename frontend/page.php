@@ -173,6 +173,18 @@ class page
                 $function = new Twig_SimpleFunction('json', $closure->bindTo($this, $this));
                 $twig->addFunction($function);
 
+                $closure = function($object)
+                {
+                    $array = [];
+                    foreach($object as $key => $value)
+                    {
+                        $array[$key] = $value;
+                    }
+                    return $array;
+                };
+                $filter = new Twig_SimpleFilter('array', $closure);
+                $twig->addFilter($filter);
+
                 $closure = function($number)
                 {
                     return ceil($number);
