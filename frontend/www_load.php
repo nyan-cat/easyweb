@@ -42,7 +42,7 @@ foreach($config->query('/config/pages//page') as $page)
     {
         $array = ['type' => 'post', 'value' => $param['@post']];
 
-        if($default = $param->attribute('default'))
+        if(($default = $param->attribute('default')) !== null)
         {
             $array['default'] = $default;
         }

@@ -1,6 +1,7 @@
 <?php
 
 require_once(www_root . 'facilities/filesystem.php');
+require_once(www_root . 'facilities/form.php');
 require_once(www_root . 'facilities/json.php');
 require_once(www_root . 'facilities/string.php');
 require_once(www_root . 'facilities/xml.php');

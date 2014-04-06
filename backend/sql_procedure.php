@@ -58,19 +58,23 @@ class sql_procedure extends procedure
 
     private function apply($query, $args)
     {
-        return preg_replace(array('/\[(\w+)\]/e', '/\$(\w+)/e'), array("\$this->replace('\\1', \$args)", "\$this->replace_escape('\\1', \$args)"), $query);
-    }
+        $self = $this;
 
-    private function replace($name, $args)
-    {
-        isset($args[$name]) or backend_error('bad_input', 'Unknown procedure parameter: ' . $name);
-        return $args[$name];
-    }
-
-    private function replace_escape($name, $args)
-    {
-        isset($args[$name]) or backend_error('bad_input', 'Unknown procedure parameter: ' . $name);
-        return $this->sql->quote($args[$name]);
+        return replace(['/\[(\w+)\]/', '/\$(\w+)/'],
+        [
+            function($matches) use($args)
+            {
+                $name = $matches[1];
+                isset($args[$name]) or backend_error('bad_input', 'Unknown procedure parameter: ' . $name);
+                return $args[$name];
+            },
+            function($matches) use($self, $args)
+            {
+                $name = $matches[1];
+                isset($args[$name]) or backend_error('bad_input', 'Unknown procedure parameter: ' . $name);
+                return $self->sql->quote($args[$name]);
+            }
+        ], $query);
     }
 
     private function result($multiarray)
