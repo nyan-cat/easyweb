@@ -214,6 +214,11 @@ class page
                         {
                             $twig->addFilter(new Twig_SimpleFilter($name, $closure->bindTo($this, $this)));
                         }
+
+                        foreach($extensions['twig']['functions'] as $name => $closure)
+                        {
+                            $twig->addFunction(new Twig_SimpleFunction($name, $closure->bindTo($this, $this)));
+                        }
                     }
                 }
 
