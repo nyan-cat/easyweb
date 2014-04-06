@@ -61,6 +61,17 @@ class www
         return $response;
     }
 
+    function get($url, $params = [])
+    {
+        return $this->api->get($url, $params);
+    }
+
+    function post($url, $post = [], $get = [])
+    {
+        return $this->api->post($url, $post, $get);
+    }
+
+    private $api;
     private $locale;
     private $router;
 }
