@@ -210,13 +210,15 @@ class solr_procedure extends procedure
 
     private static function substitute($body, $args)
     {
-        return preg_replace('/\$(\w+)/e', "self::replace('\\1', \$args)", $body);
-    }
-
-    private static function replace($name, $args)
-    {
-        isset($args[$name]) or backend_error('bad_config', "Unknown Solr procedure parameter: $name");
-        return $args[$name];
+        return replace(['/\$(\w+)/'],
+        [
+            function($matches) use($args)
+            {
+                $name = $matches[1];
+                isset($args[$name]) or backend_error('bad_config', "Unknown Solr procedure parameter: $name");
+                return $args[$name];
+            }
+        ], $body);
     }
 
     private static function add($document)
