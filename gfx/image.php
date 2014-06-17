@@ -1,5 +1,7 @@
 <?php
 
+namespace gfx;
+
 class image
 {
     static function load($filename)
@@ -18,23 +20,17 @@ class image
         {
         case 'image/gif':
             $image = imagecreatefromgif($filename);
+            imagealphablending($image, true);
             break;
 
         case 'image/jpeg':
             $image = imagecreatefromjpeg($filename);
+            imagealphablending($image, true);
             break;
 
         case 'image/png':
-            $image = imagecreatetruecolor($width, $height);
-            $white = imagecolorallocate($image, 255, 255, 255);
-            imagefill($image, 0, 0, $white);
-
-            $png = imagecreatefrompng($filename);
-            imagealphablending($png, true);
-            imagesavealpha($png, true);
-
-            imagecopy($image, $png, 0, 0, 0, 0, $width, $height);
-            imagedestroy($png);
+            $image = imagecreatefrompng($filename);
+            imagealphablending($image, true);
             break;
         }
 
@@ -46,7 +42,7 @@ class image
         imagejpeg($this->resource, $filename, $quality);
     }
 
-    function crop_copy($x, $y, $width, $height)
+    function crop($x, $y, $width, $height)
     {
         $image = imagecreatetruecolor($width, $height);
         if(imagecopy($image, $this->resource, 0, 0, $x, $y, $width, $height))
@@ -59,7 +55,7 @@ class image
         }
     }
 
-    function fit_to_width_copy($width)
+    function fit_to_width($width)
     {
         $new_width = $width;
         $new_height = (int)(($width * $this->height) / $this->width);
@@ -68,7 +64,7 @@ class image
         return new image($image, $new_width, $new_height);
     }
 
-    function fit_to_height_copy($height)
+    function fit_to_height($height)
     {
         $new_width = (int)(($height * $this->width) / $this->height);
         $new_height = $height;
@@ -77,7 +73,7 @@ class image
         return new image($image, $new_width, $new_height);
     }
 
-    function contain_copy($width, $height)
+    function contain($width, $height)
     {
         if($this->width / $this->height > $width / $height)
         {
@@ -89,7 +85,7 @@ class image
         }
     }
 
-    function cover_copy($width, $height)
+    function cover($width, $height)
     {
         if($this->width / $this->height < $width / $height)
         {
@@ -113,6 +109,11 @@ class image
         return $this->height;
     }
 
+    function blit($image, $x, $y)
+    {
+        imagecopy($this->resource, $image->native(), $x, $y, 0, 0, $image->width(), $image->height());
+    }
+
     /*function watermark($width, $height, $string)
     {
         $color = imagecolorallocatealpha($image, 255, 255, 255, 64);
@@ -125,6 +126,11 @@ class image
         $vertical = 16;
         imagefttext($image, $fontsize, 0, $width - $fwidth - $horizontal, $height - $fheight - $vertical, $color, $font, $string);
     }*/
+
+    function native()
+    {
+        return $this->resource;
+    }
 
     private function __construct($resource, $width, $height)
     {

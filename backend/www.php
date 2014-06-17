@@ -11,6 +11,7 @@ require_once(www_root . 'backend/foursquare_procedure.php');
 require_once(www_root . 'backend/geoip_procedure.php');
 require_once(www_root . 'backend/php_procedure.php');
 require_once(www_root . 'backend/dispatcher.php');
+require_once(www_root . 'facilities/datetime.php');
 require_once(www_root . 'facilities/filesystem.php');
 require_once(www_root . 'facilities/image.php');
 require_once(www_root . 'facilities/json.php');
