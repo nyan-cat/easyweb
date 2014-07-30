@@ -9,8 +9,8 @@ class form
 
     static function adjust_uint($value)
     {
-        $value = preg_replace('/^\d/', '', $value);
-        return is_integer($value) ? $value : 0;
+        $value = preg_replace('/[^\d]/', '', $value);
+        return is_numeric($value) ? $value : 0;
     }
 }
 

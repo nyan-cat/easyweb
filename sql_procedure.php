@@ -72,7 +72,19 @@ class sql_procedure extends procedure
 
     private function apply($query, $args)
     {
-        return preg_replace(array('/\[(\w+)\]/e', '/\$(\w+)/e'), array("\$this->replace('\\1', \$args)", "\$this->replace_escape('\\1', \$args)"), $query);
+        $self = $this;
+
+        $noescape = preg_replace_callback('/\[(\w+)\]/', function($matches) use($self, $args)
+        {
+            return $self->replace($matches[1], $args);
+        }, $query);
+
+        return preg_replace_callback('/\$(\w+)/', function($matches) use($self, $args)
+        {
+            return $self->replace_escape($matches[1], $args);
+        }, $noescape);
+
+        //return preg_replace(array('/\[(\w+)\]/e', '/\$(\w+)/e'), array("\$this->replace('\\1', \$args)", "\$this->replace_escape('\\1', \$args)"), $query);
     }
 
     private function replace($name, $args)

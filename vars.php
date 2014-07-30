@@ -67,7 +67,13 @@ class vars
 
     function apply($string, $quotes = false, $names = vars::names_objective)
     {
-        return preg_replace('/\$(' . $names . ')/e', "\$this->replace('\\1', \$quotes)", $string);
+        $self = $this;
+        return preg_replace_callback('/\$(' . $names . ')/', function($matches) use($self, $quotes)
+        {
+            return $self->replace($matches[1], $quotes);
+        }, $string);
+
+        //return preg_replace('/\$(' . $names . ')/e', "\$this->replace('\\1', \$quotes)", $string);
     }
 
     static function apply_assoc($string, $vars, $quotes = false, $names = vars::names_objective)
