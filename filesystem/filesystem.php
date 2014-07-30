@@ -12,6 +12,11 @@ function write($filename, $append = false)
 {
 }
 
+function size($filename)
+{
+    return filesize($filename);
+}
+
 function each($path, $callback = null)
 {
     if($callback)

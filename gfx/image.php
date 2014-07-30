@@ -77,11 +77,11 @@ class image
     {
         if($this->width / $this->height > $width / $height)
         {
-            return $this->fit_to_width_copy($width);
+            return $this->fit_to_width($width);
         }
         else
         {
-            return $this->fit_to_height_copy($height);
+            return $this->fit_to_height($height);
         }
     }
 
@@ -89,13 +89,13 @@ class image
     {
         if($this->width / $this->height < $width / $height)
         {
-            $image = $this->fit_to_width_copy($width);
-            return $image->crop_copy(0, (int)(($image->height() - $height) / 2), $width, $height);
+            $image = $this->fit_to_width($width);
+            return $image->crop(0, (int)(($image->height() - $height) / 2), $width, $height);
         }
         else
         {
-            $image = $this->fit_to_height_copy($height);
-            return $image->crop_copy((int)(($image->width() - $width) / 2), 0, $width, $height);
+            $image = $this->fit_to_height($height);
+            return $image->crop((int)(($image->width() - $width) / 2), 0, $width, $height);
         }
     }
 

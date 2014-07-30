@@ -2,7 +2,7 @@
 
 namespace fs;
 
-class enumerator implements Iterator
+class enumerator implements \Iterator
 {
     function __construct($path)
     {
