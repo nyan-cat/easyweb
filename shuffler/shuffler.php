@@ -17,6 +17,7 @@ class shuffler
     function shuffle($template, $seed)
     {
         $this->generator->reset($seed);
+        $this->values = [];
         $node = new node();
         $this->parse($node, $template);
         return $node->get();
@@ -31,15 +32,25 @@ class shuffler
     {
         for($n = $begin, $tn = $begin; $n != $end; ++$n)
         {
-            if($template[$n] == '[')
+            if($template[$n] == '[' or $template[$n] == '~')
             {
                 if($n != $begin)
                 {
                     $node->push(new text(substr($template, $tn, $n - $tn)));
                 }
+
+                $name = null;
+
+                if($template[$n] == '~')
+                {
+                    $name = substr($template, $n + 1, strpos($template, '[', $n) - $n - 1);
+                    $this->values[$name] = null;
+                    $n += strlen($name) + 1;
+                }
+
                 $begin_branch = $n + 1;
                 $end_branch = self::search_bracket($template, $begin_branch, $end);
-                $branch = new branch($this->generator);
+                $branch = new branch($this->generator, $this->values, $name);
                 $this->parse_branch($branch, $template, $begin_branch, $end_branch);
                 $node->push($branch);
                 $n = $end_branch;
@@ -103,6 +114,7 @@ class shuffler
     }
 
     private $generator;
+    private $values = [];
 }
 
 ?>

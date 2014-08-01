@@ -4,9 +4,11 @@ namespace shuffler;
 
 class branch
 {
-    function __construct($generator)
+    function __construct($generator, &$values, $name = null)
     {
         $this->generator = $generator;
+        $this->values = &$values;
+        $this->name = $name;
     }
 
     function push($node)
@@ -16,10 +18,26 @@ class branch
 
     function get()
     {
-        return $this->branches[$this->generator->irand(count($this->branches))]->get();
+        if($this->name === null or ($this->name !== null and $this->values[$this->name] === null))
+        {
+            $index = $this->generator->irand(count($this->branches));
+
+            if($this->name !== null)
+            {
+                $this->values[$this->name] = $index;
+            }
+        }
+        else
+        {
+            $index = $this->values[$this->name];
+        }
+
+        return $this->branches[$index]->get();
     }
 
     private $generator;
+    private $values;
+    private $name;
     private $branches = [];
 }
 
