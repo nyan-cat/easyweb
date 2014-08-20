@@ -2,7 +2,7 @@
 
 class dt
 {
-    function mysql($string)
+    static function mysql($string)
     {
         return date("Y-m-d H:m:s", self::parse($string));
     }
