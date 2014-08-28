@@ -38,7 +38,7 @@ class document implements \ArrayAccess
 
     function query($expression, $context = null)
     {
-        return new nodelist($this->xpath->query($expression, $context ? $context : $this->document->documentElement));
+        return new nodelist($this->xpath->query($expression, $context ? $context->native() : $this->document->documentElement));
     }
 
     static function load($filename)

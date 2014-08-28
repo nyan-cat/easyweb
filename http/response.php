@@ -4,11 +4,15 @@ namespace http;
 
 class response
 {
-    function __construct($code = '200', $message = 'OK', $protocol = 'HTTP/1.1')
+    function __construct($code = 200, $message = 'OK', $protocol = 'HTTP/1.1', $content = null)
     {
-        $this->method = $method;
-        $this->uri = $uri;
         $this->protocol = $protocol;
+        $this->code = $code;
+        $this->message = $message;
+        if($content !== null)
+        {
+            $this->content = $content;
+        }
     }
 
     function write()
@@ -19,14 +23,18 @@ class response
         {
             header("$name: $value");
         }
+
+        if(isset($this->content))
+        {
+            echo $this->content;
+        }
     }
 
-    $protocol;
-    $code;
-    $message;
-    $headers = [];
-    $cookies = [];
-    $data = (object) [];
+    var $protocol;
+    var $code;
+    var $message;
+    var $headers = [];
+    var $cookies = [];
 }
 
 ?>

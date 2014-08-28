@@ -4,16 +4,18 @@ namespace http;
 
 class request
 {
-    function __construct($method, $uri, $protocol = 'HTTP/1.1')
+    function __construct($uri, $method = 'GET', $protocol = 'HTTP/1.1')
     {
-        $this->method = $method;
         $this->uri = $uri;
+        $this->method = $method;
         $this->protocol = $protocol;
+        $this->get = (object) [];
+        $this->post = (object) [];
     }
 
     static function current()
     {
-        $request = new request($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI'], $_SERVER['SERVER_PROTOCOL']);
+        $request = new request($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD'], $_SERVER['SERVER_PROTOCOL']);
         $request->headers = getallheaders();
         $request->cookies = $_COOKIE;
 
@@ -57,16 +59,19 @@ class request
             }
         }
 
-        $request->data = (object) $_POST;
+        $request->post = (object) $_POST;
+
+        return $request;
     }
 
-    $method;
-    $uri;
-    $protocol;
-    $headers = [];
-    $cookies = [];
-    $files = [];
-    $data = (object) [];
+    var $uri;
+    var $method;
+    var $protocol;
+    var $headers = [];
+    var $cookies = [];
+    var $files = [];
+    var $get;
+    var $post;
 }
 
 ?>

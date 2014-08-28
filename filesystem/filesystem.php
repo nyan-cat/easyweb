@@ -17,6 +17,11 @@ function size($filename)
     return filesize($filename);
 }
 
+function extension($filename)
+{
+    return pathinfo($filename, PATHINFO_EXTENSION);
+}
+
 function each($path, $callback = null)
 {
     if($callback)
