@@ -44,13 +44,18 @@ class handler
 
         if(preg_match($uri->regex, $request->uri, $matches))
         {
+            $object = (object) [];
+
             if(isset($uri->params))
             {
                 foreach($uri->params as $n => $param)
                 {
-                    $params[$param->name] = $matches[$n + 1];
+                    $name = $param->name;
+                    $object->$name = $matches[$n + 1];
                 }
             }
+
+            $params['uri'] = new \readonly($object);
 
             return true;
         }

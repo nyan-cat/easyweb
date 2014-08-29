@@ -1,6 +1,6 @@
 <?php
 
-//require_once('exception.php');
+require_once(www_root . 'error.php');
 
 class sql
 {
@@ -67,7 +67,7 @@ class sql
     {
         $message .= ': ' . $this->get()->errorInfo()[2];
         $this->pdo = null;
-        die('bad_query' . $message);
+        error('database_error', $message);
     }
 
     private static $drivers =

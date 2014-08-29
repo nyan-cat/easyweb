@@ -1,5 +1,7 @@
 <?php
 
+require_once(www_root . 'error.php');
+
 class thiscall
 {
     function __construct($object, $name, $value)
@@ -55,9 +57,9 @@ class collection implements ArrayAccess
         $this->_delete($offset);
     }
 
-    function attach($name, $params, $procedure)
+    function attach($name, $procedure)
     {
-        $mangled = self::mangle($name, array_keys($params));
+        $mangled = self::mangle($name, array_keys($procedure->params()));
         $this->procedures[$mangled] = $procedure;
     }
 
@@ -65,7 +67,7 @@ class collection implements ArrayAccess
     {
         $params = empty($params) ? [] : $params[0];
         $mangled = self::mangle($name, array_keys($params));
-        isset($this->procedures[$mangled]) or die('Unknown procedure: ' . $mangled);
+        isset($this->procedures[$mangled]) or error('object_not_found', 'Unknown procedure: ' . $mangled);
         return $this->procedures[$mangled]->query($params);
     }
 

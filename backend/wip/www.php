@@ -68,25 +68,49 @@ class www
 
     function bind($success = null, $error = null, $content_type = 'application/json')
     {
-        $this->encoders[$content_type] =
+        $this->encoders[$content_type] = (object)
         [
-            'success' => is_null($success) ? self::$success : $success,
-            'error' => is_null($error) ? self::$error : $error
+            'success' => $success === null ? self::$success : $success,
+            'error'   => $error === null ? self::$error : $error
         ];
     }
 
     function request($request)
     {
+        $response = null;
         $content_type = 'application/json';
         $encoder = $this->encoders[$content_type];
-        return new http\response
-        (
-            200, 'OK', $request->protocol,
-            $encoder['success']->__invoke
+        
+        try
+        {
+            $result = null;
+
+            if($request->uri == $this->batch and $request->method == 'POST')
+            {
+                $result = $this->batch($request);
+            }
+            else
+            {
+                $result = $this->router->request($request);
+            }
+
+            $response = new http\response
             (
-                $this->router->request($request)
-            )
-        );
+                200, 'OK', $request->protocol,
+                $encoder->success->__invoke($result)
+            );
+        }
+        catch(www_exception $e)
+        {
+            $response = new http\response($e->code, $e->message, $request->protocol, $encoder->error->__invoke($e));
+        }
+
+        if(isset($request->get->_code))
+        {
+            $response->code = $request->get->_code;
+        }
+
+        return $response;
     }
 
     function __get($name)
@@ -99,8 +123,61 @@ class www
         return $this->dispatcher->__call($name, $args);
     }
 
+    private function batch($request)
+    {
+        $result = [];
+
+        foreach($request->post as $param => $uri)
+        {
+            $query = parse_url($uri);
+            $uri = $query['path'];
+            $get = [];
+            !isset($query['query']) or parse_str($query['query'], $get);
+
+            foreach($get as $name => &$value)
+            {
+                $value = preg_replace_callback( '/\{@([\w\.]+)\}/', function($matches) use(&$result)
+                {
+                    $params = explode('.', $matches[1]);
+
+                    $current = null;
+
+                    foreach($params as $member)
+                    {
+                        if(!$current)
+                        {
+                            $current = $result[$member];
+                        }
+                        else
+                        {
+                            if(preg_match('/\A(\w+)\[(\d+)\]\Z/', $member, $array))
+                            {
+                                $current = $current->$array[1];
+                                $current = $current[(int) $array[2]];
+                            }
+                            else
+                            {
+                                $current = $current->$member;
+                            }
+                        }
+                    }
+
+                    return $current;
+                }, $value);
+            }
+
+            $result[$param] = $this->router->request(new http\request($uri, 'GET', $request->protocol, $get));
+        }
+
+        return $result;
+    }
+
     static $success;
     static $error;
+
+    private $batch;
+    private $schema;
+    private $documentation;
 
     private $router;
     private $dispatcher;
@@ -109,12 +186,12 @@ class www
 
 www::$success = function($content)
 {
-    return www::encode(['status' => 'success', 'content' => $content]);
+    return www::encode($content);
 };
 
-www::$error = function($type, $message)
+www::$error = function($e)
 {
-    return www::encode(['status' => 'error', 'type' => $type, 'message' => $message]);
+    return www::encode(['type' => $e->type, 'description' => $e->description, 'stacktrace' => $e->getTrace()]);
 };
 
 ?>

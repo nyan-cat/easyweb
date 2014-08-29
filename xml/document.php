@@ -33,7 +33,19 @@ class document implements \ArrayAccess
 
     function offsetUnset($offset)
     {
-        // TODO: Exception?
+        foreach($this->query($offset) as $child)
+        {
+            $child = $child->native();
+
+            if(get_class($child) == 'DOMAttr')
+            {
+                $child->parentNode->removeAttribute(substr($offset, 1));
+            }
+            else
+            {
+                $child->parentNode->removeChild($child);
+            }
+        }
     }
 
     function query($expression, $context = null)

@@ -27,7 +27,7 @@ class router
             }
         }
 
-        return null;
+        error('not_found', 'Resource and method not found: ' . $request->method . ' ' . $request->uri);
     }
 
     private $handlers =

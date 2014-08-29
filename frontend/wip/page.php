@@ -48,35 +48,32 @@ class page extends http\handler
         {
             if(isset($param->query))
             {
-                $batch[$name] = $param->query;
+                $batch[$name] = self::substitute($param->query, $containers);
             }
             elseif(isset($param->value))
             {
-                $result[$name] = preg_replace_callback('/\{\$([^\.]+)\.([^\}]+)\}/', function($matches) use($containers)
-                {
-                    $container = $matches[1];
-                    $value = $matches[2];
-                    isset($containers[$container]) or runtime_error('Unknown container: ' . $container);
-                    isset($containers[$container][$value]) or runtime_error('Unknown container value: ' . $container . '[' . $value . ']');
-                    return $containers[$container][$value];
-                }, $param->value);
+                $result[$name] = self::substitute($param->value, $containers);
             }
         }
 
         if(!empty($batch))
         {
-            foreach($batch as $name => &$query)
-            {
-                $query = preg_replace_callback('/\{@(\w+)\}/', function($matches) use($result)
-                {
-                    return isset($result[$matches[1]]) ? $result[$matches[1]] : $matches[0];
-                }, $query);
-            }
-
             $result = array_merge($result, $this->api->batch($batch));
         }
 
         return $result;
+    }
+
+    private static function substitute($string, $containers)
+    {
+        return preg_replace_callback('/\{\$([^\.]+)\.([^\}]+)\}/', function($matches) use($containers)
+        {
+            $container = $matches[1];
+            $value = $matches[2];
+            isset($containers[$container]) or error('missing_parameter', 'Unknown container: ' . $container);
+            isset($containers[$container]->$value) or error('missing_parameter', 'Unknown container value: ' . $container . '[' . $value . ']');
+            return $containers[$container]->$value;
+        }, $string);
     }
 
     private $params;

@@ -1,5 +1,7 @@
 <?php
 
+require_once(www_root . 'error.php');
+
 class readonly
 {
     function __construct($object)
@@ -9,8 +11,13 @@ class readonly
 
     function __get($name)
     {
-        isset($object->$name) or die('Parameter not set: ' . $name);
-        return $object->$name;
+        isset($this->object->$name) or error('missing_parameter', 'Parameter not set: ' . $name);
+        return $this->object->$name;
+    }
+
+    function __isset($name)
+    {
+        return isset($this->object->$name);
     }
 
     private $object;

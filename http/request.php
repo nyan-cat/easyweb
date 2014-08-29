@@ -4,13 +4,13 @@ namespace http;
 
 class request
 {
-    function __construct($uri, $method = 'GET', $protocol = 'HTTP/1.1')
+    function __construct($uri, $method = 'GET', $protocol = 'HTTP/1.1', $get = [], $post = [])
     {
         $this->uri = $uri;
         $this->method = $method;
         $this->protocol = $protocol;
-        $this->get = (object) [];
-        $this->post = (object) [];
+        $this->get = (object) $get;
+        $this->post = (object) $post;
     }
 
     static function current()

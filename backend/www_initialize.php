@@ -13,6 +13,7 @@ foreach($config->collections as $options)
     foreach($options->procedures as $procedure)
     {
         $datasource = $config->datasources[$procedure->datasource];
+        $params = array_merge([$options->key => (object) []], $procedure->params);
 
         if(in_array($datasource->type, array_keys(sql::drivers())))
         {
@@ -31,12 +32,10 @@ foreach($config->collections as $options)
                 );
             }
 
-            $params = array_merge([$options->key => (object) []], $procedure->params);
-
-            $collection->attach($procedure->name, $params, new sql_procedure
+            $collection->attach($procedure->name, new sql_procedure
             (
                 $params,
-                isset($procedure->required) and $procedure->required !== 'false',
+                !isset($procedure->required) or $procedure->required !== 'false',
                 isset($procedure->result) ? $procedure->result : 'array',
                 $procedure->body,
                 $datasources[$procedure->datasource]
@@ -46,7 +45,68 @@ foreach($config->collections as $options)
         {
             switch($datasource->type)
             {
-            case 'mysql':
+            case 'foursquare':
+                if(!isset($datasources[$procedure->datasource]))
+                {
+                    $datasources[$procedure->datasource] = new foursquare($datasources->client_id, $datasources->client_secret);
+                }
+
+                $collection->attach($procedure->name, new foursquare_procedure
+                (
+                    $procedure->method,
+                    !isset($procedure->required) or $procedure->required !== 'false',
+                    isset($procedure->result) ? $procedure->result : 'array',
+                    $datasources[$procedure->datasource]
+                ));
+                break;
+
+            case 'php':
+                $collection->attach($procedure->name, new php_procedure
+                (
+                    $params,
+                    !isset($procedure->required) or $procedure->required !== 'false',
+                    isset($procedure->result) ? $procedure->result : 'array',
+                    new script($this, $procedure->script)
+                ));
+                break;
+
+            case 'solr':
+                if(!isset($datasources[$procedure->datasource]))
+                {
+                    $datasources[$procedure->datasource] = new solr($datasources->server, $datasources->port, $datasources->url, $datasources->username, $datasources->password);
+                }
+
+                $order_by = [];
+
+                foreach($procedure->order_by as $order)
+                {
+                    $mode = (object)
+                    [
+                        'type'  => isset($order['@type']) ? $order['@type'] : 'normal',
+                        'order' => $order['@order']
+                    ];
+
+                    if(isset($order->point))
+                    {
+                        $mode->point = $order->point;
+                    }
+
+                    $order_by[$order->name] = $mode;
+                }
+
+                $collection->attach($procedure->name, new solr_procedure
+                (
+                    $params,
+                    !isset($procedure->required) or $procedure->required !== 'false',
+                    isset($procedure->result) ? $procedure->result : 'array',
+                    $datasources[$procedure->datasource],
+                    $procedure->core,
+                    $procedure->method,
+                    $procedure->body,
+                    $order_by,
+                    $procedure->offset,
+                    $procedure->count
+                ));
                 break;
             }
         }

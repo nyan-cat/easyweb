@@ -11,7 +11,7 @@ class dispatcher
 
     function __get($name)
     {
-        isset($this->collections[$name]) or (debug_print_backtrace() and die('Unknown collection: ' . $name));
+        isset($this->collections[$name]) or error('object_not_found', 'Unknown collection: ' . $name);
         return $this->collections[$name];
     }
 

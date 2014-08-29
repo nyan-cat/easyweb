@@ -18,7 +18,7 @@ class sql_procedure extends procedure
         if(!is_array($this->body))
         {
             $array = $this->sql->query($this->apply($this->body, $args));
-            !($this->required and empty($array)) or backend_error('bad_query', 'SQL procedure returned empty result');
+            !($this->required and empty($array)) or error('empty_query_result', 'SQL procedure returned empty result');
             return self::result(empty($array) ? [] : [$array]);
         }
         else
@@ -39,7 +39,7 @@ class sql_procedure extends procedure
             if(empty($multiarray) and $this->required)
             {
                 $this->sql->rollback();
-                backend_error('bad_input', 'Empty response from SQL procedure');
+                error('empty_query_result', 'SQL procedure returned empty result');
             }
             else
             {
@@ -59,13 +59,13 @@ class sql_procedure extends procedure
             function($matches) use($args)
             {
                 $name = $matches[1];
-                isset($args[$name]) or backend_error('bad_input', 'Unknown procedure parameter: ' . $name);
+                isset($args[$name]) or error('missing_parameter', 'Unknown procedure parameter: ' . $name);
                 return $args[$name];
             },
             function($matches) use($sql, $args)
             {
                 $name = $matches[1];
-                isset($args[$name]) or backend_error('bad_input', 'Unknown procedure parameter: ' . $name);
+                isset($args[$name]) or error('missing_parameter', 'Unknown procedure parameter: ' . $name);
                 return $sql->quote($args[$name]);
             }
         ], $query);
@@ -78,7 +78,7 @@ class sql_procedure extends procedure
             switch($this->result)
             {
             case 'value':
-                count(get_object_vars($multiarray[0][0])) == 1 or backend_error('bad_query', 'SQL result is not a value');
+                count(get_object_vars($multiarray[0][0])) == 1 or error('bad_query_result', 'SQL result is not a value');
                 return reset($multiarray[0][0]);
 
             case 'object':
@@ -109,7 +109,7 @@ class sql_procedure extends procedure
             }
         }
 
-        backend_error('bad_query', 'Unsupported SQL query result type: ' . $this->result);
+        error('bad_query_result', 'Unsupported SQL query result type: ' . $this->result);
     }
 
     private $sql;

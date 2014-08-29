@@ -1,5 +1,7 @@
 <?php
 
+require_once(www_root . 'error.php');
+
 class api
 {
     function __construct($schema)
@@ -25,7 +27,7 @@ class api
 
     function request($type, $url, $get = [], $post = [])
     {
-        $request = ['method' => $type, 'protocol_version' => '1.1', 'header' => 'Connection: Close'];
+        $request = ['method' => $type, 'protocol_version' => '1.1', 'header' => 'Connection: Close', 'ignore_errors' => true];
 
         foreach($post as $name => &$param)
         {
@@ -45,24 +47,21 @@ class api
 
         $response = file_get_contents($this->endpoint . (empty($get) ? $url : ($url . '?' . http_build_query($get))), false, $ctx);
 
-        $object = json\decode($response, true);
+        preg_match('/\A[^ ]+ (\d+) .+\Z/', $http_response_header[0], $matches);
 
-        if($object === null)
+        if($matches[1] == 200)
         {
-            //if($developer)
+            if(!empty($response))
             {
-                var_dump($response);
-                die();
-            }
-            //else
-            {
-                //throw new Exception("Error Processing Request", 1);
+                $result = json\decode($response);
+                $result !== null or error('bad_backend_response', "Response from backend server is not valid JSON: $response");
+                return $result;
             }
         }
-
-        $content = $object['content'];
-
-        return (is_object($content) or (is_array($content) and array_values($content) !== $content)) ? (object) $content : $content;
+        else
+        {
+            error('bad_backend_response', $response);
+        }
     }
 
     function get($url, $params = [])
