@@ -20,13 +20,13 @@ class page extends http\handler
     {
         $response = new http\response(200, 'OK', $request->protocol);
 
-        $params = $this->resolve($this->params, $containers);
+        $params = $this->resolve($this->params + $containers['global'], $containers);
 
         if($this->script)
         {
             if(($script = $this->script->evaluate($params)) !== null)
             {
-                $params = array_merge($params, $script);
+                $params += $script;
             }
         }
 

@@ -9,7 +9,7 @@ require_once(www_root . 'frontend/wip/page.php');
 
 class www
 {
-    private function __construct($options)
+    private function __construct($options, $extensions)
     {
         $this->router = new http\router();
         switch(fs\extension($options->config))
@@ -18,7 +18,7 @@ class www
             $config = self::from_xml($options->config);
             break;
         }
-        $this->initialize($config);
+        $this->initialize($config, $extensions);
     }
 
     private static function from_xml($filename)
@@ -26,12 +26,12 @@ class www
         return (include(www_root . 'frontend/www_xml.php'));
     }
 
-    private function initialize($config)
+    private function initialize($config, $extensions)
     {
         include(www_root . 'frontend/www_initialize.php');
     }
 
-    static function create($options)
+    static function create($options, $extensions)
     {
         if(isset($options->cache))
         {
@@ -51,7 +51,7 @@ class www
         }
         else
         {
-            return new www($options);
+            return new www($options, $extensions);
         }
     }
 
@@ -70,29 +70,30 @@ class www
         return $response;
     }
 
-    function get($url, $params = [])
+    function get($uri, $params = [])
     {
-        return $this->api->get($url, $params);
+        return $this->api->get($uri, $params);
     }
 
-    function post($url, $post = [], $get = [])
+    function post($uri, $post = [], $get = [])
     {
-        return $this->api->post($url, $post, $get);
+        return $this->api->post($uri, $post, $get);
     }
 
-    function put($url, $post = [], $get = [])
+    function put($uri, $post = [], $get = [])
     {
-        return $this->api->put($url, $post, $get);
+        return $this->api->put($uri, $post, $get);
     }
 
-    function delete($url, $get = [])
+    function delete($uri, $get = [])
     {
-        return $this->api->delete($url, $get);
+        return $this->api->delete($uri, $get);
     }
 
     private $api;
     private $locale;
     private $router;
+    private $templaters = [];
 }
 
 ?>

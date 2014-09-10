@@ -25,7 +25,7 @@ class api
         return $array;
     }
 
-    function request($type, $url, $get = [], $post = [])
+    function request($type, $uri, $get = [], $post = [])
     {
         $request = ['method' => $type, 'protocol_version' => '1.1', 'header' => 'Connection: Close', 'ignore_errors' => true];
 
@@ -45,7 +45,7 @@ class api
 
         $ctx = stream_context_create(['http' => $request]);
 
-        $response = file_get_contents($this->endpoint . (empty($get) ? $url : ($url . '?' . http_build_query($get))), false, $ctx);
+        $response = file_get_contents($this->endpoint . (empty($get) ? $uri : ($uri . '?' . http_build_query($get))), false, $ctx);
 
         preg_match('/\A[^ ]+ (\d+) .+\Z/', $http_response_header[0], $matches);
 
@@ -64,14 +64,24 @@ class api
         }
     }
 
-    function get($url, $params = [])
+    function get($uri, $params = [])
     {
-        return $this->request('GET', $url, $params);
+        return $this->request('GET', $uri, $params);
     }
 
-    function post($url, $post = [], $get = [])
+    function post($uri, $post = [], $get = [])
     {
-        return $this->request('POST', $url, $get, $post);
+        return $this->request('POST', $uri, $get, $post);
+    }
+
+    function put($uri, $post = [], $get = [])
+    {
+        return $this->request('PUT', $uri, $get, $post);
+    }
+
+    function delete($uri, $get = [])
+    {
+        return $this->request('DELETE', $uri, $get, $post);
     }
 
     private $endpoint;

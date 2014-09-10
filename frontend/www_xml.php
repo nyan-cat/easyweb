@@ -42,6 +42,11 @@ foreach($config->query('/config/pages//page') as $page)
         $options->template = $page['@template'];
     }
 
+    if(isset($page['@engine']))
+    {
+        $options->engine = $page['@engine'];
+    }
+
     $script = trim($page->value());
 
     if(!empty($script))

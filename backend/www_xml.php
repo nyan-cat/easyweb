@@ -21,7 +21,7 @@ foreach($config->query('/config/datasources//datasource[@name and @type]') as $d
     $result->datasources[$name] = (object) iterator_to_array($datasource->attributes());
 }
 
-foreach($config->query('/config/collections//collection') as $collection)
+foreach($config->query('/config//collection[@name]') as $collection)
 {
     $procedures = [];
 
@@ -33,9 +33,15 @@ foreach($config->query('/config/collections//collection') as $collection)
         {
             foreach(explode(',', $procedure['@params']) as $param)
             {
-                $param = trim($param);
-
-                $params[$param] = (object) [];
+                $options = (object) [];
+                $name = trim($param);
+                $encode = explode('|', $name);
+                if(count($encode) == 2)
+                {
+                    $name = trim($encode[0]);
+                    $options->encode = trim($encode[1]);
+                }
+                $params[$name] = $options;
             }
         }
 
@@ -49,7 +55,7 @@ foreach($config->query('/config/collections//collection') as $collection)
     $result->collections[] = (object)
     [
         'name'       => $collection['@name'],
-        'key'        => $collection['@key'],
+        'key'        => isset($collection['@key']) ? $collection['@key'] : null,
         'procedures' => $procedures
     ];
 }

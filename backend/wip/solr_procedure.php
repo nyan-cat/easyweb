@@ -4,11 +4,11 @@ require_once(www_root . 'backend/wip/procedure.php');
 
 class solr_procedure extends procedure
 {
-    function __construct($params, $required, $result, $solr, $core, $method, $body, $order_by, $offset, $count)
+    function __construct($params, $required, $result, $embed, $solr, $core, $method, $body, $order_by, $offset, $count)
     {
         in_array($method, ['add', 'delete', 'query']) or error('initialization_error', "Unknown Solr method: $method");
 
-        parent::__construct($params, $required, $result);
+        parent::__construct($params, $required, $result, $embed);
 
         $this->solr = $solr;
         $this->core = $core;

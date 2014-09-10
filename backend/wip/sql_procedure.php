@@ -5,9 +5,9 @@ require_once(www_root . 'backend/wip/procedure.php');
 
 class sql_procedure extends procedure
 {
-    function __construct($params, $required, $result, $body, $sql)
+    function __construct($params, $required, $result, $embed, $body, $sql)
     {
-        parent::__construct($params, $required, $result);
+        parent::__construct($params, $required, $result, $embed);
         $body = explode(';', trim(trim($body), ';'));
         $this->body = count($body) == 1 ? $body[0] : $body;
         $this->sql = $sql;

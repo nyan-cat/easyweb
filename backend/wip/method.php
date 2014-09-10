@@ -14,7 +14,9 @@ class method extends http\handler
 
     function request($request, $containers)
     {
-        return $this->script->evaluate($containers);
+        $_count = isset($request->get->_count) ? $request->get->_count : 10;
+        $_offset = isset($request->get->_offset) ? $request->get->_offset : isset($request->get->_page) ? ($request->get->_page - 1) * $_count : 0;
+        return $this->script->evaluate($containers + ['_offset' => $_offset, '_count' => $_count]);
     }
 
     private $params;

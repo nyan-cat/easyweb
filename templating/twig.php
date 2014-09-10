@@ -11,7 +11,19 @@ class twig
         {
             foreach($extensions->filters as $name => $closure)
             {
-                $this->twig->addFilter(new Twig_SimpleFilter($name, $closure));
+                if($closure instanceof Closure)
+                {
+                    $this->twig->addFilter(new Twig_SimpleFilter($name, $closure));
+                }
+                else
+                {
+                    $options = [];
+                    if(isset($closure->escape) and !$closure->escape)
+                    {
+                        $options['is_safe'] = ['html'];
+                    }
+                    $this->twig->addFilter(new Twig_SimpleFilter($name, $closure->function, $options));
+                }
             }
         }
 

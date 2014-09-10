@@ -18,12 +18,13 @@ class router
         {
             if($handler->match($request, $matches))
             {
-                return $handler->request($request, array_merge($global, $matches,
+                return $handler->request($request, $matches +
                 [
                     'get'     => new \readonly($request->get),
                     'post'    => new \readonly($request->post),
-                    'cookies' => new \readonly($request->cookies)
-                ]));
+                    'cookies' => new \readonly($request->cookies),
+                    'global'  => $global
+                ]);
             }
         }
 

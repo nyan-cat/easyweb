@@ -13,7 +13,7 @@ foreach($config->collections as $options)
     foreach($options->procedures as $procedure)
     {
         $datasource = $config->datasources[$procedure->datasource];
-        $params = array_merge([$options->key => (object) []], $procedure->params);
+        $params = $procedure->params;
 
         if(in_array($datasource->type, array_keys(sql::drivers())))
         {
@@ -37,6 +37,7 @@ foreach($config->collections as $options)
                 $params,
                 !isset($procedure->required) or $procedure->required !== 'false',
                 isset($procedure->result) ? $procedure->result : 'array',
+                isset($procedure->embed) ? $procedure->embed : null,
                 $procedure->body,
                 $datasources[$procedure->datasource]
             ));
@@ -99,6 +100,7 @@ foreach($config->collections as $options)
                     $params,
                     !isset($procedure->required) or $procedure->required !== 'false',
                     isset($procedure->result) ? $procedure->result : 'array',
+                    isset($procedure->embed) ? $procedure->embed : null,
                     $datasources[$procedure->datasource],
                     $procedure->core,
                     $procedure->method,
