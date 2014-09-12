@@ -58,6 +58,7 @@ class procedure
             }
             if(isset($this->params[$name]->encode) and $this->params[$name]->encode == 'json')
             {
+
                 $value = json\encode($value);
             }
         }

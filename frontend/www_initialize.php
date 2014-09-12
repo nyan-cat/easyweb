@@ -1,12 +1,14 @@
 <?php
 
-require_once(www_root . 'templating/twig.php');
+require_once(www_root . 'templating/twig/engine.php');
 
 $this->api = new api($config->schema);
+$this->locale = new locale($options->language, $options->country);
+$this->locale->load($config->locale);
 
 if($config->engine == 'twig')
 {
-    $this->templaters[$config->engine] = new twig($config->templates, [], $extensions[$config->engine]);
+    $this->templaters[$config->engine] = new twig\engine($config->templates, [], $config->data, $this->locale);
 }
 
 foreach($config->pages as $page)

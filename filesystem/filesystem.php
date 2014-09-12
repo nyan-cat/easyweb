@@ -6,10 +6,12 @@ require_once('enumerator.php');
 
 function read($filename)
 {
+    return file_get_contents($filename);
 }
 
 function write($filename, $append = false)
 {
+    file_put_contents($filename, $append ? FILE_APPEND : 0);
 }
 
 function size($filename)

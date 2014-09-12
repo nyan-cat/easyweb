@@ -35,7 +35,7 @@ class node implements \ArrayAccess
         {
             $child = $child->native();
 
-            if(get_class($child) == 'DOMAttr')
+            if($child instanceof \DOMAttr)
             {
                 $child->parentNode->removeAttribute(substr($offset, 1));
             }

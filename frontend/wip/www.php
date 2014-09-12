@@ -9,7 +9,7 @@ require_once(www_root . 'frontend/wip/page.php');
 
 class www
 {
-    private function __construct($options, $extensions)
+    private function __construct($options)
     {
         $this->router = new http\router();
         switch(fs\extension($options->config))
@@ -18,7 +18,7 @@ class www
             $config = self::from_xml($options->config);
             break;
         }
-        $this->initialize($config, $extensions);
+        $this->initialize($options, $config);
     }
 
     private static function from_xml($filename)
@@ -26,7 +26,7 @@ class www
         return (include(www_root . 'frontend/www_xml.php'));
     }
 
-    private function initialize($config, $extensions)
+    private function initialize($options, $config)
     {
         include(www_root . 'frontend/www_initialize.php');
     }
@@ -39,20 +39,25 @@ class www
             if($www = fs\read($cache))
             {
                 $www = unserialize($www);
-                $www->locale->setup($options->language, $options->country);
-                return $www;
             }
             else
             {
                 $www = new www($options);
                 fs\write($cache, serialize($www));
-                return $www;
             }
+            $www->locale->setup($options->language, $options->country);
         }
         else
         {
-            return new www($options, $extensions);
+            $www = new www($options);
         }
+
+        foreach($www->templaters as $name => $templater)
+        {
+            $templater->extend(isset($extensions[$name]) ? $extensions[$name] : []);
+        }
+
+        return $www;
     }
 
     function request($request, $global = [])

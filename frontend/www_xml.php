@@ -8,6 +8,8 @@ $result = (object)
 [
     'engine'    => $config['@engine'],
     'templates' => $config['@templates'],
+    'data'      => $config['@data'],
+    'locale'    => $config['@locale'],
     'schema'    => $config['@schema'],
     'pages'     => []
 ];
