@@ -2,6 +2,7 @@
 
 require_once(www_root . 'facilities/string.php');
 require_once(www_root . 'backend/wip/procedure.php');
+require_once(www_root . 'backend/wip/sql.php');
 
 class sql_procedure extends procedure
 {

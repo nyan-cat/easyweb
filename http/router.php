@@ -18,13 +18,23 @@ class router
         {
             if($handler->match($request, $matches))
             {
-                return $handler->request($request, $matches +
+                $collections =
                 [
                     'get'     => new \readonly($request->get),
                     'post'    => new \readonly($request->post),
                     'cookies' => new \readonly($request->cookies),
-                    'global'  => $global
-                ]);
+                    '_global' => $global
+                ];
+
+                if(isset($global['_collections']))
+                {
+                    foreach($global['_collections'] as $name => $collection)
+                    {
+                        $collections[$name] = new \readonly($collection);
+                    }
+                }
+
+                return $handler->request($request, $matches + $collections);
             }
         }
 

@@ -4,18 +4,19 @@ require_once(www_root . 'backend/wip/datatype.php');
 
 class procedure
 {
-    function __construct($params, $required, $result, $embed = null)
+    function __construct($params, $required, $result, $output = null)
     {
         $this->params = $params;
         $this->required = $required;
         $this->result = $result;
-        $this->embed = $embed;
+        $this->output = $output;
     }
 
     function query($params)
     {
         $this->preprocess($params);
-        if($this->embed === null)
+
+        if($this->output === null)
         {
             return $this->query_direct($params);
         }
@@ -25,18 +26,28 @@ class procedure
 
             if($this->result == 'object')
             {
-                self::embed($result, $this->embed);
+                $this->postprocess($result);
             }
             elseif($this->result == 'array')
             {
-                foreach($result as $object)
+                foreach($result as &$object)
                 {
-                    self::embed($object, $this->embed);
+                    $this->postprocess($object);
+                }
+            }
+            elseif($this->result == 'multiarray')
+            {
+                foreach($result as &$array)
+                {
+                    foreach($array as &$object)
+                    {
+                        $this->postprocess($object);
+                    }
                 }
             }
             else
             {
-                error('bad_query_result', 'Only object or array can be embedded');
+                error('bad_query_result', 'Only object or array can be post-processed');
             }
 
             return $result;
@@ -50,16 +61,33 @@ class procedure
 
     private function preprocess(&$params)
     {
-        foreach($params as $name => &$value)
+        foreach($this->params as $name => $options)
         {
-            if(isset($this->params[$name]->type) and $name[0] != '_')
+            if(isset($options->type))
             {
-                datatype::assert($this->params[$name], $value);
+                datatype::assert($options->type, $params[$name]);
             }
-            if(isset($this->params[$name]->encode) and $this->params[$name]->encode == 'json')
+            if(isset($options->filter) and $options->filter == 'json')
             {
+                $params[$name] = json\encode($params[$name]);
+            }
+        }
+    }
 
-                $value = json\encode($value);
+    private function postprocess(&$object)
+    {
+        foreach($this->output as $name => $options)
+        {
+            if(isset($object->$name) and isset($options->filter))
+            {
+                if($options->filter == 'embed')
+                {
+                    self::embed($object, $name);
+                }
+                elseif($options->filter == 'json')
+                {
+                    $object->$name = json\decode($object->$name);
+                }
             }
         }
     }
@@ -75,7 +103,7 @@ class procedure
     private $params;
     protected $required;
     protected $result;
-    private $embed;
+    private $output;
 }
 
 ?>

@@ -2,12 +2,15 @@
 
 namespace fs;
 
+require_once(www_root . 'error.php');
+
 class enumerator implements \Iterator
 {
     function __construct($path)
     {
         $this->path = $path;
-        $this->handle = opendir($path);
+        $this->handle = @opendir($path);
+        $this->handle !== false or error('filesystem_error', "Directory $path not found");
         self::read();
     }
 

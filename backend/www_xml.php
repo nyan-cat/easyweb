@@ -28,6 +28,7 @@ foreach($config->query('/config//collection[@name]') as $collection)
     foreach($collection->query('procedure[@name and @datasource]') as $procedure)
     {
         $params = [];
+        $output = [];
 
         if(isset($procedure['@params']))
         {
@@ -35,20 +36,39 @@ foreach($config->query('/config//collection[@name]') as $collection)
             {
                 $options = (object) [];
                 $name = trim($param);
-                $encode = explode('|', $name);
-                if(count($encode) == 2)
+                $filter = explode('|', $name);
+                if(count($filter) == 2)
                 {
-                    $name = trim($encode[0]);
-                    $options->encode = trim($encode[1]);
+                    $name = trim($filter[0]);
+                    $options->filter = trim($filter[1]);
                 }
                 $params[$name] = $options;
             }
         }
 
+        if($attrib = isset($procedure['@output']) ? $procedure['@output'] : (isset($collection['@output']) ? $collection['@output'] : null))
+        {
+            if(in_array(isset($procedure['@result']) ? $procedure['@result'] : 'array', ['array', 'object', 'multiarray']))
+            {
+                foreach(explode(',', $attrib) as $field)
+                {
+                    $options = (object) [];
+                    $filter = explode('|', $field);
+                    if(count($filter) == 2)
+                    {
+                        $name = trim($filter[0]);
+                        $options->filter = trim($filter[1]);
+                        $output[$name] = $options;
+                    }
+                }
+            }
+        }
+
         $procedures[] = (object) array_merge(iterator_to_array($procedure->attributes()),
         [
-            'params'     => $params,
-            'body'       => trim($procedure->value())
+            'params' => $params,
+            'body'   => trim($procedure->value()),
+            'output' => empty($output) ? null : $output
         ]);
     }
 

@@ -10,6 +10,7 @@ $result = (object)
     'templates' => $config['@templates'],
     'data'      => $config['@data'],
     'locale'    => $config['@locale'],
+    'vars'      => $config['@vars'],
     'schema'    => $config['@schema'],
     'pages'     => []
 ];

@@ -11,9 +11,9 @@ class api
         $this->endpoint = $endpoint[0];
     }
 
-    function batch($params)
+    function batch($params, $get)
     {
-        $result = $this->request('POST', '/batch', [], $params);
+        $result = $this->request('POST', '/batch', $get, $params);
 
         $array = [];
 
@@ -57,10 +57,14 @@ class api
                 $result !== null or error('bad_backend_response', "Response from backend server is not valid JSON: $response");
                 return $result;
             }
+            else
+            {
+                error('bad_backend_response', 'Empty backend response');
+            }
         }
         else
         {
-            error('bad_backend_response', $response);
+            error('bad_backend_response', 'Backend HTTP response is not 200: ' . $response);
         }
     }
 

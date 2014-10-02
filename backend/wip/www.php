@@ -4,10 +4,13 @@ require_once(www_root . 'filesystem/filesystem.php');
 require_once(www_root . 'http/response.php');
 require_once(www_root . 'http/router.php');
 require_once(www_root . 'json/json.php');
-require_once(www_root . 'backend/wip/sql.php');
+require_once(www_root . 'backend/wip/foursquare_procedure.php');
+require_once(www_root . 'backend/wip/php_procedure.php');
+require_once(www_root . 'backend/wip/solr_procedure.php');
 require_once(www_root . 'backend/wip/sql_procedure.php');
 require_once(www_root . 'backend/wip/dispatcher.php');
 require_once(www_root . 'backend/wip/method.php');
+require_once(www_root . 'backend/wip/security.php');
 
 class www
 {
@@ -75,7 +78,7 @@ class www
         ];
     }
 
-    function request($request)
+    function request($request, $global = [])
     {
         $response = null;
         $content_type = 'application/json';
@@ -87,18 +90,22 @@ class www
 
             if($request->uri == $this->batch and $request->method == 'POST')
             {
-                $result = $this->batch($request);
+                $result = $this->batch($request, $global);
             }
             else
             {
-                $result = $this->router->request($request);
+                $result = $this->router->request($request, $global);
             }
 
-            $response = new http\response
-            (
-                200, 'OK', $request->protocol,
-                $encoder->success->__invoke($result)
-            );
+            $response = new http\response(200, 'OK', $request->protocol);
+
+            if(isset($result['_cookies']))
+            {
+                $response->cookies = $result['_cookies'];
+                unset($result['_cookies']);
+            }
+
+            $response->content = $encoder->success->__invoke($result);
         }
         catch(www_exception $e)
         {
@@ -123,7 +130,7 @@ class www
         return $this->dispatcher->__call($name, $args);
     }
 
-    private function batch($request)
+    private function batch($request, $global = [])
     {
         $result = [];
 
@@ -136,40 +143,25 @@ class www
 
             foreach($get as $name => &$value)
             {
-                $value = preg_replace_callback( '/\{@([\w\.]+)\}/', function($matches) use(&$result)
-                {
-                    $params = explode('.', $matches[1]);
-
-                    $current = null;
-
-                    foreach($params as $member)
-                    {
-                        if(!$current)
-                        {
-                            $current = $result[$member];
-                        }
-                        else
-                        {
-                            if(preg_match('/\A(\w+)\[(\d+)\]\Z/', $member, $array))
-                            {
-                                $current = $current->$array[1];
-                                $current = $current[(int) $array[2]];
-                            }
-                            else
-                            {
-                                $current = $current->$member;
-                            }
-                        }
-                    }
-
-                    return $current;
-                }, $value);
+                $value = self::substitute($value, $result);
             }
 
-            $result[$param] = $this->router->request(new http\request($uri, 'GET', $request->protocol, $get));
+            $uri = self::substitute($uri, $result);
+
+            $result[$param] = $this->router->request(new http\request($uri, 'GET', $request->protocol, $get), $global);
         }
 
         return $result;
+    }
+
+    private static function substitute($string, $vars)
+    {
+        $vars = new readonly((object) $vars);
+
+        return preg_replace_callback('/\{@([\w\.]+)\}/', function($matches) use($vars)
+        {
+            return $vars[$matches[1]];
+        }, $string);
     }
 
     static $success;

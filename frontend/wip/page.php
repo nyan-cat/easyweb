@@ -20,18 +20,28 @@ class page extends http\handler
     {
         $response = new http\response(200, 'OK', $request->protocol);
 
-        $params = $this->resolve($this->params + $containers['global'], $containers);
+        $params = $this->resolve($containers['_global'] + $this->params, $containers);
 
         if($this->script)
         {
-            if(($script = $this->script->evaluate($params)) !== null)
+            if(($script = $this->script->evaluate($containers + $params)) !== null)
             {
+                if(isset($script['_cookies']))
+                {
+                    $response->cookies = $script['_cookies'];
+                    unset($script['_cookies']);
+                }
+
                 $params += $script;
             }
         }
 
         if($this->template)
         {
+            if(isset($containers['_global']['_collections']))
+            {
+                $params += $containers['_global']['_collections'];
+            }
             $response->content = $this->template->render($params);
         }
 
@@ -48,7 +58,7 @@ class page extends http\handler
         {
             if(isset($param->query))
             {
-                $batch[$name] = self::substitute($param->query, $containers);
+                $batch[$name] = self::substitute(self::prepass($param->query, $result), $containers);
             }
             elseif(isset($param->value))
             {
@@ -58,10 +68,18 @@ class page extends http\handler
 
         if(!empty($batch))
         {
-            $result = array_merge($result, $this->api->batch($batch));
+            $result += $this->api->batch($batch, $containers['_global']['_batch']);
         }
 
         return $result;
+    }
+
+    private static function prepass($string, $values)
+    {
+        return preg_replace_callback('/\{@(\w+)\}/', function($matches) use($values)
+        {
+            return isset($values[$matches[1]]) ? $values[$matches[1]] : $matches[0];
+        }, $string);
     }
 
     private static function substitute($string, $containers)
@@ -69,10 +87,9 @@ class page extends http\handler
         return preg_replace_callback('/\{\$([^\.]+)\.([^\}]+)\}/', function($matches) use($containers)
         {
             $container = $matches[1];
-            $value = $matches[2];
+            $offset = $matches[2];
             isset($containers[$container]) or error('missing_parameter', 'Unknown container: ' . $container);
-            isset($containers[$container]->$value) or error('missing_parameter', 'Unknown container value: ' . $container . '[' . $value . ']');
-            return $containers[$container]->$value;
+            return readonly::create($containers[$container])[$offset];
         }, $string);
     }
 

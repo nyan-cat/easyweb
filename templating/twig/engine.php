@@ -18,6 +18,10 @@ class engine
     {
         $extensions->filters +=
         [
+            'ceil' => function($value)
+            {
+                return ceil($value);
+            },
             'local' => function($alias)
             {
                 return $this->locale->get($alias);

@@ -24,6 +24,12 @@ class response
             header("$name: $value");
         }
 
+        foreach($this->cookies as $name => $cookie)
+        {
+            $cookie = (object) $cookie;
+            setcookie($name, $cookie->value, @time() + $cookie->expire, $cookie->path, '.' . $cookie->domain);
+        }
+
         if(isset($this->content))
         {
             echo $this->content;
@@ -35,6 +41,7 @@ class response
     var $message;
     var $headers = [];
     var $cookies = [];
+    var $content = null;
 }
 
 ?>

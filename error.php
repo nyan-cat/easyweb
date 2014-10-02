@@ -48,15 +48,19 @@ class www_exception extends Exception
     private static $types =
     [
         'bad_backend_response' => ['code' => 500],
+        'bad_credentials'      => ['code' => 403],
+        'bad_config'           => ['code' => 500],
         'bad_parameter'        => ['code' => 400],
         'bad_parameter_type'   => ['code' => 500],
         'bad_query_result'     => ['code' => 500],
         'bad_validator_type'   => ['code' => 500],
         'database_error'       => ['code' => 500],
         'empty_query_result'   => ['code' => 400],
+        'filesystem_error'     => ['code' => 500],
         'initialization_error' => ['code' => 500],
         'missing_parameter'    => ['code' => 500],
         'not_found'            => ['code' => 404],
+        'not_implemented'      => ['code' => 500],
         'object_not_found'     => ['code' => 500],
         'xml_error'            => ['code' => 500]
     ];

@@ -7,7 +7,7 @@ require_once(www_root . 'frontend/wip/api.php');
 require_once(www_root . 'frontend/locale.php');
 require_once(www_root . 'frontend/wip/page.php');
 
-class www
+class www implements ArrayAccess
 {
     private function __construct($options)
     {
@@ -19,6 +19,26 @@ class www
             break;
         }
         $this->initialize($options, $config);
+    }
+
+    function offsetSet($offset, $value)
+    {
+        error('not_implemented', 'Frontend core object vars are immutable');
+    }
+
+    function offsetExists($offset)
+    {
+        return is_object($this->vars) ? isset($this->vars->$offset) : isset($this->vars[$offset]);
+    }
+
+    function offsetUnset($offset)
+    {
+        error('not_implemented', 'Frontend core object vars are immutable');
+    }
+
+    function offsetGet($offset)
+    {
+        return is_object($this->vars) ? $this->vars->$offset : $this->vars[$offset];
     }
 
     private static function from_xml($filename)
@@ -62,7 +82,7 @@ class www
 
     function request($request, $global = [])
     {
-        $response = $this->router->request($request, $global);
+        $response = $this->router->request($request, $global + ['_collections' => ['vars' => $this->vars]]);
 
         if($response !== null and isset($response->content))
         {
@@ -97,6 +117,7 @@ class www
 
     private $api;
     private $locale;
+    private $vars;
     private $router;
     private $templaters = [];
 }

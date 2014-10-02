@@ -15,7 +15,17 @@ class request
 
     static function current()
     {
-        $request = new request($_SERVER['REQUEST_URI'], $_SERVER['REQUEST_METHOD'], $_SERVER['SERVER_PROTOCOL']);
+        $uri = $_SERVER['REQUEST_URI'];
+        $get = $_GET;
+
+        $parsed = parse_url($uri);
+        if(isset($parsed['query']))
+        {
+            $uri = $parsed['path'];
+            parse_str($parsed['query'], $get);
+        }
+
+        $request = new request($uri, $_SERVER['REQUEST_METHOD'], $_SERVER['SERVER_PROTOCOL'], $get, $_POST);
         $request->headers = getallheaders();
         $request->cookies = $_COOKIE;
 
@@ -58,8 +68,6 @@ class request
                 }
             }
         }
-
-        $request->post = (object) $_POST;
 
         return $request;
     }
