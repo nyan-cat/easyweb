@@ -16,7 +16,7 @@ class www
 {
     private function __construct($options)
     {
-        $this->router = new http\router();
+        $this->router = new http\router($options->access->method->bindTo($this, $this));
         $this->dispatcher = new dispatcher();
         switch(fs\extension($options->config))
         {
@@ -45,23 +45,26 @@ class www
             if($www = fs\read($cache))
             {
                 $www = unserialize($www);
-                $www->bind();
-                return $www;
             }
             else
             {
                 $www = new www($options);
                 fs\write($cache, serialize($www));
-                $www->bind();
-                return $www;
             }
         }
         else
         {
             $www = new www($options);
-            $www->bind();
-            return $www;
         }
+
+        $www->bind();
+
+        if(isset($options->access))
+        {
+            $www->resolve = $options->access->resolve->bindTo($www, $www);
+        }
+
+        return $www;
     }
 
     static function encode($object)
@@ -76,6 +79,11 @@ class www
             'success' => $success === null ? self::$success : $success,
             'error'   => $error === null ? self::$error : $error
         ];
+    }
+
+    function access($account_id, $expression)
+    {
+        return $this->resolve($account_id, $expression);
     }
 
     function request($request, $global = [])
@@ -99,7 +107,7 @@ class www
 
             $response = new http\response(200, 'OK', $request->protocol);
 
-            if(isset($result['_cookies']))
+            if(is_array($result) and isset($result['_cookies']))
             {
                 $response->cookies = $result['_cookies'];
                 unset($result['_cookies']);
@@ -118,6 +126,12 @@ class www
         }
 
         return $response;
+    }
+
+    function schema($name)
+    {
+        isset($this->schemas[$name]) or error('bad_parameter'. 'Unknown schema: ' . $name);
+        return $this->schemas[$name];
     }
 
     function __get($name)
@@ -171,6 +185,8 @@ class www
     private $schema;
     private $documentation;
 
+    private $schemas = [];
+    private $resolve = null;
     private $router;
     private $dispatcher;
     private $encoders = [];

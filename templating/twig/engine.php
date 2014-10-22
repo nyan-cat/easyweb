@@ -18,6 +18,10 @@ class engine
     {
         $extensions->filters +=
         [
+            'array' => function($object)
+            {
+                return (array) $object;
+            },
             'ceil' => function($value)
             {
                 return ceil($value);
@@ -25,6 +29,10 @@ class engine
             'local' => function($alias)
             {
                 return $this->locale->get($alias);
+            },
+            'md5' => function($value)
+            {
+                return md5($value);
             }
         ];
 

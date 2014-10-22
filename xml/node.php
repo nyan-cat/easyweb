@@ -27,6 +27,10 @@ class node implements \ArrayAccess
         {
             $result->item(0)->nodeValue = $value;
         }
+        elseif($offset[0] == '@')
+        {
+            $this->node->setAttribute(substr($offset, 1), $mixed);
+        }
     }
 
     function offsetUnset($offset)

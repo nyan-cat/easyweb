@@ -19,6 +19,11 @@ function size($filename)
     return filesize($filename);
 }
 
+function path($filename)
+{
+    return pathinfo($filename, PATHINFO_DIRNAME);
+}
+
 function extension($filename)
 {
     return pathinfo($filename, PATHINFO_EXTENSION);

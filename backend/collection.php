@@ -2,24 +2,21 @@
 
 require_once(www_root . 'error.php');
 
-class thiscall
+class bind
 {
-    function __construct($object, $name, $value)
+    function __construct($collection, $key)
     {
-        $this->object = $object;
-        $this->name = $name;
-        $this->value = $value;
+        $this->collection = $collection;
+        $this->key = $key;
     }
 
-    function __call($name, $args)
+    function __call($name, $params)
     {
-        $args[0][$this->name] = $this->value;
-        return call_user_func_array([$this->object, $name], $args);
+        return $this->collection->call($name, $this->key, empty($params) ? [] : $params[0]);
     }
 
-    private $object;
-    private $name;
-    private $value;
+    private $collection;
+    private $key;
 }
 
 class collection implements ArrayAccess
@@ -32,47 +29,58 @@ class collection implements ArrayAccess
     function offsetExists($offset)
     {
         $this->key !== null or error('missing_parameter', 'Collection has no key');
-        return $this->_exists($offset);
+        return $this->exists($offset);
     }
 
     function offsetGet($offset)
     {
         $this->key !== null or error('missing_parameter', 'Collection has no key');
-        return new thiscall($this, $this->key, $offset);
+        return new bind($this, $offset);
     }
 
     function offsetSet($offset, $value)
     {
-        $this->key !== null or error('missing_parameter', 'Collection has no key');
         if($offset === null)
         {
-            $this->_create($value);
+            $this->create($value);
         }
         else
         {
-            $value[$this->key] = $offset;
-            $this->_update($value);
+            $this[$offset]->update($value);
         }
     }
 
     function offsetUnset($offset)
     {
-        $this->key !== null or error('missing_parameter', 'Collection has no key');
-        $this->_delete($offset);
+        $this[$offset]->delete();
     }
 
-    function attach($name, $procedure)
+    function attach($name, $procedure, $static = false)
     {
         $mangled = $this->mangle($name, array_keys($procedure->params()));
-        $this->procedures[$mangled] = $procedure;
+        if($static)
+        {
+            $this->static[$mangled] = $procedure;
+        }
+        else
+        {
+            $this->members[$mangled] = $procedure;
+        }
+    }
+
+    function call($name, $key, $params)
+    {
+        $mangled = $this->mangle($name, array_keys($params));
+        isset($this->members[$mangled]) or error('object_not_found', 'Unknown member procedure: ' . $mangled);
+        return $this->members[$mangled]->query([$this->key => $key] + $params);
     }
 
     function __call($name, $params)
     {
         $params = empty($params) ? [] : $params[0];
         $mangled = $this->mangle($name, array_keys($params));
-        isset($this->procedures[$mangled]) or error('object_not_found', 'Unknown procedure: ' . $mangled);
-        return $this->procedures[$mangled]->query($params);
+        isset($this->static[$mangled]) or error('object_not_found', 'Unknown static procedure: ' . $mangled);
+        return $this->static[$mangled]->query($params);
     }
 
     private function mangle($name, $args)
@@ -81,7 +89,7 @@ class collection implements ArrayAccess
         $result = $name;
         foreach($args as $arg)
         {
-            if($arg[0] != '_' and $arg !== $this->key)
+            if($arg[0] != '_')
             {
                 $result .= "[$arg]";
             }
@@ -90,7 +98,8 @@ class collection implements ArrayAccess
     }
 
     private $key;
-    private $procedures = [];
+    private $members = [];
+    private $static = [];
 }
 
 ?>

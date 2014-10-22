@@ -28,8 +28,15 @@ class page extends http\handler
             {
                 if(isset($script['_cookies']))
                 {
-                    $response->cookies = $script['_cookies'];
+                    $response->cookies += $script['_cookies'];
                     unset($script['_cookies']);
+                }
+                if(isset($script['_redirect']))
+                {
+                    $response->code = 302;
+                    $response->message = 'Found';
+                    $response->headers['Location'] = $script['_redirect'];
+                    unset($script['_redirect']);
                 }
 
                 $params += $script;

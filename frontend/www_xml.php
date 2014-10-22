@@ -12,7 +12,8 @@ $result = (object)
     'locale'    => $config['@locale'],
     'vars'      => $config['@vars'],
     'schema'    => $config['@schema'],
-    'pages'     => []
+    'pages'     => [],
+    'schemas'   => []
 ];
 
 foreach($config->query('/config/pages//page') as $page)
@@ -58,6 +59,11 @@ foreach($config->query('/config/pages//page') as $page)
     }
 
     $result->pages[] = $options;
+}
+
+foreach($config->query('/config/schemas//schema[@name and @src]') as $schema)
+{
+    $result->schemas[$schema['@name']] = $schema['@src'];
 }
 
 return $result;

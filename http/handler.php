@@ -11,8 +11,10 @@ function preg_escape($pattern)
 
 class handler
 {
-    function __construct($uri)
+    function __construct($uri, $access = [])
     {
+        $this->access = $access;
+
         $this->patterns = (object) [];
 
         $pattern = (object)
@@ -36,14 +38,19 @@ class handler
         $this->patterns->uri = $pattern;
     }
 
-    function match($request, &$params)
+    function match($request, &$params, $access = null, $global = null)
     {
-        $params = [];
-        
         $uri = $this->patterns->uri;
 
         if(preg_match($uri->regex, $request->uri, $matches))
         {
+            foreach($this->access as $expression)
+            {
+                $access->mehtod($global, $expression) or error('bad_credentials', 'Access denied for ' . $expression);
+            }
+
+            $params = [];
+
             $object = (object) [];
 
             if(isset($uri->params))
@@ -65,10 +72,7 @@ class handler
         }
     }
 
-    function request($request, $containers)
-    {
-    }
-
+    private $access = [];
     private $patterns;
 }
 

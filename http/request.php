@@ -17,6 +17,14 @@ class request
     {
         $uri = $_SERVER['REQUEST_URI'];
         $get = $_GET;
+        $post = $_POST;
+
+        self::dry($post);
+
+        if($_SERVER['REQUEST_METHOD'] == 'PUT')
+        {
+            parse_str(file_get_contents("php://input"), $post);
+        }
 
         $parsed = parse_url($uri);
         if(isset($parsed['query']))
@@ -25,7 +33,7 @@ class request
             parse_str($parsed['query'], $get);
         }
 
-        $request = new request($uri, $_SERVER['REQUEST_METHOD'], $_SERVER['SERVER_PROTOCOL'], $get, $_POST);
+        $request = new request($uri, $_SERVER['REQUEST_METHOD'], $_SERVER['SERVER_PROTOCOL'], $get, $post);
         $request->headers = getallheaders();
         $request->cookies = $_COOKIE;
 
@@ -70,6 +78,25 @@ class request
         }
 
         return $request;
+    }
+
+    private static function dry(&$array)
+    {
+        $keys = [];
+
+        foreach($array as $key => &$value)
+        {
+            $value = trim($value);
+            if(!strlen($value))
+            {
+                $keys[] = $key;
+            }
+        }
+
+        foreach($keys as $key)
+        {
+            unset($array[$key]);
+        }
     }
 
     var $uri;

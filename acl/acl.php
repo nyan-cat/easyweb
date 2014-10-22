@@ -71,21 +71,27 @@ function parse($query)
 {
     if(preg_match('/\A([^\.]+)\.([^\[]+)\[([^\]]+)\]\|(.+)\Z/', $query, $matches))
     {
+        $operation = $matches[4];
+
         return (object)
         [
             'collection' => $matches[1],
             'id' => $matches[2],
             'acl' => $matches[3],
-            'operation' => $matches[4]
+            'operation' => rtrim($operation, '!'),
+            'required' => $operation[strlen($operation) - 1] == '!'
         ];
     }
     elseif(preg_match('/\A([^\.]+)\.([^\|]+)\|(.+)\Z/', $query, $matches))
     {
+        $operation = $matches[4];
+
         return (object)
         [
             'collection' => $matches[1],
             'id' => $matches[2],
-            'operation' => $matches[3]
+            'operation' => rtrim($operation, '!'),
+            'required' => $operation[strlen($operation) - 1] == '!'
         ];
     }
     else

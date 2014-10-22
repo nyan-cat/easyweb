@@ -83,9 +83,9 @@ class api
         return $this->request('PUT', $uri, $get, $post);
     }
 
-    function delete($uri, $get = [])
+    function delete($uri, $params = [])
     {
-        return $this->request('DELETE', $uri, $get, $post);
+        return $this->request('DELETE', $uri, $params);
     }
 
     private $endpoint;

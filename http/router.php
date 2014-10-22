@@ -7,6 +7,11 @@ require_once(www_root . 'http/handler.php');
 
 class router
 {
+    function __construct($access = null)
+    {
+        $this->access = $access;
+    }
+
     function attach($method, $handler)
     {
         $this->handlers[strtoupper($method)][] = $handler;
@@ -16,7 +21,7 @@ class router
     {
         foreach($this->handlers[$request->method] as $handler)
         {
-            if($handler->match($request, $matches))
+            if($handler->match($request, $matches, $this->access, $global))
             {
                 $collections =
                 [
@@ -40,6 +45,8 @@ class router
 
         error('not_found', 'Resource and method not found: ' . $request->method . ' ' . $request->uri);
     }
+
+    private $access;
 
     private $handlers =
     [

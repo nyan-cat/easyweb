@@ -95,6 +95,12 @@ class www implements ArrayAccess
         return $response;
     }
 
+    function schema($name)
+    {
+        isset($this->schemas[$name]) or error('bad_parameter'. 'Unknown schema: ' . $name);
+        return $this->schemas[$name];
+    }
+
     function get($uri, $params = [])
     {
         return $this->api->get($uri, $params);
@@ -120,6 +126,7 @@ class www implements ArrayAccess
     private $vars;
     private $router;
     private $templaters = [];
+    private $schemas = [];
 }
 
 ?>

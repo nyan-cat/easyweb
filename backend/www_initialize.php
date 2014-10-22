@@ -22,7 +22,7 @@ foreach($config->collections as $options)
                 !isset($procedure->required) or $procedure->required !== 'false',
                 isset($procedure->result) ? $procedure->result : 'array',
                 new script($this, $procedure->body)
-            ));
+            ), $procedure->static);
         }
         else
         {
@@ -53,7 +53,7 @@ foreach($config->collections as $options)
                     isset($procedure->output) ? $procedure->output : null,
                     $procedure->body,
                     $datasources[$procedure->datasource]
-                ));
+                ), $procedure->static);
             }
             else
             {
@@ -71,31 +71,34 @@ foreach($config->collections as $options)
                         !isset($procedure->required) or $procedure->required !== 'false',
                         isset($procedure->result) ? $procedure->result : 'array',
                         $datasources[$procedure->datasource]
-                    ));
+                    ), $procedure->static);
                     break;
 
                 case 'solr':
                     if(!isset($datasources[$procedure->datasource]))
                     {
-                        $datasources[$procedure->datasource] = new solr($datasources->server, $datasources->port, $datasources->url, $datasources->username, $datasources->password);
+                        $datasources[$procedure->datasource] = new solr($datasource->server, $datasource->port, $datasource->url, $datasource->username, $datasource->password);
                     }
 
                     $order_by = [];
 
-                    foreach($procedure->order_by as $order)
+                    if(isset($procedure->order_by))
                     {
-                        $mode = (object)
-                        [
-                            'type'  => isset($order['@type']) ? $order['@type'] : 'normal',
-                            'order' => $order['@order']
-                        ];
-
-                        if(isset($order->point))
+                        foreach($procedure->order_by as $order)
                         {
-                            $mode->point = $order->point;
+                            $mode = (object)
+                            [
+                                'type'  => isset($order['@type']) ? $order['@type'] : 'normal',
+                                'order' => $order['@order']
+                            ];
+                    
+                            if(isset($order->point))
+                            {
+                                $mode->point = $order->point;
+                            }
+                    
+                            $order_by[$order->name] = $mode;
                         }
-
-                        $order_by[$order->name] = $mode;
                     }
 
                     $collection->attach($procedure->name, new solr_procedure
@@ -109,9 +112,9 @@ foreach($config->collections as $options)
                         $procedure->method,
                         $procedure->body,
                         $order_by,
-                        $procedure->offset,
-                        $procedure->count
-                    ));
+                        isset($procedure->offset) ? $procedure->offset : 0,
+                        isset($procedure->count) ? $procedure->count : 10
+                    ), $procedure->static);
                     break;
                 }
             }
@@ -125,8 +128,13 @@ foreach($config->resources as $resource)
 {
     foreach($resource->methods as $method)
     {
-        $this->router->attach($method->type, new method($resource->uri, new script($this, $method->script)));
+        $this->router->attach($method->type, new method($resource->uri, $method->access, new script($this, $method->script)));
     }
+}
+
+foreach($config->schemas as $name => $src)
+{
+    $this->schemas[$name] = json\schema::load($src);
 }
 
 ?>

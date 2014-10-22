@@ -19,15 +19,29 @@ class response
     {
         header("{$this->protocol} {$this->code} {$this->message}");
 
+        foreach($this->cookies as $name => $cookie)
+        {
+            if($cookie !== null)
+            {
+                $cookie = (object) $cookie;
+                setcookie
+                (
+                    $name,
+                    $cookie->value,
+                    isset($cookie->expire) ? @time() + $cookie->expire : null,
+                    isset($cookie->path) ? $cookie->path : null,
+                    isset($cookie->domain) ? '.' . $cookie->domain : null
+                );
+            }
+            else
+            {
+                setcookie($name, '', 1, '/', '.' . $_SERVER['HTTP_HOST']);
+            }
+        }
+
         foreach($this->headers as $name => $value)
         {
             header("$name: $value");
-        }
-
-        foreach($this->cookies as $name => $cookie)
-        {
-            $cookie = (object) $cookie;
-            setcookie($name, $cookie->value, @time() + $cookie->expire, $cookie->path, '.' . $cookie->domain);
         }
 
         if(isset($this->content))

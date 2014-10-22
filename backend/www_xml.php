@@ -11,7 +11,8 @@ $result = (object)
     'documentation' => $config['@documentation'],
     'datasources'   => [],
     'collections'   => [],
-    'resources'     => []
+    'resources'     => [],
+    'schemas'       => []
 ];
 
 foreach($config->query('/config/datasources//datasource[@name and @type]') as $datasource)
@@ -25,7 +26,7 @@ foreach($config->query('/config//collection[@name]') as $collection)
 {
     $procedures = [];
 
-    foreach($collection->query('procedure[@name and @datasource]') as $procedure)
+    foreach($collection->query('.//procedure[@name and @datasource]') as $procedure)
     {
         $params = [];
         $output = [];
@@ -66,6 +67,7 @@ foreach($config->query('/config//collection[@name]') as $collection)
 
         $procedures[] = (object) array_merge(iterator_to_array($procedure->attributes()),
         [
+            'static' => $procedure->parent()->name() == 'static',
             'params' => $params,
             'body'   => trim($procedure->value()),
             'output' => empty($output) ? null : $output
@@ -86,9 +88,19 @@ foreach($config->query('/config/resources//resource[@uri]') as $resource)
 
     foreach($resource->query('method[@type]') as $method)
     {
+        $access = [];
+        if(isset($method['@access']))
+        {
+            foreach(explode(',', $method['@access']) as $expression)
+            {
+                $access[] = trim($expression);
+            }
+        }
+
         $methods[] = (object)
         [
             'type'   => $method['@type'],
+            'access' => $access,
             'script' => trim($method->value())
         ];
     }
@@ -98,6 +110,11 @@ foreach($config->query('/config/resources//resource[@uri]') as $resource)
         'uri'     => $resource['@uri'],
         'methods' => $methods
     ];
+}
+
+foreach($config->query('/config/schemas//schema[@name and @src]') as $schema)
+{
+    $result->schemas[$schema['@name']] = $schema['@src'];
 }
 
 return $result;

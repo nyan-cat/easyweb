@@ -21,7 +21,7 @@ class dispatcher
 
         if(isset($this->collections[$name]))
         {
-            return $this->collections[$name]->_query($params);
+            return $this->collections[$name]->query($params);
         }
         else
         {

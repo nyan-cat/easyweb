@@ -26,4 +26,9 @@ foreach($config->pages as $page)
     ));
 }
 
+foreach($config->schemas as $name => $src)
+{
+    $this->schemas[$name] = json\schema::load($src);
+}
+
 ?>

@@ -1,6 +1,7 @@
 <?php
 
 require_once(www_root . 'backend/wip/procedure.php');
+require_once(www_root . 'backend/solr.php');
 
 class solr_procedure extends procedure
 {

@@ -53,6 +53,21 @@ class document implements \ArrayAccess
         return new nodelist($this->xpath->query($expression, $context ? $context->native() : $this->document->documentElement));
     }
 
+    function append($node)
+    {
+        $this->document->appendChild($node->native());
+    }
+
+    function element($name, $value = null)
+    {
+        return new node($value !== null ? $this->document->createElement($name, $value) : $this->document->createElement($name));
+    }
+
+    function render()
+    {
+        return $this->document->saveXML();
+    }
+
     static function load($filename)
     {
         $document = new \DOMDocument();
