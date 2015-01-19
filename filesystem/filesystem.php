@@ -9,9 +9,14 @@ function read($filename)
     return file_get_contents($filename);
 }
 
-function write($filename, $append = false)
+function write($filename, $data, $append = false)
 {
-    file_put_contents($filename, $append ? FILE_APPEND : 0);
+    file_put_contents($filename, $data, $append ? FILE_APPEND : 0);
+}
+
+function delete($filename)
+{
+    @unlink($filename);
 }
 
 function size($filename)

@@ -55,7 +55,7 @@ function create($owner_id, $operations = '*')
 {
     return (object)
     [
-        'users' =>
+        'users' => (object)
         [
             (string) $owner_id => (object)
             [
@@ -63,8 +63,77 @@ function create($owner_id, $operations = '*')
                 'deny' => []
             ]
         ],
-        'groups' => []
+        'groups' => (object) []
     ];
+}
+
+function apply($acl, $expression, $operations)
+{
+    preg_match('/(users|groups)\.(\w+)\|(allow|deny)/', $expression, $matches);
+
+    $subject = $matches[1];
+    $id = $matches[2];
+    $type = $matches[3];
+
+    if(!isset($acl->$subject->$id))
+    {
+        $acl->$subject->$id = (object)
+        [
+            'allow' => [],
+            'deny' => []
+        ];
+    }
+
+    if(!is_array($operations))
+    {
+        $operations = [$operations];
+    }
+
+    foreach($operations as $operation)
+    {
+        if(!in_array($operation, $acl->$subject->$id->$type))
+        {
+            array_push($acl->$subject->$id->$type, $operation);
+        }
+    }
+
+    return $acl;
+}
+
+function revoke($acl, $expression, $operations)
+{
+    preg_match('/(users|groups)\.(\w+)\|(allow|deny)/', $expression, $matches);
+
+    $subject = $matches[1];
+    $id = $matches[2];
+    $type = $matches[3];
+
+    if($operations === '*')
+    {
+        $acl->$subject->$id->$type = [];
+    }
+    else
+    {
+        if(!is_array($operations))
+        {
+            $operations = [$operations];
+        }
+
+        foreach($operations as $operation)
+        {
+            if(($key = array_search($operation, $acl->$subject->$id->$type)) !== false)
+            {
+                unset($acl->$subject->$id->$type[$key]);
+            }
+        }
+    }
+
+    if(empty($acl->$subject->$id->allow) and empty($acl->$subject->$id->deny))
+    {
+        unset($acl->$subject->$id);
+    }
+
+    return $acl;
 }
 
 function parse($query)
@@ -84,7 +153,7 @@ function parse($query)
     }
     elseif(preg_match('/\A([^\.]+)\.([^\|]+)\|(.+)\Z/', $query, $matches))
     {
-        $operation = $matches[4];
+        $operation = $matches[3];
 
         return (object)
         [

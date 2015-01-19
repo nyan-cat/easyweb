@@ -4,8 +4,9 @@ require_once(www_root . 'backend/wip/datatype.php');
 
 class procedure
 {
-    function __construct($params, $required, $result, $output = null)
+    function __construct($name, $params, $required, $result, $output = null)
     {
+        $this->name = $name;
         $this->params = $params;
         $this->required = $required;
         $this->result = $result;
@@ -24,30 +25,35 @@ class procedure
         {
             $result = $this->query_direct($params);
 
-            if($this->result == 'object')
+            if($result !== null)
             {
-                $this->postprocess($result);
-            }
-            elseif($this->result == 'array')
-            {
-                foreach($result as &$object)
+                if($this->result == 'value')
                 {
+                    $object = (object) [$this->name => $result];
                     $this->postprocess($object);
+                    $result = $object->{$this->name};
                 }
-            }
-            elseif($this->result == 'multiarray')
-            {
-                foreach($result as &$array)
+                elseif($this->result == 'object')
                 {
-                    foreach($array as &$object)
+                    $this->postprocess($result);
+                }
+                elseif($this->result == 'array')
+                {
+                    foreach($result as &$object)
                     {
                         $this->postprocess($object);
                     }
                 }
-            }
-            else
-            {
-                error('bad_query_result', 'Only object or array can be post-processed');
+                elseif($this->result == 'multiarray')
+                {
+                    foreach($result as &$array)
+                    {
+                        foreach($array as &$object)
+                        {
+                            $this->postprocess($object);
+                        }
+                    }
+                }
             }
 
             return $result;
@@ -82,11 +88,25 @@ class procedure
             {
                 if($options->filter == 'embed')
                 {
-                    self::embed($object, $name);
+                    if(empty($object->$name))
+                    {
+                        unset($object->$name);
+                    }
+                    else
+                    {
+                        self::embed($object, $name);
+                    }
                 }
                 elseif($options->filter == 'json')
                 {
-                    $object->$name = json\decode($object->$name);
+                    if(empty($object->$name))
+                    {
+                        unset($object->$name);
+                    }
+                    else
+                    {
+                        $object->$name = json\decode($object->$name);
+                    }
                 }
             }
         }
@@ -100,6 +120,7 @@ class procedure
         }
     }
 
+    private $name;
     private $params;
     protected $required;
     protected $result;

@@ -78,6 +78,14 @@ class page extends http\handler
             $result += $this->api->batch($batch, $containers['_global']['_batch']);
         }
 
+        foreach($params as $name => $param)
+        {
+            if(isset($param->value))
+            {
+                $result[$name] = self::prepass($result[$name], $result);
+            }
+        }
+
         return $result;
     }
 

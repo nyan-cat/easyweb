@@ -2,7 +2,7 @@
 
 namespace json;
 
-require_once(www_root . 'json/document.php');
+require_once(www_root . 'json/flat.php');
 require_once(www_root . 'filesystem/filesystem.php');
 require_once(www_root . 'xml/document.php');
 
@@ -37,27 +37,57 @@ class schema
         return $schema;
     }
 
-    function create($source)
+    function create($source, $required = true)
     {
-        if($source instanceof document)
+        $flat = new flat();
+
+        $this->traverse(function($path, $property) use($source, $flat)
         {
-            return $this->create(function($path) use($source)
+            if($property->type == 'set')
             {
-                return isset($source[$path]) ? $source[$path] : null;
-            });
-        }
-        else
-        {
-            $result = [];
-            foreach($this->schema->properties as $name => $property)
-            {
-                if(($value = $this->fetch($property, $name, $source)) !== null)
+                foreach($property->items as $item)
                 {
-                    $result[$name] = $value;
+                    $current = $path . ".$item";
+
+                    $closure = is_array($source) ? isset($source[$current]) ? $source[$current] : $source['*'] : $source;
+                    $closure = is_array($closure) ? isset($closure[$property->type]) ? $closure[$property->type] : $closure['*'] : $closure;
+
+                    if(($result = $closure($current, $property)) !== null)
+                    {
+                        $flat[$current] = $result;
+                    }
                 }
             }
-            return $result;
-        }
+            else
+            {
+                $closure = is_array($source) ? isset($source[$path]) ? $source[$path] : $source['*'] : $source;
+                $closure = is_array($closure) ? isset($closure[$property->type]) ? $closure[$property->type] : $closure['*'] : $closure;
+
+                if(($result = $closure($path, $property)) !== null)
+                {
+                    $flat[$path] = $result;
+                }
+            }
+        });
+
+        return $required ? $flat->render() : $flat;
+    }
+
+    function post($post, $required = true)
+    {
+        return $this->create(function($path, $property) use($post)
+        {
+            $param = str_replace('.', '_', $path);
+
+            if(in_array($property->type, ['boolean', 'set']))
+            {
+                return isset($post->$param) and strtolower($post->$param) == 'on';
+            }
+            else
+            {
+                return isset($post->$param) ? $post->$param : null;
+            }
+        }, $required);
     }
 
     function solr()
@@ -65,52 +95,145 @@ class schema
         $document = new \xml\document();
         $fields = $document->element('fields');
 
-        $this->make_solr(null, $this->schema->properties, $document, $fields);
-
-        $document->append($fields);
-
-        header ("Content-Type:text/xml");
-
-        echo $document->render(); die();
-    }
-
-    private function make_solr($path, $properties, $document, $fields)
-    {
-        foreach($properties as $name => $property)
+        $this->traverse(function($path, $property) use($document, $fields)
         {
-            if(isset($this->schema->types->{$property->type}))
-            {
-                $property = $this->schema->types->{$property->type};
-            }
+            $types =
+            [
+                'boolean'  => 'boolean',
+                'datetime' => 'date',
+                'enum'     => 'string',
+                'integer'  => 'int',
+                'number'   => 'float',
+                'string'   => 'string'
+            ];
 
-            $current = $path === null ? $name : "$path.$name";
+            $required = (isset($property->required) and $property->required) ? 'true' : 'false';
+            $stored = 'true';
+            $multiValued = 'false';
 
-            if($property->type == 'object')
+            if($property->type == 'set')
             {
-                $this->make_solr($current, $property->properties, $document, $fields);
-            }
-            else
-            {
-                $types =
-                [
-                    'enum'    => 'string',
-                    'boolean' => 'boolean',
-                    'integer' => 'int',
-                    'number'  => 'float'
-                ];
-
-                if(isset($types[$property->type]))
+                foreach($property->items as $item)
                 {
                     $field = $document->element('field');
-                    $field['@name'] = $current;
-                    $field['@type'] = $types[$property->type];
-                    $field['@required'] = (isset($property->required) and !$property->required) ? 'false' : 'true';
+                    $field['@name'] = "$path.$item";
+                    $field['@type'] = 'boolean';
+                    $field['@required'] = $required;
                     $field['@indexed'] = 'true';
-                    $field['@stored'] = 'true';
+                    $field['@stored'] = $stored;
+                    $field['@multiValued'] = $multiValued;
                     $fields->append($field);
                 }
             }
+            elseif(isset($types[$property->type]))
+            {
+                $field = $document->element('field');
+                $field['@name'] = $path;
+                $field['@type'] = $types[$property->type];
+                $field['@required'] = $required;
+                $field['@indexed'] = in_array($property->type, ['string']) ? 'false' : 'true';
+                $field['@stored'] = $stored;
+                $field['@multiValued'] = $multiValued;
+                $fields->append($field);
+            }
+        });
+
+        $document->append($fields);
+
+        return $document->render();
+    }
+
+    function conditions($get)
+    {
+        # TODO: Replace with something from the library
+        $escape = function($string)
+        {
+            return str_replace('.', '_', $string);
+        };
+
+        $query = [];
+
+        $this->traverse(function($path, $property) use($escape, $get, &$query)
+        {
+            switch($property->type)
+            {
+            case 'enum':
+                $filter = (object)
+                [
+                    'condition' => 'any',
+                    'values'    => []
+                ];
+                foreach($property->items as $item)
+                {
+                    $param = $escape("$path.$item");
+                    if(isset($get->$param) and strtolower($get->$param) == 'on')
+                    {
+                        $filter->values[] = $item;
+                    }
+                }
+                if(!empty($filter->values) and count($filter->values) < count($property->items))
+                {
+                    $query[$path] = $filter;
+                }
+                break;
+
+            case 'integer':
+                if(isset($property->min) and isset($property->max))
+                {
+                    $min = $escape("$path.min");
+                    $max = $escape("$path.max");
+
+                    if(isset($get->$min) and isset($get->$max))
+                    {
+                        $query[$path] = (object)
+                        [
+                            'condition' => 'range',
+                            'min'       => $get->$min,
+                            'max'       => $get->$max
+                        ];
+                    }
+                }
+                break;
+
+            case 'money-optional':
+                $param = $escape($path);
+                if(isset($get->$param) and strtolower($get->$param) == 'on')
+                {
+                    $query["$path.enabled"] = (object)
+                    [
+                        'condition' => 'equal',
+                        'value'     => true
+                    ];
+                }
+                break;
+            }
+
+        }, false);
+
+        return $query;
+    }
+
+    static function query($query, $solr)
+    {
+        foreach($query as $name => $param)
+        {
+            switch($param['condition'])
+            {
+            case 'any':
+                $solr[] = $name . ':(' . implode(' OR ', $param['values']) . ')';
+                break;
+
+            case 'range':
+                $solr[] = $name . ':[' . $param['min'] . ' TO ' . $param['max'] . ']';
+                break;
+
+            case 'equal':
+                $solr[] = $name . ':' . $param['value'];
+                break;
+            }
         }
+
+        return implode(' AND ', $solr);
     }
 
     static function load($filename)
@@ -127,66 +250,43 @@ class schema
         return new schema($schema);
     }
 
-    private function fetch($property, $path, $source, $required = true)
-    {        
-        if(isset($this->schema->types->{$property->type}))
-        {
-            $property = $this->schema->types->{$property->type};
-        }
-
-        if($property->type == 'object')
-        {
-            $result = [];
-            foreach($property->properties as $name => $child)
-            {
-                if(($value = $this->fetch($child, "$path.$name", $source)) !== null)
-                {
-                    $result[$name] = $value;
-                }
-            }
-            return $result;
-        }
-        elseif($property->type == 'array')
-        {
-            $result = [];
-            for($n = 0; $n < $property->max; ++$n)
-            {
-                if(($value = $this->fetch($property->item, $path . "[$n]", $source, false)) !== null)
-                {
-                    $result[] = $value;
-                }
-            }
-            $count = count($result);
-            ($count >= $property->min and $count <= $property->max)
-                or error('bad_parameter', 'Bad metadata array size: ' . $path . ', expected [' . $property->min . '; ' . $property->max . '], ' . $count . ' given');
-            return $result;
-        }
-        else
-        {
-            $source = is_array($source) ? isset($source[$path]) ? $source[$path] : $source['*'] : $source;
-            $source = is_array($source) ? isset($source[$property->type]) ? $source[$property->type] : $source['*'] : $source;
-
-            $result = $source($path, $property);
-
-            if($result === null and $required)
-            {
-                (isset($property->required) and !$property->required) or error('missing_parameter', 'Required metadata parameter not set: ' . $path);
-            }
-
-            return $result;
-        }
-    }
-
     private static function load_schema($filename)
     {
         $schema = decode(\fs\read($filename), true);
-        if(isset($schema['extend']))
+        if(isset($schema['extends']))
         {
-            $extend = $schema['extend'];
-            unset($schema['extend']);
-            $schema = join(self::load_schema(\fs\path($filename) . '/' . $extend), $schema);
+            $extends = $schema['extends'];
+            unset($schema['extends']);
+            $schema = join(self::load_schema(\fs\path($filename) . '/' . $extends), $schema);
         }
         return $schema;
+    }
+
+    function traverse($closure, $resolve = true, $path = null, $object = null)
+    {
+        if($object === null)
+        {
+            $object = $this->schema->properties;
+        }
+
+        foreach($object as $name => $property)
+        {
+            $current = $path === null ? $name : "$path.$name";
+
+            if($resolve and isset($this->schema->types->{$property->type}))
+            {
+                $property = $this->schema->types->{$property->type};
+            }
+
+            if($property->type == 'object')
+            {
+                $this->traverse($closure, $resolve, $current, $property->properties);
+            }
+            else
+            {
+                $closure($current, $property);
+            }
+        }
     }
 
     private $schema;

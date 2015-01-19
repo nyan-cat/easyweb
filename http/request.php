@@ -86,10 +86,13 @@ class request
 
         foreach($array as $key => &$value)
         {
-            $value = trim($value);
-            if(!strlen($value))
+            if(!is_object($value) and !is_array($value))
             {
-                $keys[] = $key;
+                $value = trim($value);
+                if(!strlen($value))
+                {
+                    $keys[] = $key;
+                }
             }
         }
 

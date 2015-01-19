@@ -49,7 +49,7 @@ foreach($config->query('/config//collection[@name]') as $collection)
 
         if($attrib = isset($procedure['@output']) ? $procedure['@output'] : (isset($collection['@output']) ? $collection['@output'] : null))
         {
-            if(in_array(isset($procedure['@result']) ? $procedure['@result'] : 'array', ['array', 'object', 'multiarray']))
+            if(in_array(isset($procedure['@result']) ? $procedure['@result'] : 'array', ['array', 'object', 'multiarray', 'value']))
             {
                 foreach(explode(',', $attrib) as $field)
                 {
@@ -114,7 +114,11 @@ foreach($config->query('/config/resources//resource[@uri]') as $resource)
 
 foreach($config->query('/config/schemas//schema[@name and @src]') as $schema)
 {
-    $result->schemas[$schema['@name']] = $schema['@src'];
+    $result->schemas[$schema['@name']] = (object)
+    [
+        'src' => $schema['@src'],
+        'solr' => $schema['@solr']
+    ];
 }
 
 return $result;

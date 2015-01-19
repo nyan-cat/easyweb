@@ -8,7 +8,7 @@ $datasources = [];
 
 foreach($config->collections as $options)
 {
-    $collection = new collection($options->key);
+    $collection = new collection($options->name, $options->key);
 
     foreach($options->procedures as $procedure)
     {
@@ -18,6 +18,7 @@ foreach($config->collections as $options)
         {
             $collection->attach($procedure->name, new php_procedure
             (
+                $procedure->name,
                 $params,
                 !isset($procedure->required) or $procedure->required !== 'false',
                 isset($procedure->result) ? $procedure->result : 'array',
@@ -47,6 +48,7 @@ foreach($config->collections as $options)
 
                 $collection->attach($procedure->name, new sql_procedure
                 (
+                    $procedure->name,
                     $params,
                     !isset($procedure->required) or $procedure->required !== 'false',
                     isset($procedure->result) ? $procedure->result : 'array',
@@ -67,6 +69,7 @@ foreach($config->collections as $options)
 
                     $collection->attach($procedure->name, new foursquare_procedure
                     (
+                        $procedure->name,
                         $procedure->method,
                         !isset($procedure->required) or $procedure->required !== 'false',
                         isset($procedure->result) ? $procedure->result : 'array',
@@ -103,6 +106,7 @@ foreach($config->collections as $options)
 
                     $collection->attach($procedure->name, new solr_procedure
                     (
+                        $procedure->name,
                         $params,
                         !isset($procedure->required) or $procedure->required !== 'false',
                         isset($procedure->result) ? $procedure->result : 'array',
@@ -132,9 +136,10 @@ foreach($config->resources as $resource)
     }
 }
 
-foreach($config->schemas as $name => $src)
+foreach($config->schemas as $name => $schema)
 {
-    $this->schemas[$name] = json\schema::load($src);
+    $this->schemas[$name] = json\schema::load($schema->src);
+    fs\write($schema->solr, $this->schemas[$name]->solr());
 }
 
 ?>

@@ -28,6 +28,7 @@ class router
                     'get'     => new \readonly($request->get),
                     'post'    => new \readonly($request->post),
                     'cookies' => new \readonly($request->cookies),
+                    'files'   => new \readonly($request->files),
                     '_global' => $global
                 ];
 

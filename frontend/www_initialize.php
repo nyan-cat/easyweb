@@ -21,7 +21,7 @@ foreach($config->pages as $page)
         $page->uri,
         $page->params,
         isset($page->template) ? $this->templaters[$templater]->load($page->template) : null,
-        isset($page->script) ? new script($this->api, $page->script) : null,
+        isset($page->script) ? new script($this, $page->script) : null,
         $this->api
     ));
 }

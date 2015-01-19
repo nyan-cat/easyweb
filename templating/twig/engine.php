@@ -48,7 +48,7 @@ class engine
         {
             if($closure instanceof \Closure)
             {
-                $this->twig->addFilter(new \Twig_SimpleFilter($name, $closure));
+                $this->twig->addFilter(new \Twig_SimpleFilter($name, $closure->bindTo($this, $this)));
             }
             else
             {
@@ -57,7 +57,7 @@ class engine
                 {
                     $options['is_safe'] = ['html'];
                 }
-                $this->twig->addFilter(new \Twig_SimpleFilter($name, $closure->function, $options));
+                $this->twig->addFilter(new \Twig_SimpleFilter($name, $closure->function->bindTo($this, $this), $options));
             }
         }
 

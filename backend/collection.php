@@ -21,8 +21,9 @@ class bind
 
 class collection implements ArrayAccess
 {
-    function __construct($key)
+    function __construct($name, $key)
     {
+        $this->name = $name;
         $this->key = $key;
     }
 
@@ -71,7 +72,7 @@ class collection implements ArrayAccess
     function call($name, $key, $params)
     {
         $mangled = $this->mangle($name, array_keys($params));
-        isset($this->members[$mangled]) or error('object_not_found', 'Unknown member procedure: ' . $mangled);
+        isset($this->members[$mangled]) or error('object_not_found', 'Unknown member procedure: ' . $this->name . '::' . $mangled);
         return $this->members[$mangled]->query([$this->key => $key] + $params);
     }
 
@@ -79,7 +80,7 @@ class collection implements ArrayAccess
     {
         $params = empty($params) ? [] : $params[0];
         $mangled = $this->mangle($name, array_keys($params));
-        isset($this->static[$mangled]) or error('object_not_found', 'Unknown static procedure: ' . $mangled);
+        isset($this->static[$mangled]) or error('object_not_found', 'Unknown static procedure: ' . $this->name . '::' . $mangled);
         return $this->static[$mangled]->query($params);
     }
 
@@ -97,6 +98,7 @@ class collection implements ArrayAccess
         return $result;
     }
 
+    private $name;
     private $key;
     private $members = [];
     private $static = [];

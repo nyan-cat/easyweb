@@ -4,12 +4,12 @@ require_once(www_root . 'backend/wip/procedure.php');
 
 class foursquare_procedure extends procedure
 {
-    function __construct($method, $required, $result, $foursquare)
+    function __construct($name, $method, $required, $result, $foursquare)
     {
         in_array($method, ['photos', 'venues']) or error('initialization_error', 'Unknown Foursquare procedure method: ' . $method);
         $result == 'array' or error('initialization_error', 'Foursquare procedure result must be array');
 
-        parent::__construct([], $required, $result);
+        parent::__construct($name, [], $required, $result);
 
         $this->method = $method;
         $this->foursquare = $foursquare;

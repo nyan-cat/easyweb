@@ -83,7 +83,8 @@ class www
 
     function access($account_id, $expression)
     {
-        return $this->resolve($account_id, $expression);
+        $closure = $this->resolve;
+        return $closure($account_id, $expression);
     }
 
     function request($request, $global = [])

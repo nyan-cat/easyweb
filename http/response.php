@@ -35,7 +35,7 @@ class response
             }
             else
             {
-                setcookie($name, '', 1, '/', '.' . $_SERVER['HTTP_HOST']);
+                setcookie($name, null, -1, '/');
             }
         }
 

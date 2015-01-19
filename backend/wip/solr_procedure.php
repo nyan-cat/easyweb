@@ -5,11 +5,11 @@ require_once(www_root . 'backend/solr.php');
 
 class solr_procedure extends procedure
 {
-    function __construct($params, $required, $result, $embed, $solr, $core, $method, $body, $order_by, $offset, $count)
+    function __construct($name, $params, $required, $result, $embed, $solr, $core, $method, $body, $order_by, $offset, $count)
     {
         in_array($method, ['add', 'delete', 'query']) or error('initialization_error', "Unknown Solr method: $method");
 
-        parent::__construct($params, $required, $result, $embed);
+        parent::__construct($name, $params, $required, $result, $embed);
 
         $this->solr = $solr;
         $this->core = $core;
@@ -86,8 +86,8 @@ class solr_procedure extends procedure
             $offset = isset($args['_offset']) ? $args['_offset'] : $this->offset;
             $count = isset($args['_count']) ? $args['_count'] : $this->count;
 
-            $offset !== null or $query->setStart($offset);
-            $count !== null or $query->setRows($count);
+            $offset === null or $query->setStart($offset);
+            $count === null or $query->setRows($count);
 
             if(isset($args['_fields']) or isset($args['_queries']))
             {
@@ -110,18 +110,26 @@ class solr_procedure extends procedure
                 }
             }
 
+            if(isset($args['_stats']))
+            {
+                $query->setStats(true);
+
+                foreach($args['_stats'] as $field)
+                {
+                    $query->addStatsField($field);
+                }
+            }
+
             $result = (object) [];
-            $result->matched = 0;
+            $result->total = 0;
             $result->documents = [];
-            $result->fields = (object) [];
-            $result->queries = (object) [];
 
             $response = $solr->query($query);
             $object = $response->getResponse();
 
             if(is_array($object['response']['docs']))
             {
-                $result->matched = $object['response']['numFound'];
+                $result->total = $object['response']['numFound'];
                 
                 foreach($object['response']['docs'] as $doc)
                 {
@@ -159,6 +167,8 @@ class solr_procedure extends procedure
 
             if(isset($args['_fields']))
             {
+                $result->fields = (object) [];
+
                 foreach($object['facet_counts']['facet_fields'] as $name => $counts)
                 {
                     $array = [];
@@ -174,23 +184,44 @@ class solr_procedure extends procedure
 
             if(isset($args['_queries']))
             {
+                $result->queries = (object) [];
+
                 foreach($object['facet_counts']['facet_queries'] as $fq => $count)
                 {
                     $result->queries->$fq = $count;
                 }
             }
 
+            if(isset($args['_stats']))
+            {
+                $result->stats = (object) [];
+
+                foreach($object['stats']['stats_fields'] as $field => $stats)
+                {
+                    if(is_object($stats))
+                    {
+                        $result->stats->$field = (object)
+                        [
+                            'min'     => $stats->min,
+                            'max'     => $stats->max,
+                            'count'   => $stats->count,
+                            'missing' => $stats->missing
+                        ];
+                    }
+                }
+            }
+
             switch($this->result)
             {
             case 'array':
-                return empty($result) ? (object) ['matched' => 0, 'documents' => [], 'fields' => (object) null, 'queries' => (object) null] : $result;
+                return empty($result) ? (object) ['total' => 0, 'documents' => [], 'fields' => (object) null, 'queries' => (object) null] : $result;
 
             case 'object':
-                if($result->matched == 1 and count($result->documents) == 1)
+                if($result->total == 1 and count($result->documents) == 1)
                 {
                     return $result->documents[0];
                 }
-                elseif($result->matched == 0 and count($result->documents) == 0)
+                elseif($result->total == 0 and count($result->documents) == 0)
                 {
                     return null;
                 }

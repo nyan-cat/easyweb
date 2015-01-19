@@ -65,6 +65,7 @@ class document implements \ArrayAccess
 
     function render()
     {
+        $this->document->formatOutput = true;
         return $this->document->saveXML();
     }
 

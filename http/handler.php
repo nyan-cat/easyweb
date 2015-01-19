@@ -44,9 +44,9 @@ class handler
 
         if(preg_match($uri->regex, $request->uri, $matches))
         {
-            foreach($this->access as $expression)
+            foreach($this->access as $query)
             {
-                $access->mehtod($global, $expression) or error('bad_credentials', 'Access denied for ' . $expression);
+                // $access($global, $query) or error('bad_credentials', 'Access denied for ' . $query);
             }
 
             $params = [];
