@@ -49,6 +49,7 @@ class www_exception extends Exception
     private static $types =
     [
         'bad_backend_response' => ['code' => 500],
+        'bad_captcha'          => ['code' => 400],
         'bad_credentials'      => ['code' => 403],
         'bad_config'           => ['code' => 500],
         'bad_parameter'        => ['code' => 400],
