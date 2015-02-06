@@ -16,6 +16,16 @@ class engine
 
     function extend($extensions)
     {
+        if(!isset($extensions->filters))
+        {
+            $extensions->filters = [];
+        }
+
+        if(!isset($extensions->functions))
+        {
+            $extensions->functions = [];
+        }
+
         $extensions->filters +=
         [
             'array' => function($object)

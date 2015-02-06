@@ -65,12 +65,31 @@ foreach($config->query('/config//collection[@name]') as $collection)
             }
         }
 
+        $order_by = [];
+
+        foreach($config->query('order-by', $procedure) as $order)
+        {
+            $mode =
+            [
+                'type'  => isset($order['@type']) ? $order['@type'] : 'normal',
+                'order' => $order['@order']
+            ];
+
+            if(isset($order['@point']))
+            {
+                $mode['point'] = $order['@point'];
+            }
+
+            $order_by[$order['@name']] = (object) $mode;
+        }
+
         $procedures[] = (object) array_merge(iterator_to_array($procedure->attributes()),
         [
-            'static' => $procedure->parent()->name() == 'static',
-            'params' => $params,
-            'body'   => trim($procedure->value()),
-            'output' => empty($output) ? null : $output
+            'static'   => $procedure->parent()->name() == 'static',
+            'params'   => $params,
+            'body'     => trim($procedure->value()),
+            'order_by' => $order_by,
+            'output'   => empty($output) ? null : $output
         ]);
     }
 
