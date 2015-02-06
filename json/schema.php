@@ -33,6 +33,15 @@ class schema
 
             if(($result = $closure($path, $property)) !== null)
             {
+                if($property->type == 'number')
+                {
+                    $result = floatval(preg_replace('/[^0-9\.\-]/', '', $result));
+                }
+                elseif($property->type == 'integer')
+                {
+                    $result = intval(preg_replace('/[^0-9\-]/', '', $result));
+                }
+
                 $flat[$path] = $result;
             }
         });
