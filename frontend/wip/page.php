@@ -38,6 +38,11 @@ class page extends http\handler
                     $response->headers['Location'] = $script['_redirect'];
                     unset($script['_redirect']);
                 }
+                if(isset($script['_headers']))
+                {
+                    $response->headers = array_merge($response->headers, $script['_headers']);
+                    unset($script['_headers']);
+                }
 
                 $params += $script;
             }

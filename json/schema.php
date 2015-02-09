@@ -93,7 +93,7 @@ class schema
                 $field['@name'] = $path;
                 $field['@type'] = $types[$property->type];
                 $field['@required'] = $required;
-                $field['@indexed'] = in_array($property->type, ['string']) ? 'false' : 'true';
+                $field['@indexed'] = in_array($property->type, ['string']) ? ((isset($property->indexed) and $property->indexed) ? 'true' : 'false') : 'true';
                 $field['@stored'] = $stored;
                 $field['@multiValued'] = $multiValued;
                 $fields->append($field);
