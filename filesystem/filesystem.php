@@ -6,6 +6,7 @@ require_once('enumerator.php');
 
 function read($filename)
 {
+    !empty($filename) or error('filesystem_error', 'File name is empty');
     return file_get_contents($filename);
 }
 

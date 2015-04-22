@@ -80,11 +80,11 @@ class www implements ArrayAccess
         return $www;
     }
 
-    function request($request, $global = [])
+    function request($request, $global = [], $cut_self = true)
     {
         $response = $this->router->request($request, $global + ['_collections' => ['vars' => $this->vars]]);
 
-        if($response !== null and isset($response->content))
+        if($cut_self and $response !== null and isset($response->content))
         {
             $response->content = preg_replace_callback('/<a [^>]*href="([^"]+)"[^>]*>([\s\S]+?)<\/a>/i', function($matches) use($request)
             {

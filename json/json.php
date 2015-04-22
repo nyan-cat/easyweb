@@ -9,7 +9,7 @@ function encode($value, $options = JSON_UNESCAPED_UNICODE)
 
 function decode($json, $assoc = false)
 {
-    return json_decode($json, $assoc);
+    return json_decode($json, $assoc, 512, JSON_BIGINT_AS_STRING);
 }
 
 function join($a, $b)
