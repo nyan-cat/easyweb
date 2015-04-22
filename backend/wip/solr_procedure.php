@@ -65,7 +65,13 @@ class solr_procedure extends procedure
         case 'query':
             $query = new SolrQuery(self::substitute($this->body, $args));
 
-            foreach($this->order_by as $name => $mode)
+            $order_by = $this->order_by;
+            if(isset($args['_order']))
+            {
+                $order_by = array_merge($order_by, $args['_order']);
+            }
+
+            foreach($order_by as $name => $mode)
             {
                 if($mode->type == 'normal')
                 {

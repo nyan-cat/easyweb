@@ -17,24 +17,9 @@ class schema
         $this->schema = $schema;
     }
 
-    function get($slice = '')
+    function get()
     {
-        $schema = $this->schema;
-        $properties = (object) [];
-
-        foreach($this->schema->properties as $name => $property)
-        {
-            if(!isset($property->slice) or
-                (is_array($property->slice) and in_array($slice, $property->slice)) or
-                (!is_array($property->slice) and $property->slice == $slice))
-            {
-                $properties->$name = $property;
-            }
-        }
-
-        $schema->properties = $properties;
-
-        return $schema;
+        return $this->schema;
     }
 
     function create($source, $required = true)
@@ -43,30 +28,21 @@ class schema
 
         $this->traverse(function($path, $property) use($source, $flat)
         {
-            if($property->type == 'set')
+            $closure = is_array($source) ? isset($source[$path]) ? $source[$path] : $source['*'] : $source;
+            $closure = is_array($closure) ? isset($closure[$property->type]) ? $closure[$property->type] : $closure['*'] : $closure;
+
+            if(($result = $closure($path, $property)) !== null)
             {
-                foreach($property->items as $item)
+                if($property->type == 'number')
                 {
-                    $current = $path . ".$item";
-
-                    $closure = is_array($source) ? isset($source[$current]) ? $source[$current] : $source['*'] : $source;
-                    $closure = is_array($closure) ? isset($closure[$property->type]) ? $closure[$property->type] : $closure['*'] : $closure;
-
-                    if(($result = $closure($current, $property)) !== null)
-                    {
-                        $flat[$current] = $result;
-                    }
+                    $result = floatval(preg_replace('/[^0-9\.\-]/', '', $result));
                 }
-            }
-            else
-            {
-                $closure = is_array($source) ? isset($source[$path]) ? $source[$path] : $source['*'] : $source;
-                $closure = is_array($closure) ? isset($closure[$property->type]) ? $closure[$property->type] : $closure['*'] : $closure;
-
-                if(($result = $closure($path, $property)) !== null)
+                elseif($property->type == 'integer')
                 {
-                    $flat[$path] = $result;
+                    $result = intval(preg_replace('/[^0-9\-]/', '', $result));
                 }
+
+                $flat[$path] = $result;
             }
         });
 
@@ -79,7 +55,7 @@ class schema
         {
             $param = str_replace('.', '_', $path);
 
-            if(in_array($property->type, ['boolean', 'set']))
+            if(in_array($property->type, ['boolean']))
             {
                 return isset($post->$param) and strtolower($post->$param) == 'on';
             }
@@ -111,27 +87,13 @@ class schema
             $stored = 'true';
             $multiValued = 'false';
 
-            if($property->type == 'set')
-            {
-                foreach($property->items as $item)
-                {
-                    $field = $document->element('field');
-                    $field['@name'] = "$path.$item";
-                    $field['@type'] = 'boolean';
-                    $field['@required'] = $required;
-                    $field['@indexed'] = 'true';
-                    $field['@stored'] = $stored;
-                    $field['@multiValued'] = $multiValued;
-                    $fields->append($field);
-                }
-            }
-            elseif(isset($types[$property->type]))
+            if(isset($types[$property->type]))
             {
                 $field = $document->element('field');
                 $field['@name'] = $path;
                 $field['@type'] = $types[$property->type];
                 $field['@required'] = $required;
-                $field['@indexed'] = in_array($property->type, ['string']) ? 'false' : 'true';
+                $field['@indexed'] = in_array($property->type, ['string']) ? ((isset($property->indexed) and $property->indexed) ? 'true' : 'false') : 'true';
                 $field['@stored'] = $stored;
                 $field['@multiValued'] = $multiValued;
                 $fields->append($field);

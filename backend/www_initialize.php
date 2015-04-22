@@ -87,20 +87,20 @@ foreach($config->collections as $options)
 
                     if(isset($procedure->order_by))
                     {
-                        foreach($procedure->order_by as $order)
+                        foreach($procedure->order_by as $name => $order)
                         {
                             $mode = (object)
                             [
-                                'type'  => isset($order['@type']) ? $order['@type'] : 'normal',
-                                'order' => $order['@order']
+                                'type'  => isset($order->type) ? $order->type : 'normal',
+                                'order' => $order->order
                             ];
                     
                             if(isset($order->point))
                             {
                                 $mode->point = $order->point;
                             }
-                    
-                            $order_by[$order->name] = $mode;
+
+                            $order_by[$name] = $mode;
                         }
                     }
 

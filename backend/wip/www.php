@@ -16,7 +16,7 @@ class www
 {
     private function __construct($options)
     {
-        $this->router = new http\router($options->access->method->bindTo($this, $this));
+        $this->router = new http\router();
         $this->dispatcher = new dispatcher();
         switch(fs\extension($options->config))
         {
@@ -42,7 +42,7 @@ class www
         if(isset($options->cache))
         {
             $cache = $options->cache . 'cache.tmp';
-            if($www = fs\read($cache))
+            if($www = @fs\read($cache))
             {
                 $www = unserialize($www);
             }
@@ -57,6 +57,7 @@ class www
             $www = new www($options);
         }
 
+        $www->router->bind($options->access->method->bindTo($www, $www));
         $www->bind();
 
         if(isset($options->access))

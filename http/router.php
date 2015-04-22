@@ -7,7 +7,7 @@ require_once(www_root . 'http/handler.php');
 
 class router
 {
-    function __construct($access = null)
+    function bind($access)
     {
         $this->access = $access;
     }
@@ -47,7 +47,7 @@ class router
         error('not_found', 'Resource and method not found: ' . $request->method . ' ' . $request->uri);
     }
 
-    private $access;
+    private $access = null;
 
     private $handlers =
     [

@@ -56,7 +56,7 @@ class www implements ArrayAccess
         if(isset($options->cache))
         {
             $cache = $options->cache . 'cache.tmp';
-            if($www = fs\read($cache))
+            if($www = @fs\read($cache))
             {
                 $www = unserialize($www);
             }

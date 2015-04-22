@@ -21,7 +21,7 @@ class response
 
         foreach($this->cookies as $name => $cookie)
         {
-            if($cookie !== null)
+            if(!is_string($cookie))
             {
                 $cookie = (object) $cookie;
                 setcookie
@@ -30,12 +30,13 @@ class response
                     $cookie->value,
                     isset($cookie->expire) ? @time() + $cookie->expire : null,
                     isset($cookie->path) ? $cookie->path : null,
-                    isset($cookie->domain) ? '.' . $cookie->domain : null
+                    isset($cookie->domain) ? ('.' . $cookie->domain) : null,
+                    isset($_SERVER['HTTPS'])
                 );
             }
             else
             {
-                setcookie($name, null, -1, '/');
+                setcookie($name, null, -1, '/', '.' . $cookie, isset($_SERVER['HTTPS']));
             }
         }
 
