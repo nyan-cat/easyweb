@@ -15,6 +15,11 @@ $result = (object)
     'schemas'       => []
 ];
 
+if(isset($config['@vars']))
+{
+    $result->vars = $config['@vars'];
+}
+
 foreach($config->query('/config/datasources//datasource[@name and @type]') as $datasource)
 {
     $name = $datasource['@name'];

@@ -72,9 +72,15 @@ class document implements \ArrayAccess
     static function load($filename)
     {
         $document = new \DOMDocument();
-        $document->load($filename) or replace_me();
-        $document->xinclude();
-        return new document($document);
+        if($document->load($filename) !== false)
+        {
+            $document->xinclude();
+            return new document($document);
+        }
+        else
+        {
+            return null;
+        }
     }
 
     static function download($url)
@@ -82,16 +88,15 @@ class document implements \ArrayAccess
         $document = new \DOMDocument();
         $allow_url_fopen = ini_get('allow_url_fopen');
         ini_set('allow_url_fopen', 1);
-        $document->load($url);
+        $loaded = $document->load($url);
         ini_set('allow_url_fopen', $allow_url_fopen);
-        return new document($document);
+        return $loaded ? new document($document) : null;
     }
 
     static function parse($string)
     {
         $document = new \DOMDocument();
-        $document->loadXML($string);
-        return new document($document);
+        return $document->loadXML($string) ? new document($document) : null;
     }
 
     private $document;

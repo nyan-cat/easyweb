@@ -12,7 +12,7 @@ require_once(www_root . 'backend/wip/dispatcher.php');
 require_once(www_root . 'backend/wip/method.php');
 require_once(www_root . 'backend/wip/security.php');
 
-class www
+class www implements ArrayAccess
 {
     private function __construct($options)
     {
@@ -25,6 +25,26 @@ class www
             break;
         }
         $this->initialize($config);
+    }
+
+    function offsetSet($offset, $value)
+    {
+        error('not_implemented', 'Backend core object vars are immutable');
+    }
+
+    function offsetExists($offset)
+    {
+        return is_object($this->vars) ? isset($this->vars->$offset) : isset($this->vars[$offset]);
+    }
+
+    function offsetUnset($offset)
+    {
+        error('not_implemented', 'Backend core object vars are immutable');
+    }
+
+    function offsetGet($offset)
+    {
+        return is_object($this->vars) ? $this->vars->$offset : $this->vars[$offset];
     }
 
     private static function from_xml($filename)
@@ -115,7 +135,7 @@ class www
                 unset($result['_cookies']);
             }
 
-            $response->content = $encoder->success->__invoke($result);
+            $response->content = $result !== null ? $encoder->success->__invoke($result) : 'null';
         }
         catch(www_exception $e)
         {
@@ -164,7 +184,10 @@ class www
 
             $uri = self::substitute($uri, $result);
 
-            $result[$param] = $this->router->request(new http\request($uri, 'GET', $request->protocol, $get), $global);
+            if(($value = $this->router->request(new http\request($uri, 'GET', $request->protocol, $get), $global)) !== null)
+            {
+                $result[$param] = $value;
+            }
         }
 
         return $result;
@@ -186,6 +209,7 @@ class www
     private $batch;
     private $schema;
     private $documentation;
+    private $vars;
 
     private $schemas = [];
     private $resolve = null;

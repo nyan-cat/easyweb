@@ -4,6 +4,11 @@ $this->batch         = $config->batch;
 $this->schema        = $config->schema;
 $this->documentation = $config->documentation;
 
+if(isset($config->vars))
+{
+    $this->vars = json\decode(fs\read($config->vars));
+}
+
 $datasources = [];
 
 foreach($config->collections as $options)

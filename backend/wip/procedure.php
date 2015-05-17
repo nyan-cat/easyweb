@@ -39,7 +39,7 @@ class procedure
                 }
                 elseif($this->result == 'array')
                 {
-                    foreach($result as &$object)
+                    foreach($this->array_ref($result) as &$object)
                     {
                         $this->postprocess($object);
                     }
@@ -63,6 +63,11 @@ class procedure
     function params()
     {
         return $this->params;
+    }
+
+    protected function & array_ref(&$object)
+    {
+        return $object;
     }
 
     private function preprocess(&$params)
@@ -114,9 +119,15 @@ class procedure
 
     static private function embed(&$object, $metadata)
     {
-        foreach(json\decode($object->$metadata, true) as $name => $value)
+        if(($json = json\decode($object->$metadata, true)) !== null)
         {
-            $object->$name = $value;
+            if(is_array($json))
+            {
+                foreach($json as $name => $value)
+                {
+                    $object->$name = $value;
+                }
+            }
         }
     }
 

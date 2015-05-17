@@ -60,14 +60,12 @@ class sql_procedure extends procedure
             function($matches) use($args)
             {
                 $name = $matches[1];
-                isset($args[$name]) or error('missing_parameter', 'Unknown procedure parameter: ' . $name);
-                return $args[$name];
+                return isset($args[$name]) ? $args[$name] : $matches[0];
             },
             function($matches) use($sql, $args)
             {
                 $name = $matches[1];
-                isset($args[$name]) or error('missing_parameter', 'Unknown procedure parameter: ' . $name);
-                return $sql->quote($args[$name]);
+                return isset($args[$name]) ? $sql->quote($args[$name]) : $matches[0];
             }
         ], $query);
     }

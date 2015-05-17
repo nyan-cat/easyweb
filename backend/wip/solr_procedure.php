@@ -223,11 +223,11 @@ class solr_procedure extends procedure
                 return empty($result) ? (object) ['total' => 0, 'documents' => [], 'fields' => (object) null, 'queries' => (object) null] : $result;
 
             case 'object':
-                if($result->total == 1 and count($result->documents) == 1)
+                if(count($result->documents) == 1)
                 {
                     return $result->documents[0];
                 }
-                elseif($result->total == 0 and count($result->documents) == 0)
+                elseif(empty($result->documents))
                 {
                     return null;
                 }
@@ -240,6 +240,11 @@ class solr_procedure extends procedure
                 error('bad_query_result', 'Unsupported Solr query result type: ' . $this->result);
             }
         }
+    }
+
+    protected function & array_ref(&$object)
+    {
+        return $object->documents;
     }
 
     private static function substitute($body, $args)
