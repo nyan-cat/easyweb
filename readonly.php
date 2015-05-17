@@ -94,6 +94,11 @@ class readonly implements ArrayAccess, Iterator
         return $this->object;
     }
 
+    function optional($name)
+    {
+        return isset($this->object->$name) ? $this->object->$name : '';
+    }
+
     static function create($object)
     {
         return new readonly($object);
